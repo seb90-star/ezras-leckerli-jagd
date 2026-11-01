@@ -1,0 +1,13 @@
+{
+  "appId": "de.lifeofezra.leckerlijagd",
+  "appName": "Leckerli-Jagd",
+  "webDir": "docs",
+  "backgroundColor": "#2f4a26",
+  "android": {
+    "backgroundColor": "#2f4a26"
+  },
+  "ios": {
+    "backgroundColor": "#2f4a26",
+    "contentInset": "never"
+  }
+}

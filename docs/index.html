@@ -1,0 +1,1367 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Ezras Leckerli-Jagd</title>
+<meta name="description" content="Kleines Fangspiel: Ezra schnappt im Garten Leckerlis und Bälle und lässt die Socken liegen.">
+<meta name="theme-color" content="#2f4a26">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preload" href="fonts/baloo-2-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+  @font-face { font-family: "Baloo 2"; font-weight: 600; font-display: swap; src: url("fonts/baloo-2-latin-600-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Baloo 2"; font-weight: 800; font-display: swap; src: url("fonts/baloo-2-latin-800-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Nunito"; font-weight: 500; font-display: swap; src: url("fonts/nunito-latin-500-normal.woff2") format("woff2"); }
+  @font-face { font-family: "Nunito"; font-weight: 700; font-display: swap; src: url("fonts/nunito-latin-700-normal.woff2") format("woff2"); }
+
+  /* Layout: ein Bildschirm – Punkteleiste oben, darunter der Garten als Spielfeld; Start/Ende als Karte darüber */
+  :root {
+    --hecke: #2f4a26;
+    --hecke-d: #22371b;
+    --creme: #fff6df;
+    --tinte: #26321f;
+    --fell: #b4612f;
+    --tuch: #2742c4;
+    --gelb: #f2d43a;
+    --font-anzeige: "Baloo 2", "Trebuchet MS", system-ui, sans-serif;
+    --font-text: "Nunito", "Segoe UI", system-ui, sans-serif;
+    color-scheme: dark;
+  }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; }
+  html {
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    box-sizing: border-box;
+    background: var(--hecke-d);
+  }
+  body {
+    margin: 0;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior: none;
+    background: var(--hecke-d);
+    color: var(--creme);
+    font-family: var(--font-text);
+    overflow: hidden;
+  }
+  .app {
+    height: 100%;
+    max-width: 760px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    background: var(--hecke);
+  }
+  .hud {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-block: 8px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    font-family: var(--font-anzeige);
+    font-variant-numeric: tabular-nums;
+  }
+  .wert { display: flex; flex-direction: column; line-height: 1; }
+  .wert small {
+    font-family: var(--font-text);
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    opacity: .75;
+  }
+  .wert b { font-size: 26px; font-weight: 800; }
+  .pfoten { display: flex; gap: 6px; color: var(--gelb); }
+  .pfoten svg { width: 22px; height: 22px; transition: opacity .3s, transform .3s; }
+  .pfoten svg.weg { opacity: .2; transform: scale(.8); }
+  .knoepfe { display: flex; gap: 6px; }
+  .rund {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 246, 223, .35);
+    background: transparent;
+    color: var(--creme);
+    font: 700 16px var(--font-text);
+    cursor: pointer;
+    display: grid; place-items: center;
+  }
+  .rund:hover { border-color: var(--creme); }
+  button:focus-visible { outline: 3px solid var(--gelb); outline-offset: 2px; }
+
+  .buehne { position: relative; flex: 1; min-height: 0; overflow: hidden; }
+  canvas#spiel { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: crosshair; }
+
+  .ueber {
+    position: absolute; inset: 0;
+    display: flex;
+    overflow-y: auto;
+    padding: 16px;
+    background: rgba(25, 40, 20, .45);
+  }
+  .karte {
+    margin: auto;
+    width: min(100%, 380px);
+    background: var(--creme);
+    color: var(--tinte);
+    border-radius: 18px;
+    padding: 22px 22px 20px;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, .35);
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .karte h1, .karte h2 {
+    margin: 0;
+    font-family: var(--font-anzeige);
+    font-weight: 800;
+    line-height: 1.05;
+    text-wrap: balance;
+    color: var(--tuch);
+  }
+  .karte h1 { font-size: 32px; }
+  .karte h2 { font-size: 28px; }
+  .karte p { margin: 0; line-height: 1.45; }
+  .regeln { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .regeln li { display: grid; grid-template-columns: 40px 1fr; align-items: center; gap: 10px; line-height: 1.35; font-size: 15px; }
+  .regeln canvas { width: 40px; height: 40px; }
+  .klein { font-size: 13px; opacity: .75; }
+  .los {
+    margin-top: 4px;
+    border: 0;
+    border-radius: 999px;
+    padding: 14px 18px;
+    background: var(--tuch);
+    color: #fff;
+    font: 800 20px var(--font-anzeige);
+    cursor: pointer;
+    box-shadow: 0 4px 0 #1a2d8a;
+  }
+  .los:active { transform: translateY(2px); box-shadow: 0 2px 0 #1a2d8a; }
+  .gross {
+    font-family: var(--font-anzeige);
+    font-size: 56px; font-weight: 800; line-height: 1;
+    font-variant-numeric: tabular-nums;
+    color: var(--fell);
+  }
+  .rekord-neu {
+    align-self: flex-start;
+    background: var(--gelb);
+    color: var(--tinte);
+    font: 800 14px var(--font-anzeige);
+    letter-spacing: .04em;
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+  .knopfreihe { display: flex; flex-direction: column; gap: 8px; }
+  .zweit {
+    border: 2px solid var(--tuch);
+    border-radius: 999px;
+    padding: 10px 16px;
+    background: transparent;
+    color: var(--tuch);
+    font: 800 17px var(--font-anzeige);
+    cursor: pointer;
+  }
+  .zweit.klein { align-self: center; padding: 5px 14px; font-size: 14px; border-color: rgba(38, 50, 31, .25); color: var(--tinte); }
+  .zweit:disabled { opacity: .5; cursor: default; }
+  .zweit.warnung { background: #d33b2f; border-color: #d33b2f; color: #fff; }
+  .eintragen { display: flex; flex-direction: column; gap: 8px; }
+  .eintragen label { font-weight: 700; }
+  #nameFeld {
+    font: 700 18px var(--font-text);
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 2px solid rgba(38, 50, 31, .25);
+    background: #fff;
+    color: var(--tinte);
+    -webkit-user-select: text;
+    user-select: text;
+  }
+  #nameFeld:focus { outline: none; border-color: var(--tuch); }
+  .liste { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  .liste th {
+    padding: 0 6px 4px;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: .08em; text-transform: uppercase;
+    text-align: left;
+    opacity: .6;
+  }
+  .liste th.r { text-align: right; }
+  .liste td { padding: 5px 6px; border-top: 1px solid rgba(38, 50, 31, .1); }
+  .liste .platz { width: 2ch; font: 800 17px var(--font-anzeige); color: var(--fell); }
+  .liste .name { font-weight: 700; overflow-wrap: anywhere; }
+  .liste .pkt { font: 800 17px var(--font-anzeige); text-align: right; }
+  .liste .datum { font-size: 13px; opacity: .65; text-align: right; white-space: nowrap; }
+  .liste tr.neu td { background: #f7e49a; }
+  .regeln { gap: 6px; }
+  .regeln li { grid-template-columns: 34px 1fr; font-size: 14px; }
+  .regeln canvas { width: 34px; height: 34px; }
+  .rund.zahnrad { font-size: 20px; }
+  .einstellungen { display: flex; flex-direction: column; gap: 14px; margin: 0; }
+  .zeile { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-weight: 700; }
+  .segmente { display: flex; gap: 2px; padding: 3px; border-radius: 999px; background: rgba(38, 50, 31, .08); }
+  .segmente button {
+    border: 0; border-radius: 999px;
+    padding: 6px 11px;
+    background: transparent;
+    color: var(--tinte);
+    font: 700 14px var(--font-text);
+    cursor: pointer;
+  }
+  .segmente button[aria-pressed="true"] { background: var(--tuch); color: #fff; }
+  .schiebe {
+    -webkit-appearance: none; appearance: none;
+    flex: none;
+    position: relative;
+    width: 48px; height: 28px;
+    margin: 0;
+    border-radius: 999px;
+    background: rgba(38, 50, 31, .25);
+    cursor: pointer;
+    transition: background .2s;
+  }
+  .schiebe::after {
+    content: "";
+    position: absolute; top: 3px; left: 3px;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .3);
+    transition: transform .2s;
+  }
+  .schiebe:checked { background: var(--tuch); }
+  .schiebe:checked::after { transform: translateX(20px); }
+  .schiebe:focus-visible { outline: 3px solid var(--gelb); outline-offset: 2px; }
+  .trenner { height: 1px; background: rgba(38, 50, 31, .12); }
+  .fusszeile { display: flex; justify-content: space-between; font-size: 12px; opacity: .6; }
+  .fusszeile a { color: inherit; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="hud">
+    <div class="wert"><small data-t="punkte">Punkte</small><b id="punkte">0</b></div>
+    <div class="pfoten" id="pfoten" data-ta="leben" aria-label="Leben"></div>
+    <div class="wert" style="text-align:right"><small data-t="rekord">Rekord</small><b id="rekord">0</b></div>
+    <div class="knoepfe">
+      <button class="rund zahnrad" id="einstellKnopf" type="button" data-ta="einstellungen" aria-label="Einstellungen">⚙</button>
+      <button class="rund" id="pauseKnopf" type="button" data-ta="pause" aria-label="Pause">❚❚</button>
+    </div>
+  </header>
+
+  <main class="buehne" id="buehne">
+    <canvas id="spiel"></canvas>
+
+    <div class="ueber" id="startKarte">
+      <div class="karte">
+        <h1 data-t="titel">Ezras Leckerli-Jagd</h1>
+        <p data-t="intro">Ezra hat Hunger. Hilf ihm, die Leckerlis aus der Luft zu schnappen.</p>
+        <ul class="regeln">
+          <li><canvas data-typ="knochen" width="68" height="68"></canvas><span data-th="r_knochen"></span></li>
+          <li><canvas data-typ="ball" width="68" height="68"></canvas><span data-th="r_ball"></span></li>
+          <li><canvas data-typ="gold" width="68" height="68"></canvas><span data-th="r_gold"></span></li>
+          <li><canvas data-typ="pfote" width="68" height="68"></canvas><span data-th="r_pfote"></span></li>
+          <li><canvas data-typ="socke" width="68" height="68"></canvas><span data-th="r_socke"></span></li>
+        </ul>
+        <p class="klein" data-t="r_combo"></p>
+        <div class="knopfreihe">
+          <button class="los" id="losKnopf" type="button" data-t="los">Los geht’s</button>
+          <button class="zweit" data-liste type="button" data-t="bestenliste">Bestenliste</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="ueber" id="einstellKarte" hidden>
+      <div class="karte">
+        <h2 data-t="einstellungen">Einstellungen</h2>
+        <div class="einstellungen">
+          <div class="zeile">
+            <span id="spracheLabel" data-t="sprache">Sprache</span>
+            <div class="segmente" role="group" aria-labelledby="spracheLabel">
+              <button type="button" data-sprache="auto" data-t="auto">Auto</button>
+              <button type="button" data-sprache="de">Deutsch</button>
+              <button type="button" data-sprache="en">English</button>
+            </div>
+          </div>
+          <label class="zeile" for="tonSchalter"><span data-t="ton">Ton</span><input class="schiebe" type="checkbox" role="switch" id="tonSchalter"></label>
+          <label class="zeile" for="vibSchalter" id="vibZeile" hidden><span data-t="vibration">Vibration</span><input class="schiebe" type="checkbox" role="switch" id="vibSchalter"></label>
+          <div class="trenner"></div>
+          <button class="zweit klein" id="anleitungKnopf" type="button" data-t="anleitungNochmal">Kurzanleitung nochmal zeigen</button>
+          <button class="zweit klein" id="loeschKnopf" type="button">Bestenliste löschen</button>
+        </div>
+        <button class="los" id="fertigKnopf" type="button" data-t="fertig">Fertig</button>
+        <p class="fusszeile"><a id="datenschutzLink" href="datenschutz.html" data-t="datenschutz">Datenschutz</a><span id="versionText">Version 1.0</span></p>
+      </div>
+    </div>
+
+    <div class="ueber" id="pauseKarte" hidden>
+      <div class="karte">
+        <h2 data-t="pause">Pause</h2>
+        <p data-t="pauseText">Ezra wartet geduldig.</p>
+        <button class="los" id="weiterKnopf" type="button" data-t="weiter">Weiterspielen</button>
+      </div>
+    </div>
+
+    <div class="ueber" id="endeKarte" hidden>
+      <div class="karte">
+        <h2 id="endeTitel">Satt!</h2>
+        <span class="rekord-neu" id="rekordNeu" data-t="rekordNeu" hidden>Neuer Rekord!</span>
+        <div class="gross" id="endePunkte">0</div>
+        <p id="endeText">Punkte</p>
+        <p class="klein" id="endeSerie"></p>
+        <form class="eintragen" id="eintragen" hidden>
+          <label for="nameFeld" id="platzText"></label>
+          <input id="nameFeld" type="text" maxlength="12" autocomplete="nickname" enterkeyhint="done" data-tp="namePlatzhalter" placeholder="Dein Name">
+          <button class="los" type="submit" data-t="eintragen">Eintragen</button>
+        </form>
+        <div class="knopfreihe" id="endeKnoepfe">
+          <button class="los" id="nochmalKnopf" type="button" data-t="nochmal">Nochmal</button>
+          <button class="zweit" data-liste type="button" data-t="bestenliste">Bestenliste</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="ueber" id="listeKarte" hidden>
+      <div class="karte">
+        <h2 data-t="bestenliste">Bestenliste</h2>
+        <p id="listeLeer" data-t="listeLeer"></p>
+        <table class="liste" id="listeTabelle">
+          <thead><tr><th>#</th><th data-t="th_name">Name</th><th class="r" data-t="punkte">Punkte</th><th class="r" data-t="th_datum">Datum</th></tr></thead>
+          <tbody id="listeZeilen"></tbody>
+        </table>
+        <p class="klein" data-t="listeHinweis"></p>
+        <button class="los" id="listeSpielen" type="button" data-t="spielen">Spielen</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+(() => {
+  // ---------- Sprache (richtet sich nach dem Handy) ----------
+  const TEXTE = {
+    de: {
+      titel: 'Ezras Leckerli-Jagd',
+      intro: 'Ezra hat Hunger. Hilf ihm, die Leckerlis aus der Luft zu schnappen.',
+      r_knochen: '<b>Leckerli</b>: 1 Punkt. Fällt eins auf den Rasen, ist ein Leben weg.',
+      r_ball: '<b>Ball</b>: 3 Punkte.',
+      r_gold: '<b>Goldenes Leckerli</b>: Alles läuft kurz in Zeitlupe.',
+      r_pfote: '<b>Pfote</b>: ein Leben zurück.',
+      r_socke: '<b>Socke</b>: bloß nicht fressen! Kostet ein Leben.',
+      r_combo: 'Fang 5 hintereinander für doppelte Punkte, 10 für dreifache.',
+      los: 'Los geht’s', bestenliste: 'Bestenliste', datenschutz: 'Datenschutz', datenschutzSeite: 'datenschutz.html',
+      vibration: 'Vibration', pause: 'Pause', pauseText: 'Ezra wartet geduldig.', weiter: 'Weiterspielen',
+      nochmal: 'Nochmal', punkte: 'Punkte', punkt: 'Punkt', rekord: 'Rekord', leben: 'Leben',
+      rekordNeu: 'Neuer Rekord!', platz: (n) => `Platz ${n} in der Bestenliste! Wie heißt du?`,
+      namePlatzhalter: 'Dein Name', eintragen: 'Eintragen',
+      listeLeer: 'Noch keine Einträge. Spiel eine Runde und hol dir Platz 1!',
+      listeHinweis: 'Die Liste wird nur auf diesem Gerät gespeichert.',
+      spielen: 'Spielen', loeschen: 'Bestenliste löschen', loeschenSicher: 'Wirklich alles löschen?', geloescht: 'Bestenliste gelöscht ✓',
+      einstellungen: 'Einstellungen', sprache: 'Sprache', auto: 'Auto', ton: 'Ton', fertig: 'Fertig', version: 'Version',
+      anleitungNochmal: 'Kurzanleitung nochmal zeigen', anleitungOk: 'Kommt beim nächsten Spiel ✓',
+      th_name: 'Name', th_datum: 'Datum',
+      ende50: 'Kugelrund und glücklich!', ende20: 'Gut gefuttert!', ende0: 'Ezra hat noch Hunger',
+      serieLang: (n) => `Längste Serie: ${n}`,
+      igitt: 'Igitt!', daneben: 'Daneben!', zeitlupe: 'Zeitlupe!', lebenPlus: '+1 Leben',
+      combo: (m) => `Combo x${m}!`, serie: (n) => `Serie ${n}`, anonym: 'Anonym',
+      anleitungTouch: 'Wischen, um Ezra zu steuern', anleitungMaus: 'Pfeiltasten oder Maus zum Steuern',
+      datum: 'de-DE',
+    },
+    en: {
+      titel: 'Ezra’s Treat Hunt',
+      intro: 'Ezra is hungry. Help him snap the treats out of the air.',
+      r_knochen: '<b>Treat</b>: 1 point. If one hits the lawn, you lose a life.',
+      r_ball: '<b>Ball</b>: 3 points.',
+      r_gold: '<b>Golden treat</b>: Everything slows down for a moment.',
+      r_pfote: '<b>Paw</b>: get a life back.',
+      r_socke: '<b>Sock</b>: don’t eat it! Costs a life.',
+      r_combo: 'Catch 5 in a row for double points, 10 for triple.',
+      los: 'Let’s go', bestenliste: 'High scores', datenschutz: 'Privacy', datenschutzSeite: 'privacy.html',
+      vibration: 'Vibration', pause: 'Paused', pauseText: 'Ezra is waiting patiently.', weiter: 'Resume',
+      nochmal: 'Play again', punkte: 'Points', punkt: 'Point', rekord: 'Best', leben: 'Lives',
+      rekordNeu: 'New record!', platz: (n) => `#${n} on the high score list! What’s your name?`,
+      namePlatzhalter: 'Your name', eintragen: 'Save',
+      listeLeer: 'No entries yet. Play a round and grab first place!',
+      listeHinweis: 'This list is only saved on this device.',
+      spielen: 'Play', loeschen: 'Clear high scores', loeschenSicher: 'Really clear everything?', geloescht: 'High scores cleared ✓',
+      einstellungen: 'Settings', sprache: 'Language', auto: 'Auto', ton: 'Sound', fertig: 'Done', version: 'Version',
+      anleitungNochmal: 'Show tutorial again', anleitungOk: 'Shown in your next game ✓',
+      th_name: 'Name', th_datum: 'Date',
+      ende50: 'Round and happy!', ende20: 'Well fed!', ende0: 'Ezra is still hungry',
+      serieLang: (n) => `Longest streak: ${n}`,
+      igitt: 'Yuck!', daneben: 'Missed!', zeitlupe: 'Slow-mo!', lebenPlus: '+1 life',
+      combo: (m) => `Combo x${m}!`, serie: (n) => `Streak ${n}`, anonym: 'Anonymous',
+      anleitungTouch: 'Swipe to move Ezra', anleitungMaus: 'Use arrow keys or mouse to move',
+      datum: undefined,
+    },
+  };
+  const VERSION = '1.0';
+  // Sprache: in den Einstellungen wählbar; „auto“ richtet sich nach dem Handy.
+  // ?lang=en bzw. ?lang=de erzwingt eine Sprache (z. B. für Store-Screenshots)
+  let sprachWahl = 'auto';
+  try { sprachWahl = localStorage.getItem('ezra-sprache') || 'auto'; } catch (e) {}
+  const wunsch = new URLSearchParams(location.search).get('lang');
+  if (wunsch in TEXTE) sprachWahl = wunsch;
+  let SPRACHE, T;
+  function texteSetzen() {
+    SPRACHE = sprachWahl in TEXTE ? sprachWahl : (navigator.language || 'de').toLowerCase().startsWith('de') ? 'de' : 'en';
+    T = TEXTE[SPRACHE];
+    document.documentElement.lang = SPRACHE;
+    document.title = T.titel;
+    document.querySelectorAll('[data-t]').forEach((el) => { el.textContent = T[el.dataset.t]; });
+    document.querySelectorAll('[data-th]').forEach((el) => { el.innerHTML = T[el.dataset.th]; });
+    document.querySelectorAll('[data-ta]').forEach((el) => { el.setAttribute('aria-label', T[el.dataset.ta]); });
+    document.querySelectorAll('[data-tp]').forEach((el) => { el.placeholder = T[el.dataset.tp]; });
+    document.getElementById('datenschutzLink').href = T.datenschutzSeite;
+    document.getElementById('versionText').textContent = `${T.version} ${VERSION}`;
+    document.querySelectorAll('[data-sprache]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.sprache === sprachWahl)));
+  }
+  texteSetzen();
+
+  const FELL = '#b4612f', FELL_D = '#8e4a22', FELL_H = '#cd7d48';
+  const CREME = '#f3e3a4', BLAU = '#2742c4', HELLBLAU = '#3aa0e4', BLAU_D = '#1d2f8f';
+
+  const cv = document.getElementById('spiel');
+  const ctx = cv.getContext('2d');
+  const himmelCv = document.createElement('canvas');
+  const vorderCv = document.createElement('canvas');
+  const $ = (id) => document.getElementById(id);
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const ruhig = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const touch = matchMedia('(pointer: coarse)').matches;
+
+  let W = 0, H = 0, dpr = 1, boden = 0, sk = 1, grasOben = 0, heckeOben = 0;
+  let zustand = 'start';
+  let punkte = 0, leben = 3, zeit = 0, spawnUhr = 0;
+  let serie = 0, besteSerie = 0, faktor = 1, zeitlupe = 0;
+  let rekord = 0;
+  let items = [], krümel = [], texte = [], sterne = [];
+  let wackeln = 0, uhr = 0;
+  let anleitungUhr = -1, bewegt = 0;
+  const ezra = { x: 0, vx: 0, maul: 0, igitt: 0, blinzelUhr: 3, freude: 0 };
+  const tasten = { links: false, rechts: false };
+  let zielX = null, zeigerUnten = false;
+
+  const lies = (k, standard) => { try { return localStorage.getItem(k) ?? standard; } catch (e) { return standard; } };
+  const schreib = (k, v) => { try { v === null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} };
+
+  // ---------- App-Funktionen (nur in der Handy-App vorhanden) ----------
+  const nativ = !!window.Capacitor?.isNativePlatform?.();
+  const Haptik = nativ ? window.Capacitor.registerPlugin?.('Haptics') : null;
+  const AppPlugin = nativ ? window.Capacitor.registerPlugin?.('App') : null;
+  const kannVibrieren = !!Haptik || 'vibrate' in navigator;
+  let vibration = lies('ezra-vibration', 'an') !== 'aus';
+  function vibrieren(art) {
+    if (!vibration || !kannVibrieren) return;
+    try {
+      if (Haptik) {
+        const p = art === 'stark' ? Haptik.notification({ type: 'ERROR' }) : Haptik.impact({ style: art === 'mittel' ? 'MEDIUM' : 'LIGHT' });
+        Promise.resolve(p).catch(() => {});
+      } else {
+        navigator.vibrate(art === 'stark' ? [50, 40, 70] : art === 'mittel' ? 30 : 12);
+      }
+    } catch (e) {}
+  }
+  $('vibZeile').hidden = !kannVibrieren;
+  $('vibSchalter').checked = vibration;
+
+  // ---------- Bestenliste ----------
+  // Liegt vorerst nur auf dem Gerät. Für eine spätere weltweite Liste nur listeLaden und
+  // eintragSpeichern gegen einen Server austauschen – jeder Eintrag hat schon ID, Name, Punkte und Datum.
+  const LISTE_GROESSE = 10;
+  let letzteId = null, letzterName = lies('ezra-name', ''), loeschenAn = false;
+
+  function listeLaden() {
+    try {
+      const l = JSON.parse(lies('ezra-bestenliste', '[]'));
+      return Array.isArray(l) ? l.filter((e) => e && typeof e.punkte === 'number').slice(0, LISTE_GROESSE) : [];
+    } catch (e) { return []; }
+  }
+  function listeSichern(liste) { schreib('ezra-bestenliste', JSON.stringify(liste)); }
+  // Platz (ab 0), den diese Punktzahl bekäme – oder -1, wenn sie nicht in die Liste kommt
+  function platzFuer(p) {
+    const liste = listeLaden();
+    const i = liste.findIndex((e) => e.punkte < p);
+    const platz = i === -1 ? liste.length : i;
+    return p > 0 && platz < LISTE_GROESSE ? platz : -1;
+  }
+  function eintragSpeichern(name, p) {
+    const eintrag = {
+      id: crypto.randomUUID ? crypto.randomUUID() : Date.now() + '-' + Math.random().toString(36).slice(2),
+      name,
+      punkte: p,
+      datum: new Date().toISOString(),
+    };
+    const liste = listeLaden();
+    liste.push(eintrag);
+    liste.sort((a, b) => b.punkte - a.punkte || a.datum.localeCompare(b.datum));
+    listeSichern(liste.slice(0, LISTE_GROESSE));
+    return eintrag.id;
+  }
+
+  rekord = Math.max(parseInt(lies('ezra-rekord', '0'), 10) || 0, listeLaden()[0]?.punkte || 0);
+  $('rekord').textContent = rekord;
+
+  // ---------- Ton ----------
+  let ac = null, ton = lies('ezra-ton', 'an') !== 'aus';
+  $('tonSchalter').checked = ton;
+  function piep(f, d = .08, typ = 'sine', vol = .07, gleit = 0, verz = 0) {
+    if (!ton || !ac) return;
+    const t0 = ac.currentTime + verz;
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = typ;
+    o.frequency.setValueAtTime(f, t0);
+    if (gleit) o.frequency.exponentialRampToValueAtTime(f * gleit, t0 + d);
+    g.gain.setValueAtTime(vol, t0);
+    g.gain.exponentialRampToValueAtTime(.0001, t0 + d);
+    o.connect(g).connect(ac.destination);
+    o.start(t0); o.stop(t0 + d + .02);
+  }
+  function tonStarten() {
+    try {
+      if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
+      if (ac.state === 'suspended') ac.resume();
+    } catch (e) { ac = null; }
+  }
+
+  // ---------- Leben-Anzeige ----------
+  const PFOTE = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><ellipse cx="12" cy="16" rx="5.5" ry="4.6"/><ellipse cx="5.2" cy="10.4" rx="2.3" ry="2.9"/><ellipse cx="9.3" cy="6.2" rx="2.3" ry="3"/><ellipse cx="14.7" cy="6.2" rx="2.3" ry="3"/><ellipse cx="18.8" cy="10.4" rx="2.3" ry="2.9"/></svg>';
+  $('pfoten').innerHTML = PFOTE + PFOTE + PFOTE;
+  function lebenAnzeigen() {
+    [...$('pfoten').children].forEach((p, i) => p.classList.toggle('weg', i >= leben));
+  }
+
+  // ---------- Zeichnen: Dinge ----------
+  function dreieck(c, a, b, d, e, f, g) { c.beginPath(); c.moveTo(a, b); c.lineTo(d, e); c.lineTo(f, g); c.closePath(); }
+  function ellipse(c, x, y, rx, ry, rot = 0) { c.beginPath(); c.ellipse(x, y, rx, ry, rot, 0, Math.PI * 2); c.fill(); }
+
+  function malKnochen(c, fuell = '#e3b26c', rand = '#94612a') {
+    c.beginPath();
+    c.rect(-11, -4.5, 22, 9);
+    for (const [x, y] of [[-11, -4.5], [-11, 4.5], [11, -4.5], [11, 4.5]]) {
+      c.moveTo(x + 5.5, y); c.arc(x, y, 5.5, 0, Math.PI * 2);
+    }
+    c.lineWidth = 4; c.strokeStyle = rand; c.stroke();
+    c.fillStyle = fuell; c.fill();
+    c.fillStyle = 'rgba(255,255,255,.35)';
+    c.fillRect(-8, -3, 14, 2);
+  }
+  function funkeln(c, x, y, s) {
+    c.beginPath();
+    c.moveTo(x, y - s * 2); c.lineTo(x + s * .45, y - s * .45); c.lineTo(x + s * 2, y); c.lineTo(x + s * .45, y + s * .45);
+    c.lineTo(x, y + s * 2); c.lineTo(x - s * .45, y + s * .45); c.lineTo(x - s * 2, y); c.lineTo(x - s * .45, y - s * .45);
+    c.closePath(); c.fill();
+  }
+  function malGold(c) {
+    c.fillStyle = 'rgba(255,220,90,.35)'; ellipse(c, 0, 0, 22, 16);
+    malKnochen(c, '#ffd447', '#b98300');
+    c.fillStyle = '#fff';
+    for (const [x, y, ph] of [[-15, -10, 0], [14, 9, 2.1], [11, -12, 4.2]]) funkeln(c, x, y, 1.5 + 1.8 * Math.max(0, Math.sin(uhr * 5 + ph)));
+  }
+  function malBall(c) {
+    c.beginPath(); c.arc(0, 0, 12, 0, Math.PI * 2);
+    c.fillStyle = '#d6e63e'; c.fill();
+    c.lineWidth = 1.5; c.strokeStyle = '#9fae22'; c.stroke();
+    c.strokeStyle = '#fff'; c.lineWidth = 2;
+    c.beginPath(); c.arc(-13, 0, 9, -.95, .95); c.stroke();
+    c.beginPath(); c.arc(13, 0, 9, Math.PI - .95, Math.PI + .95); c.stroke();
+  }
+  function malPfote(c) {
+    c.fillStyle = 'rgba(255,255,255,.92)'; ellipse(c, 0, 0, 16, 16);
+    c.lineWidth = 2.5; c.strokeStyle = '#e09a00';
+    c.beginPath(); c.arc(0, 0, 16, 0, Math.PI * 2); c.stroke();
+    c.fillStyle = '#e8a000';
+    ellipse(c, 0, 4, 6, 5); ellipse(c, -7, -2, 2.4, 3); ellipse(c, -3, -7, 2.4, 3.1); ellipse(c, 3, -7, 2.4, 3.1); ellipse(c, 7, -2, 2.4, 3);
+  }
+  function malSocke(c) {
+    c.beginPath();
+    c.roundRect(-7, -16, 14, 27, 4);
+    c.roundRect(-7, 3, 21, 11, 5.5);
+    c.lineWidth = 3.5; c.strokeStyle = '#7d786e'; c.stroke();
+    c.fillStyle = '#ebe6dc'; c.fill();
+    c.fillStyle = '#d2453a';
+    c.fillRect(-7, -12, 14, 3); c.fillRect(-7, -6, 14, 3);
+    c.fillStyle = '#c9c2b4';
+    c.fillRect(-7, -16, 14, 2.5);
+    // Geruch
+    c.strokeStyle = 'rgba(110,150,60,.85)'; c.lineWidth = 1.6; c.lineCap = 'round';
+    for (const dx of [-5, 3]) {
+      c.beginPath(); c.moveTo(dx, -20);
+      c.bezierCurveTo(dx - 3, -23, dx + 3, -26, dx, -29); c.stroke();
+    }
+  }
+  const MALER = { knochen: (c) => malKnochen(c), gold: malGold, ball: malBall, pfote: malPfote, socke: malSocke };
+  const DREHT = { knochen: true, gold: true, ball: true };
+
+  // ---------- Zeichnen: Ezra ----------
+  function malEzra(c, x, y, s, o) {
+    c.save();
+    c.translate(x, y);
+    c.scale(s, s);
+    // Schatten
+    c.fillStyle = 'rgba(25,50,15,.28)';
+    ellipse(c, 0, 0, 44, 7);
+    c.rotate(o.neig);
+    // Schwanz
+    c.save();
+    c.translate(28, -14);
+    c.rotate(-.5 + o.wedel);
+    c.strokeStyle = FELL_D; c.lineWidth = 8; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(0, 0); c.quadraticCurveTo(15, -5, 20, -23); c.stroke();
+    c.restore();
+    // Körper und Beine
+    c.fillStyle = FELL; ellipse(c, 0, -30, 38, 32);
+    c.fillStyle = FELL;
+    for (const bx of [-16, 16]) { c.beginPath(); c.roundRect(bx - 8, -36, 16, 36, 7); c.fill(); }
+    c.strokeStyle = FELL_D; c.lineWidth = 1.5;
+    for (const bx of [-16, 16]) { c.beginPath(); c.moveTo(bx - 8 * Math.sign(bx), -26); c.lineTo(bx - 8 * Math.sign(bx), -4); c.stroke(); }
+    c.fillStyle = FELL_H;
+    for (const bx of [-16, 16]) ellipse(c, bx, -3, 9, 4.5);
+    // Halstuch
+    c.fillStyle = CREME; dreieck(c, -35, -60, 35, -60, 0, -15); c.fill();
+    c.save();
+    dreieck(c, -30, -58, 30, -58, 0, -23); c.clip();
+    c.fillStyle = BLAU; c.fillRect(-32, -60, 64, 40);
+    c.fillStyle = HELLBLAU; c.fillRect(-32, -50, 64, 9);
+    c.restore();
+    c.fillStyle = '#d33b2f';
+    c.font = '800 8px "Baloo 2", sans-serif';
+    c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.fillText('Ezra', 0, -45);
+    // Halsband
+    c.fillStyle = BLAU_D; c.beginPath(); c.roundRect(-28, -67, 56, 8, 4); c.fill();
+    c.strokeStyle = '#f2d43a'; c.lineWidth = 1.6; c.beginPath();
+    for (let i = 0; i <= 10; i++) { const px = -25 + i * 5, py = i % 2 ? -61 : -65; i ? c.lineTo(px, py) : c.moveTo(px, py); }
+    c.stroke();
+    // Kopf
+    c.fillStyle = FELL; ellipse(c, 0, -88, 29, 26);
+    c.fillStyle = 'rgba(255,255,255,.07)'; ellipse(c, -6, -100, 14, 8);
+    // Ohren
+    for (const seite of [-1, 1]) {
+      c.save();
+      c.translate(seite * 25, -98);
+      c.rotate(seite * (.22 + Math.min(.25, Math.abs(ezra.vx) / 3000)));
+      c.fillStyle = FELL_D; ellipse(c, 0, 13, 10, 19);
+      c.restore();
+    }
+    // Schnauze
+    c.fillStyle = FELL_H; ellipse(c, 0, -76, 16, 12);
+    // Augen
+    c.fillStyle = '#2a1a12'; c.strokeStyle = '#2a1a12'; c.lineWidth = 2; c.lineCap = 'round';
+    if (o.igitt > 0) {
+      for (const sx of [-1, 1]) {
+        c.beginPath();
+        c.moveTo(sx * 15, -96); c.lineTo(sx * 9, -93); c.lineTo(sx * 15, -90);
+        c.stroke();
+      }
+    } else if (o.blinzel) {
+      for (const sx of [-1, 1]) { c.beginPath(); c.moveTo(sx * 15, -93); c.lineTo(sx * 8, -93); c.stroke(); }
+    } else {
+      for (const sx of [-1, 1]) {
+        c.fillStyle = '#2a1a12'; ellipse(c, sx * 11, -93, 3.8, 4.1);
+        c.fillStyle = '#fff'; ellipse(c, sx * 11 + 1.2, -94.6, 1.2, 1.2);
+      }
+    }
+    // Nase
+    c.fillStyle = '#2b1d18'; ellipse(c, 0, -83, 6.5, 4.6);
+    c.fillStyle = 'rgba(255,255,255,.25)'; ellipse(c, -2, -84.5, 2, 1.2);
+    // Maul
+    c.strokeStyle = '#4a2a18'; c.lineWidth = 1.6;
+    if (o.maul > 0) {
+      const auf = Math.sin(Math.min(1, o.maul / .22) * Math.PI);
+      c.fillStyle = '#4a1f17'; ellipse(c, 0, -70, 8, 2 + 5 * auf);
+      c.fillStyle = '#e8788a'; ellipse(c, 0, -67 + auf, 5, 2 + 1.5 * auf);
+    } else if (o.igitt > 0) {
+      c.beginPath(); c.moveTo(-7, -71); c.quadraticCurveTo(0, -75, 7, -71); c.stroke();
+      c.fillStyle = '#e8788a'; ellipse(c, 3, -67, 4, 5);
+    } else {
+      c.beginPath();
+      c.moveTo(0, -78.5); c.lineTo(0, -74);
+      c.moveTo(0, -74); c.quadraticCurveTo(-4, -70, -8, -73);
+      c.moveTo(0, -74); c.quadraticCurveTo(4, -70, 8, -73);
+      c.stroke();
+    }
+    c.restore();
+  }
+
+  // ---------- Kulisse: Himmel und Garten getrennt, damit Sonne und Mond hinter der Hecke stehen ----------
+  function zufall(start) {
+    let a = start;
+    return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  }
+  function malHimmel(c) {
+    c.setTransform(dpr, 0, 0, dpr, 0, 0);
+    c.clearRect(0, 0, W, H);
+    const himmel = c.createLinearGradient(0, 0, 0, grasOben);
+    himmel.addColorStop(0, '#9fd2ea');
+    himmel.addColorStop(.75, '#e7efd0');
+    himmel.addColorStop(1, '#f6e6b4');
+    c.fillStyle = himmel; c.fillRect(0, 0, W, grasOben);
+    c.fillStyle = 'rgba(255,255,255,.85)';
+    for (const [wx, wy, g] of [[.55, .1, 1], [.88, .2, .75], [.32, .25, .6]]) {
+      const x = W * wx, y = H * wy, r = 16 * g * Math.max(1, W / 500);
+      ellipse(c, x, y, r * 2.2, r * .9); ellipse(c, x - r, y - r * .4, r, r * .8); ellipse(c, x + r * .6, y - r * .6, r * 1.1, r);
+    }
+  }
+  function malVorder(c) {
+    c.setTransform(dpr, 0, 0, dpr, 0, 0);
+    c.clearRect(0, 0, W, H);
+    const z = zufall(31);
+    // Hecke
+    c.fillStyle = '#4d7d3a';
+    c.fillRect(0, heckeOben + 18, W, grasOben - heckeOben);
+    for (let x = -20; x < W + 40; x += 26 + z() * 18) ellipse(c, x, heckeOben + 18 + z() * 8, 22 + z() * 12, 22 + z() * 10);
+    c.fillStyle = '#3d6a2e';
+    for (let x = -10; x < W + 40; x += 20 + z() * 20) ellipse(c, x, grasOben - 6 - z() * 20, 14 + z() * 10, 10 + z() * 8);
+    // Zaun
+    c.strokeStyle = 'rgba(210,215,205,.55)'; c.lineWidth = 1;
+    for (let x = 8; x < W; x += 14) { c.beginPath(); c.moveTo(x, heckeOben + 30); c.lineTo(x, grasOben); c.stroke(); }
+    c.beginPath(); c.moveTo(0, heckeOben + 34); c.lineTo(W, heckeOben + 34); c.stroke();
+    c.fillStyle = '#d9ddd2';
+    for (let x = W * .06; x < W; x += W * .3) c.fillRect(x, heckeOben + 26, 4, grasOben - heckeOben - 26);
+    // Spielturm wie im Garten
+    const tb = clamp(W * .2, 80, 140);
+    const tx = W - tb - Math.max(16, W * .05);
+    const tOben = H * .2, platt = H * .4;
+    c.fillStyle = '#b98552';
+    c.fillRect(tx, tOben + 20, 9, grasOben + 4 - tOben - 20);
+    c.fillRect(tx + tb - 9, tOben + 20, 9, grasOben + 4 - tOben - 20);
+    c.fillStyle = '#a2703f'; dreieck(c, tx - 14, tOben + 24, tx + tb + 14, tOben + 24, tx + tb / 2, tOben - 8); c.fill();
+    c.fillStyle = '#d9467e'; c.fillRect(tx + 9, platt - 30, tb - 18, 24);
+    c.fillStyle = '#c33a6e'; c.fillRect(tx + 9, platt - 9, tb - 18, 3);
+    c.fillStyle = '#c79560'; c.fillRect(tx - 4, platt - 6, tb + 8, 9);
+    c.strokeStyle = '#2f57c4'; c.lineWidth = 12; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(tx + 6, platt); c.quadraticCurveTo(tx - tb * .5, platt + 10, tx - tb * .9, grasOben + 2); c.stroke();
+    // Rasen mit Mähstreifen
+    let y = grasOben, hoehe = (H - grasOben) * .1, i = 0;
+    while (y < H) {
+      c.fillStyle = i % 2 ? '#64a14a' : '#70b055';
+      c.fillRect(0, y, W, hoehe + 1);
+      y += hoehe; hoehe *= 1.35; i++;
+    }
+    c.strokeStyle = 'rgba(40,90,30,.45)'; c.lineWidth = 1.3; c.lineCap = 'round';
+    for (let n = 0; n < W / 5; n++) {
+      const gx = z() * W, gy = grasOben + 6 + z() * (H - grasOben - 6), l = 3 + z() * 5;
+      c.beginPath(); c.moveTo(gx, gy); c.lineTo(gx - 1.5, gy - l); c.moveTo(gx + 2, gy); c.lineTo(gx + 3, gy - l * .8); c.stroke();
+    }
+  }
+
+  // ---------- Tageszeit: Mittag → Nachmittag → Abend → Nacht, je weiter man kommt ----------
+  // [Fortschritt, Himmelsfarbe rgba, Abdunkeln des Gartens]
+  const TAGESZEITEN = [
+    [0, [255, 200, 120, 0], 0],
+    [.33, [255, 185, 90, .25], .04],
+    [.6, [232, 98, 88, .48], .16],
+    [.8, [44, 42, 104, .8], .38],
+    [1, [14, 22, 62, .9], .48],
+  ];
+  function tageszeit(st) {
+    let i = 0;
+    while (i < TAGESZEITEN.length - 2 && st > TAGESZEITEN[i + 1][0]) i++;
+    const [a0, f0, n0] = TAGESZEITEN[i], [a1, f1, n1] = TAGESZEITEN[i + 1];
+    const t = clamp((st - a0) / (a1 - a0), 0, 1);
+    return { farbe: f0.map((v, k) => lerp(v, f1[k], t)), nacht: lerp(n0, n1, t) };
+  }
+  const fortschritt = () => Math.min(1, zeit / 120);
+
+  function malHintergrund() {
+    const st = fortschritt();
+    const tz = tageszeit(st);
+    ctx.drawImage(himmelCv, 0, 0, W, H);
+    const [r, g, b, a] = tz.farbe;
+    if (a > .01) { ctx.fillStyle = `rgba(${r | 0},${g | 0},${b | 0},${a})`; ctx.fillRect(0, 0, W, grasOben); }
+    // Abendrot am Horizont
+    const rot = Math.max(0, 1 - Math.abs(st - .62) / .2);
+    if (rot > 0) {
+      const gl = ctx.createLinearGradient(0, heckeOben - H * .25, 0, heckeOben + 30);
+      gl.addColorStop(0, 'rgba(255,140,70,0)');
+      gl.addColorStop(1, `rgba(255,140,70,${.55 * rot})`);
+      ctx.fillStyle = gl; ctx.fillRect(0, heckeOben - H * .25, W, H * .25 + 30);
+    }
+    // Sterne
+    const sternAlpha = clamp((st - .7) / .2, 0, 1);
+    if (sternAlpha > 0) {
+      ctx.fillStyle = '#fffbe6';
+      sterne.forEach(([x, y, s], i) => {
+        ctx.globalAlpha = sternAlpha * (.55 + .45 * Math.sin(uhr * 2 + i * 1.7));
+        ctx.fillRect(x, y, s, s);
+      });
+      ctx.globalAlpha = 1;
+    }
+    // Sonne geht unter
+    const sonneT = clamp(st / .72, 0, 1);
+    if (sonneT < 1) {
+      const sx = lerp(W * .16, W * .34, sonneT), sy = lerp(H * .13, heckeOben + 40, sonneT * sonneT);
+      const farbe = sonneT < .5 ? '255,248,214' : '255,196,120';
+      const glanz = ctx.createRadialGradient(sx, sy, 10, sx, sy, 110);
+      glanz.addColorStop(0, `rgba(${farbe},.9)`);
+      glanz.addColorStop(.3, `rgba(${farbe},.4)`);
+      glanz.addColorStop(1, `rgba(${farbe},0)`);
+      ctx.fillStyle = glanz; ctx.fillRect(sx - 110, sy - 110, 220, 220);
+      ctx.fillStyle = `rgb(${farbe})`; ellipse(ctx, sx, sy, 26, 26);
+    }
+    // Mond geht auf
+    const mondT = clamp((st - .72) / .25, 0, 1);
+    if (mondT > 0) {
+      const mx = W * .44, my = lerp(heckeOben, H * .12, mondT);
+      ctx.globalAlpha = mondT;
+      const glanz = ctx.createRadialGradient(mx, my, 8, mx, my, 70);
+      glanz.addColorStop(0, 'rgba(230,236,255,.5)'); glanz.addColorStop(1, 'rgba(230,236,255,0)');
+      ctx.fillStyle = glanz; ctx.fillRect(mx - 70, my - 70, 140, 140);
+      ctx.fillStyle = '#f4f1dc'; ellipse(ctx, mx, my, 19, 19);
+      ctx.fillStyle = 'rgba(180,176,150,.45)'; ellipse(ctx, mx - 6, my - 4, 4, 4); ellipse(ctx, mx + 5, my + 6, 3, 3);
+      ctx.globalAlpha = 1;
+    }
+    ctx.drawImage(vorderCv, 0, 0, W, H);
+    if (tz.nacht > .01) {
+      ctx.fillStyle = `rgba(10,18,48,${tz.nacht})`;
+      ctx.fillRect(0, heckeOben - 40, W, H - heckeOben + 40);
+    }
+    // Glühwürmchen
+    if (sternAlpha > 0 && !ruhig) {
+      for (let i = 0; i < 9; i++) {
+        const fx = (W * ((i * .137 + .05) % 1)) + Math.sin(uhr * .7 + i) * 20;
+        const fy = heckeOben + 20 + ((i * 53) % Math.max(1, grasOben - heckeOben + 60)) + Math.cos(uhr * .9 + i * 2) * 10;
+        ctx.globalAlpha = sternAlpha * (.4 + .6 * Math.max(0, Math.sin(uhr * 3 + i * 2.3)));
+        ctx.fillStyle = 'rgba(230,255,120,.35)'; ellipse(ctx, fx, fy, 6, 6);
+        ctx.fillStyle = '#efff9a'; ellipse(ctx, fx, fy, 2, 2);
+      }
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  // ---------- Größe ----------
+  function groesse() {
+    const r = cv.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = r.width; H = r.height;
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    for (const k of [himmelCv, vorderCv]) { k.width = cv.width; k.height = cv.height; }
+    sk = clamp(Math.min(W / 400, H / 560), .72, 1.2);
+    boden = H - Math.max(18, H * .05);
+    grasOben = H * .62;
+    heckeOben = H * .44;
+    ezra.x = clamp(ezra.x || W / 2, 34 * sk, W - 34 * sk);
+    const z = zufall(7);
+    sterne = Array.from({ length: Math.round(W / 9) }, () => [z() * W, z() * heckeOben * .9, z() < .2 ? 2 : 1.3]);
+    malHimmel(himmelCv.getContext('2d'));
+    malVorder(vorderCv.getContext('2d'));
+  }
+  new ResizeObserver(groesse).observe($('buehne'));
+
+  // ---------- Spiel ----------
+  function neuesSpiel() {
+    punkte = 0; leben = 3; zeit = 0;
+    serie = 0; besteSerie = 0; zeitlupe = 0; faktor = 1;
+    items = []; krümel = []; texte = [];
+    ezra.x = W / 2; ezra.vx = 0; ezra.maul = 0; ezra.igitt = 0;
+    zielX = null;
+    const ersteRunde = lies('ezra-anleitung', '') !== 'gesehen';
+    anleitungUhr = ersteRunde ? 0 : -1;
+    bewegt = 0;
+    spawnUhr = ersteRunde ? 3 : .6;
+    $('punkte').textContent = 0;
+    lebenAnzeigen();
+  }
+
+  function zeige(id) {
+    for (const k of ['startKarte', 'pauseKarte', 'endeKarte', 'listeKarte', 'einstellKarte']) $(k).hidden = k !== id;
+  }
+
+  // ---------- Einstellungen ----------
+  let vorherKarte = 'startKarte';
+  function einstellungenOeffnen() {
+    if (!$('einstellKarte').hidden) return einstellungenSchliessen();
+    if (zustand === 'laeuft') pause();
+    const offen = ['startKarte', 'pauseKarte', 'endeKarte', 'listeKarte'].find((k) => !$(k).hidden);
+    if (!offen) return;
+    vorherKarte = offen;
+    loeschenScharf(false);
+    $('loeschKnopf').disabled = listeLaden().length === 0;
+    delete $('loeschKnopf').dataset.geloescht;
+    $('anleitungKnopf').textContent = T.anleitungNochmal;
+    $('anleitungKnopf').disabled = false;
+    zeige('einstellKarte');
+    $('fertigKnopf').focus();
+  }
+  function einstellungenSchliessen() {
+    if (vorherKarte === 'listeKarte') listeZeigen();
+    else zeige(vorherKarte);
+  }
+
+  function loeschenScharf(an) {
+    loeschenAn = an;
+    $('loeschKnopf').textContent = an ? T.loeschenSicher : T.loeschen;
+    $('loeschKnopf').classList.toggle('warnung', an);
+  }
+  function listeZeigen() {
+    const liste = listeLaden();
+    const zeilen = $('listeZeilen');
+    zeilen.replaceChildren();
+    liste.forEach((e, i) => {
+      const tr = document.createElement('tr');
+      if (e.id === letzteId) tr.className = 'neu';
+      const d = new Date(e.datum);
+      const datum = isNaN(d) ? '' : d.toLocaleDateString(T.datum, { day: '2-digit', month: '2-digit', year: '2-digit' });
+      for (const [text, klasse] of [[i + 1, 'platz'], [e.name, 'name'], [e.punkte, 'pkt'], [datum, 'datum']]) {
+        const td = document.createElement('td');
+        td.className = klasse;
+        td.textContent = text;
+        tr.append(td);
+      }
+      zeilen.append(tr);
+    });
+    $('listeLeer').hidden = liste.length > 0;
+    $('listeTabelle').hidden = liste.length === 0;
+    zeige('listeKarte');
+    $('listeSpielen').focus();
+  }
+
+  function starten() {
+    tonStarten();
+    neuesSpiel();
+    zustand = 'laeuft';
+    zeige(null);
+    piep(520, .09, 'triangle', .06); piep(780, .12, 'triangle', .06, 0, .09);
+  }
+  function pause() {
+    if (zustand !== 'laeuft') return;
+    zustand = 'pause';
+    zeige('pauseKarte');
+    $('weiterKnopf').focus();
+  }
+  function weiter() {
+    if (zustand !== 'pause') return;
+    tonStarten();
+    zustand = 'laeuft';
+    zeige(null);
+  }
+  let endePlatz = -1;
+  // Texte der Endkarte – eigene Funktion, damit ein Sprachwechsel sie neu setzen kann
+  function endeTexte() {
+    $('endeTitel').textContent = punkte >= 50 ? T.ende50 : punkte >= 20 ? T.ende20 : T.ende0;
+    $('endeText').textContent = punkte === 1 ? T.punkt : T.punkte;
+    $('endeSerie').textContent = besteSerie >= 2 ? T.serieLang(besteSerie) : '';
+    if (endePlatz >= 0) $('platzText').textContent = T.platz(endePlatz + 1);
+  }
+  function ende() {
+    zustand = 'ende';
+    vibrieren('stark');
+    const neu = punkte > rekord;
+    if (neu) {
+      rekord = punkte;
+      $('rekord').textContent = rekord;
+      schreib('ezra-rekord', String(rekord));
+    }
+    endePlatz = platzFuer(punkte);
+    $('rekordNeu').hidden = !neu || punkte === 0;
+    $('endePunkte').textContent = punkte;
+    $('eintragen').hidden = endePlatz < 0;
+    $('endeKnoepfe').hidden = endePlatz >= 0;
+    if (endePlatz >= 0) $('nameFeld').value = letzterName;
+    endeTexte();
+    setTimeout(() => {
+      zeige('endeKarte');
+      (endePlatz >= 0 ? $('nameFeld') : $('nochmalKnopf')).focus();
+    }, 650);
+    piep(440, .18, 'triangle', .06, .7); piep(330, .3, 'triangle', .06, .6, .18);
+  }
+
+  function spawn() {
+    const stufe = fortschritt();
+    const w = Math.random();
+    let typ;
+    if (zeit > 15 && zeitlupe <= 0 && !items.some((i) => i.typ === 'gold') && Math.random() < .035) typ = 'gold';
+    else if (leben < 3 && !items.some((i) => i.typ === 'pfote') && Math.random() < .03) typ = 'pfote';
+    else {
+      const sockenAnteil = lerp(.14, .34, stufe);
+      typ = w < sockenAnteil ? 'socke' : w < sockenAnteil + .1 ? 'ball' : 'knochen';
+    }
+    const r = { ball: 12, pfote: 16 }[typ] || 14;
+    const tempo = lerp(150, 390, stufe) * clamp(H / 650, .8, 1.3) * (.85 + Math.random() * .3);
+    items.push({
+      typ, r,
+      x: r + 12 + Math.random() * (W - 2 * r - 24),
+      y: -30,
+      vy: typ === 'pfote' ? tempo * .8 : tempo,
+      rot: Math.random() * Math.PI * 2,
+      vr: (Math.random() - .5) * 4,
+      pendel: Math.random() * Math.PI * 2,
+    });
+  }
+
+  function serieAus() {
+    serie = 0;
+  }
+  function lebenWeg(x, y, text) {
+    leben--;
+    serieAus();
+    lebenAnzeigen();
+    wackeln = ruhig ? 0 : .3;
+    texte.push({ x, y, text, farbe: '#ff6a5c', leben: 1 });
+    if (leben <= 0) ende();
+    else vibrieren('mittel');
+  }
+  const multiplikator = () => serie >= 10 ? 3 : serie >= 5 ? 2 : 1;
+
+  function fangen(it, mundY) {
+    const tx = ezra.x, ty = mundY - 40 * sk;
+    if (it.typ === 'socke') {
+      ezra.igitt = .7;
+      piep(210, .28, 'sawtooth', .045, .5);
+      lebenWeg(tx, ty, T.igitt);
+      return;
+    }
+    ezra.maul = .22; ezra.freude = .8;
+    const vorher = multiplikator();
+    serie++;
+    besteSerie = Math.max(besteSerie, serie);
+    const mult = multiplikator();
+    if (it.typ === 'pfote') {
+      leben = Math.min(3, leben + 1);
+      lebenAnzeigen();
+      texte.push({ x: tx, y: ty, text: T.lebenPlus, farbe: '#ffd447', leben: 1.2 });
+      piep(523, .1, 'triangle', .06); piep(784, .16, 'triangle', .06, 0, .1);
+      vibrieren('leicht');
+    } else {
+      const p = { knochen: 1, ball: 3, gold: 2 }[it.typ] * mult;
+      punkte += p;
+      $('punkte').textContent = punkte;
+      texte.push({ x: tx, y: ty, text: '+' + p, farbe: it.typ === 'ball' ? '#b8f070' : it.typ === 'gold' ? '#ffd447' : '#ffffff', leben: 1 });
+      if (it.typ === 'gold') {
+        zeitlupe = 5;
+        texte.push({ x: W / 2, y: H * .3, text: T.zeitlupe, farbe: '#ffd447', leben: 1.6, gross: true });
+        [660, 880, 1100, 1320].forEach((f, i) => piep(f, .12, 'sine', .05, 0, i * .06));
+        vibrieren('mittel');
+      } else {
+        if (it.typ === 'ball') { piep(660, .07, 'triangle', .06); piep(990, .1, 'triangle', .06, 0, .07); }
+        else piep(620 + Math.min(punkte, 60) * 4, .08, 'triangle', .06, 1.5);
+        vibrieren('leicht');
+      }
+    }
+    if (mult > vorher) {
+      texte.push({ x: W / 2, y: H * .38, text: T.combo(mult), farbe: '#ffd447', leben: 1.5, gross: true });
+      [523, 659, 784, 1047].forEach((f, i) => piep(f, .1, 'triangle', .05, 0, .08 + i * .07));
+      vibrieren('mittel');
+    }
+    const farbe = { ball: '#d6e63e', gold: '#ffd447', pfote: '#ffffff' }[it.typ] || '#e3b26c';
+    for (let k = 0; k < (ruhig ? 0 : 7); k++) {
+      krümel.push({ x: tx, y: mundY, vx: (Math.random() - .5) * 180, vy: -60 - Math.random() * 140, leben: .6, farbe });
+    }
+  }
+
+  function aktualisieren(dt) {
+    zeit += dt;
+    const stufe = fortschritt();
+
+    // Zeitlupe: langsam rein, am Ende sanft wieder raus
+    zeitlupe = Math.max(0, zeitlupe - dt);
+    faktor = zeitlupe > 0 ? lerp(1, .45, Math.min(1, zeitlupe / .6)) : 1;
+    const fdt = dt * faktor;
+
+    spawnUhr -= fdt;
+    if (spawnUhr <= 0) {
+      spawn();
+      spawnUhr = lerp(1.05, .4, stufe) * (.75 + Math.random() * .5);
+    }
+
+    // Ezra bewegen (Ezra bleibt auch in der Zeitlupe schnell)
+    const maxTempo = 620 * clamp(W / 500, .8, 1.4);
+    const richtung = (tasten.rechts ? 1 : 0) - (tasten.links ? 1 : 0);
+    let ziel;
+    if (richtung) ziel = richtung * maxTempo;
+    else if (zielX !== null) ziel = clamp((zielX - ezra.x) * 14, -maxTempo * 1.6, maxTempo * 1.6);
+    else ziel = 0;
+    ezra.vx = lerp(ezra.vx, ziel, Math.min(1, dt * 18));
+    ezra.x = clamp(ezra.x + ezra.vx * dt, 34 * sk, W - 34 * sk);
+
+    // Kurzanleitung verschwindet, sobald Ezra bewegt wurde
+    if (anleitungUhr >= 0) {
+      anleitungUhr += dt;
+      bewegt += Math.abs(ezra.vx) * dt;
+      if (bewegt > W * .5 || anleitungUhr > 7) {
+        anleitungUhr = -1;
+        schreib('ezra-anleitung', 'gesehen');
+      }
+    }
+
+    // Dinge fallen lassen
+    const mundY = boden - 72 * sk;
+    for (let i = items.length - 1; i >= 0; i--) {
+      const it = items[i];
+      it.y += it.vy * fdt;
+      it.rot += it.vr * fdt;
+      it.pendel += fdt * 3;
+      const px = it.x + Math.sin(it.pendel) * 6;
+      const gefangen = Math.abs(px - ezra.x) < 26 * sk + it.r * .6 && it.y > boden - 120 * sk && it.y < boden - 58 * sk;
+      if (gefangen && leben > 0) {
+        items.splice(i, 1);
+        fangen(it, mundY);
+        continue;
+      }
+      if (it.y - it.r > boden + 6) {
+        items.splice(i, 1);
+        if (it.typ === 'knochen' && leben > 0) {
+          piep(300, .16, 'square', .03, .7);
+          lebenWeg(clamp(px, 40, W - 40), boden - 20, T.daneben);
+        }
+      }
+    }
+  }
+
+  function effekteAktualisieren(dt) {
+    uhr += dt;
+    ezra.maul = Math.max(0, ezra.maul - dt);
+    ezra.igitt = Math.max(0, ezra.igitt - dt);
+    ezra.freude = Math.max(0, ezra.freude - dt);
+    ezra.blinzelUhr -= dt;
+    if (ezra.blinzelUhr < -.13) ezra.blinzelUhr = 2.5 + Math.random() * 3;
+    wackeln = Math.max(0, wackeln - dt);
+    for (let i = krümel.length - 1; i >= 0; i--) {
+      const k = krümel[i];
+      k.vy += 600 * dt; k.x += k.vx * dt; k.y += k.vy * dt; k.leben -= dt;
+      if (k.leben <= 0) krümel.splice(i, 1);
+    }
+    for (let i = texte.length - 1; i >= 0; i--) {
+      const t = texte[i];
+      t.y -= (t.gross ? 20 : 50) * dt; t.leben -= dt * 1.1;
+      if (t.leben <= 0) texte.splice(i, 1);
+    }
+  }
+
+  function pille(x, y, text, hinter, vorder, ausrichtung = 'left') {
+    ctx.font = `800 ${Math.round(15 * sk)}px "Baloo 2", sans-serif`;
+    const b = ctx.measureText(text).width + 20, h = 26 * sk;
+    const lx = ausrichtung === 'center' ? x - b / 2 : x;
+    ctx.fillStyle = hinter;
+    ctx.beginPath(); ctx.roundRect(lx, y, b, h, h / 2); ctx.fill();
+    ctx.fillStyle = vorder;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(text, lx + b / 2, y + h / 2 + 1);
+  }
+
+  function malen() {
+    const wx = wackeln ? (Math.random() - .5) * 12 * wackeln : 0;
+    const wy = wackeln ? (Math.random() - .5) * 12 * wackeln : 0;
+    ctx.setTransform(dpr, 0, 0, dpr, wx * dpr, wy * dpr);
+    malHintergrund();
+
+    // Zeitlupe: goldener Schimmer
+    if (zeitlupe > 0) {
+      ctx.fillStyle = `rgba(255,214,90,${.12 * Math.min(1, zeitlupe / .6)})`;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    for (const it of items) {
+      ctx.save();
+      ctx.translate(it.x + Math.sin(it.pendel) * 6, it.y);
+      if (DREHT[it.typ]) ctx.rotate(it.rot);
+      else if (it.typ === 'socke') ctx.rotate(Math.sin(it.rot) * .5);
+      MALER[it.typ](ctx);
+      ctx.restore();
+    }
+
+    const laeuft = Math.abs(ezra.vx) > 30;
+    const huepf = laeuft && !ruhig ? Math.abs(Math.sin(uhr * 16)) * 4 * sk : 0;
+    const wedelTempo = ezra.freude > 0 ? 26 : laeuft ? 14 : 6;
+    malEzra(ctx, ezra.x, boden - huepf, sk, {
+      neig: clamp(ezra.vx / 4000, -.12, .12),
+      wedel: Math.sin(uhr * wedelTempo) * (ezra.freude > 0 ? .6 : .35),
+      maul: ezra.maul,
+      igitt: ezra.igitt,
+      blinzel: ezra.blinzelUhr < 0,
+    });
+
+    for (const k of krümel) {
+      ctx.globalAlpha = clamp(k.leben / .6, 0, 1);
+      ctx.fillStyle = k.farbe;
+      ctx.fillRect(k.x - 2, k.y - 2, 4, 4);
+    }
+    ctx.globalAlpha = 1;
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    // Serie und Combo oben links, Zeitlupe oben mittig
+    if (zustand === 'laeuft' || zustand === 'pause') {
+      const mult = multiplikator();
+      if (mult > 1) pille(12, 12, T.combo(mult).replace('!', ''), '#ffd447', '#26321f');
+      else if (serie >= 2) pille(12, 12, T.serie(serie), 'rgba(20,35,15,.55)', '#fff6df');
+      if (zeitlupe > 0) {
+        const bw = Math.min(160, W * .35), bx = W - bw - 12, by = 12;
+        ctx.fillStyle = 'rgba(20,35,15,.55)';
+        ctx.beginPath(); ctx.roundRect(bx, by, bw, 10, 5); ctx.fill();
+        ctx.fillStyle = '#ffd447';
+        ctx.beginPath(); ctx.roundRect(bx, by, bw * zeitlupe / 5, 10, 5); ctx.fill();
+      }
+    }
+
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.lineJoin = 'round';
+    for (const t of texte) {
+      ctx.font = `800 ${Math.round((t.gross ? 34 : 22) * sk)}px "Baloo 2", sans-serif`;
+      ctx.globalAlpha = clamp(t.leben * 1.5, 0, 1);
+      ctx.lineWidth = t.gross ? 6 : 4; ctx.strokeStyle = 'rgba(30,45,20,.8)';
+      ctx.strokeText(t.text, t.x, t.y);
+      ctx.fillStyle = t.farbe;
+      ctx.fillText(t.text, t.x, t.y);
+    }
+    ctx.globalAlpha = 1;
+
+    // Kurzanleitung beim allerersten Spiel
+    if (anleitungUhr >= 0 && zustand === 'laeuft') {
+      const a = Math.min(1, anleitungUhr * 3);
+      const y = boden - 150 * sk;
+      ctx.globalAlpha = a;
+      ctx.font = `800 ${Math.round(20 * sk)}px "Baloo 2", sans-serif`;
+      ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(30,45,20,.8)';
+      const text = touch ? T.anleitungTouch : T.anleitungMaus;
+      ctx.strokeText(text, W / 2, y - 40 * sk);
+      ctx.fillStyle = '#fff'; ctx.fillText(text, W / 2, y - 40 * sk);
+      const fx = W / 2 + Math.sin(anleitungUhr * 2.6) * Math.min(110, W * .28);
+      ctx.strokeStyle = 'rgba(255,255,255,.8)'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+      for (const s of [-1, 1]) {
+        const ax = W / 2 + s * (Math.min(110, W * .28) + 26);
+        ctx.beginPath(); ctx.moveTo(ax - s * 8, y - 9); ctx.lineTo(ax, y); ctx.lineTo(ax - s * 8, y + 9); ctx.stroke();
+      }
+      ctx.fillStyle = 'rgba(255,255,255,.35)'; ellipse(ctx, fx, y, 22, 22);
+      ctx.fillStyle = '#fff'; ellipse(ctx, fx, y, 12, 12);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  let zuletzt = performance.now();
+  function schleife(jetzt) {
+    const dt = Math.min(.05, (jetzt - zuletzt) / 1000);
+    zuletzt = jetzt;
+    if (W && H) {
+      if (zustand === 'laeuft') aktualisieren(dt);
+      if (zustand !== 'pause') effekteAktualisieren(dt);
+      malen();
+    }
+    requestAnimationFrame(schleife);
+  }
+
+  // ---------- Steuerung ----------
+  const posX = (e) => e.clientX - cv.getBoundingClientRect().left;
+  cv.addEventListener('pointerdown', (e) => {
+    zeigerUnten = true; zielX = posX(e);
+    try { cv.setPointerCapture(e.pointerId); } catch (err) {}
+  });
+  cv.addEventListener('pointermove', (e) => { if (e.pointerType === 'mouse' || zeigerUnten) zielX = posX(e); });
+  const loslassen = () => { zeigerUnten = false; };
+  cv.addEventListener('pointerup', loslassen);
+  cv.addEventListener('pointercancel', loslassen);
+
+  addEventListener('keydown', (e) => {
+    if (e.target instanceof HTMLInputElement) return;
+    const k = e.key;
+    if (k === 'ArrowLeft' || k === 'a' || k === 'A') { tasten.links = true; zielX = null; e.preventDefault(); }
+    else if (k === 'ArrowRight' || k === 'd' || k === 'D') { tasten.rechts = true; zielX = null; e.preventDefault(); }
+    else if (k === 'p' || k === 'P' || k === 'Escape') { zustand === 'laeuft' ? pause() : weiter(); }
+  });
+  addEventListener('keyup', (e) => {
+    const k = e.key;
+    if (k === 'ArrowLeft' || k === 'a' || k === 'A') tasten.links = false;
+    if (k === 'ArrowRight' || k === 'd' || k === 'D') tasten.rechts = false;
+  });
+  addEventListener('blur', () => { tasten.links = tasten.rechts = false; pause(); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
+
+  // Android-Zurück-Taste: im Spiel pausieren statt die App zu schließen
+  if (AppPlugin) {
+    AppPlugin.addListener('backButton', () => {
+      if (!$('einstellKarte').hidden) einstellungenSchliessen();
+      else if (zustand === 'laeuft') pause();
+      else if (zustand === 'pause') weiter();
+      else if (!$('listeKarte').hidden) zeige(zustand === 'ende' ? 'endeKarte' : 'startKarte');
+      else AppPlugin.exitApp();
+    });
+    AppPlugin.addListener('pause', pause);
+  }
+
+  $('losKnopf').addEventListener('click', starten);
+  $('nochmalKnopf').addEventListener('click', starten);
+  $('weiterKnopf').addEventListener('click', weiter);
+  $('listeSpielen').addEventListener('click', starten);
+  document.querySelectorAll('[data-liste]').forEach((k) => k.addEventListener('click', () => { letzteId = null; listeZeigen(); }));
+  $('eintragen').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = $('nameFeld').value.replace(/\s+/g, ' ').trim().slice(0, 12);
+    if (name) {
+      letzterName = name;
+      schreib('ezra-name', name);
+    }
+    letzteId = eintragSpeichern(name || T.anonym, punkte);
+    $('nameFeld').blur();
+    // Nicht zweimal eintragen, falls man zur Endkarte zurückgeht
+    $('eintragen').hidden = true;
+    $('endeKnoepfe').hidden = false;
+    listeZeigen();
+  });
+  $('loeschKnopf').addEventListener('click', () => {
+    if (!loeschenAn) return loeschenScharf(true);
+    listeSichern([]);
+    schreib('ezra-rekord', null);
+    rekord = 0;
+    $('rekord').textContent = 0;
+    letzteId = null;
+    loeschenScharf(false);
+    $('loeschKnopf').textContent = T.geloescht;
+    $('loeschKnopf').disabled = true;
+    $('loeschKnopf').dataset.geloescht = '1';
+  });
+  $('pauseKnopf').addEventListener('click', () => { zustand === 'laeuft' ? pause() : weiter(); });
+  $('einstellKnopf').addEventListener('click', einstellungenOeffnen);
+  $('fertigKnopf').addEventListener('click', einstellungenSchliessen);
+  $('tonSchalter').addEventListener('change', (e) => {
+    ton = e.target.checked;
+    schreib('ezra-ton', ton ? 'an' : 'aus');
+    if (ton) { tonStarten(); piep(700, .08, 'triangle', .05); }
+  });
+  $('anleitungKnopf').addEventListener('click', () => {
+    schreib('ezra-anleitung', null);
+    $('anleitungKnopf').textContent = T.anleitungOk;
+    $('anleitungKnopf').disabled = true;
+  });
+  document.querySelectorAll('[data-sprache]').forEach((b) => b.addEventListener('click', () => {
+    sprachWahl = b.dataset.sprache;
+    schreib('ezra-sprache', sprachWahl);
+    const anleitungAus = $('anleitungKnopf').disabled, geloescht = $('loeschKnopf').disabled;
+    texteSetzen();
+    endeTexte();
+    loeschenScharf(false);
+    if (anleitungAus) $('anleitungKnopf').textContent = T.anleitungOk;
+    if (geloescht && $('loeschKnopf').dataset.geloescht) $('loeschKnopf').textContent = T.geloescht;
+  }));
+  $('vibSchalter').addEventListener('change', (e) => {
+    vibration = e.target.checked;
+    schreib('ezra-vibration', vibration ? 'an' : 'aus');
+    vibrieren('mittel');
+  });
+
+  // Symbole in der Anleitung
+  document.querySelectorAll('canvas[data-typ]').forEach((c) => {
+    const g = c.getContext('2d');
+    const typ = c.dataset.typ;
+    const f = { knochen: 1.9, ball: 2.2, gold: 1.5, pfote: 1.9, socke: 1.45 }[typ];
+    g.setTransform(f, 0, 0, f, 34, typ === 'socke' ? 34 + 7.5 * f : 34);
+    MALER[typ](g);
+  });
+
+  groesse();
+  requestAnimationFrame(schleife);
+
+  // Offline spielbar (nur Webversion – in der App liegen die Dateien ohnehin auf dem Handy)
+  if ('serviceWorker' in navigator && !nativ) {
+    addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  }
+})();
+</script>
+</body>
+</html>

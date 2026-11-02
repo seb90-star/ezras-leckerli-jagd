@@ -416,8 +416,11 @@
   .dose-plus:empty { display: none; }
   .lk-stufen { display: flex; flex-direction: column; gap: 6px; background: #fff; border-radius: 12px; padding: 10px 12px; }
   .lk-stufen div { display: flex; justify-content: space-between; font-weight: 700; }
-  .lk-stufen .pf { letter-spacing: -1px; }
+  .lk-stufen div { align-items: center; }
+  .lk-stufen .pf { display: inline-flex; gap: 3px; color: #cfc6b2; }
+  .lk-stufen .pf svg { width: 22px; height: 22px; }
   .lk-stufen .erreicht { color: #3b6d11; }
+  .lk-stufen .erreicht .pf { color: #f2b51d; filter: drop-shadow(0 0 3px rgba(242, 181, 29, .55)); }
   .pfotenreihe { display: flex; justify-content: center; gap: 14px; font-size: 44px; line-height: 1; }
   .pfotenreihe span { filter: grayscale(1); opacity: .25; transition: opacity .2s; }
   .pfotenreihe span.an { filter: none; opacity: 1; animation: knall .5s cubic-bezier(.3, 1.6, .5, 1) both; }
@@ -3178,7 +3181,9 @@
     [0, 1, 2].forEach((i) => {
       const zeile = el('div', i < best ? 'erreicht' : null);
       const was = l.art === 'boss' ? T.bossStufen[i] : `${l.stufen[i]} ${T.einheit[l.art]}`;
-      zeile.append(el('span', 'pf', '🐾'.repeat(i + 1)), el('span', null, was));
+      const pf = el('span', 'pf');
+      pf.innerHTML = PFOTE.repeat(i + 1); // gezeichnete Pfoten: grau, erreichte leuchten gelb
+      zeile.append(pf, el('span', null, was));
       box.append(zeile);
     });
     $('lkBest').textContent = T.levelBest(best);

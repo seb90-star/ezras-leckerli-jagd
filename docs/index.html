@@ -297,10 +297,27 @@
   .ortfach canvas { width: 100%; aspect-ratio: 16 / 9; border-radius: 9px; display: block; }
   .ortfach span { display: flex; justify-content: space-between; gap: 8px; padding: 0 4px 2px; }
   .ortfach em { font-style: normal; font-weight: 500; font-size: 13px; opacity: .75; }
-  .neuheiten { list-style: none; margin: 0; padding: 10px 12px; border-radius: 12px; background: #fff; display: flex; flex-direction: column; gap: 8px; }
-  .neuheiten li { display: grid; grid-template-columns: 24px 1fr; gap: 8px; align-items: start; font-size: 14px; line-height: 1.35; }
-  .neuheiten li::before { content: "★"; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--gelb); color: var(--tinte); font-size: 13px; }
-  .neuheiten b { display: block; font-family: var(--font-anzeige); font-size: 16px; }
+  /* Fortschrittsbalken auf der Endkarte */
+  .balken { display: flex; flex-direction: column; gap: 10px; padding: 12px 14px; border-radius: 12px; background: #fff; }
+  .balken:empty { display: none; }
+  .zb-kopf { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 14px; margin-bottom: 5px; }
+  .zb-kopf b { font-family: var(--font-anzeige); font-size: 16px; }
+  .zb-kopf span { font-weight: 700; font-variant-numeric: tabular-nums; opacity: .8; }
+  .zb-spur { height: 12px; border-radius: 999px; background: rgba(38, 50, 31, .12); overflow: hidden; }
+  .zb-fuell { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--fell), var(--gelb)); }
+  .rekord-neu.knall { animation: knall .5s cubic-bezier(.3, 1.6, .5, 1) both; }
+  @keyframes knall { from { transform: scale(.3); opacity: 0; } to { transform: none; opacity: 1; } }
+
+  /* Erfolgs-Bildschirm */
+  .feier { text-align: center; align-items: stretch; }
+  .feier-kopf { align-self: center; background: var(--gelb); color: var(--tinte); font: 800 14px var(--font-anzeige); letter-spacing: .06em; text-transform: uppercase; padding: 4px 12px; border-radius: 999px; }
+  #feierBild { width: 100%; aspect-ratio: 16 / 10; display: block; border-radius: 12px; }
+  .feier.neu #feierBild { animation: knall .6s cubic-bezier(.3, 1.6, .5, 1) both; }
+  .feier h2 { font-size: 30px; }
+  #feierBelohnung { font-weight: 700; color: var(--fell); }
+  #feierBelohnung:empty, #feierZaehler:empty { display: none; }
+  #konfetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 40; }
+  @media (prefers-reduced-motion: reduce) { .feier.neu #feierBild, .rekord-neu.knall { animation: none; } }
   .toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 50;
     max-width: calc(100% - 32px); padding: 10px 18px; border-radius: 999px; background: var(--tinte); color: var(--creme);
     font-weight: 700; font-size: 15px; text-align: center; pointer-events: none; transition: opacity .2s; }
@@ -407,7 +424,7 @@
         <div class="gross" id="endePunkte">0</div>
         <p id="endeText">Punkte</p>
         <p class="klein" id="endeSerie"></p>
-        <ul class="neuheiten" id="neueSachen" hidden></ul>
+        <div class="balken" id="endeBalken"></div>
         <p class="ziel" id="endeZiel"></p>
         <form class="eintragen" id="eintragen" hidden>
           <label for="nameFeld" id="platzText"></label>
@@ -419,6 +436,21 @@
           <button class="zweit" data-liste type="button" data-t="bestenliste">Bestenliste</button>
           <button class="zweit" data-start type="button" data-t="startseite">Startseite</button>
         </div>
+      </div>
+    </div>
+
+    <div class="ueber" id="feierKarte" hidden>
+      <div class="karte feier" id="feierInhalt">
+        <span class="feier-kopf" id="feierKopf"></span>
+        <canvas id="feierBild" width="640" height="400" aria-hidden="true"></canvas>
+        <h2 id="feierTitel"></h2>
+        <p id="feierText"></p>
+        <p id="feierBelohnung"></p>
+        <div class="knopfreihe">
+          <button class="los" id="feierAktion" type="button"></button>
+          <button class="zweit" id="feierWeiter" type="button" data-t="feierWeiter">Weiter</button>
+        </div>
+        <p class="klein" id="feierZaehler"></p>
       </div>
     </div>
 
@@ -439,6 +471,7 @@
     </div>
   </main>
   <div class="toast" id="toast" role="status" hidden></div>
+  <canvas id="konfetti" aria-hidden="true"></canvas>
 </div>
 
 <script>
@@ -468,6 +501,10 @@
       spielen: 'Spielen', loeschen: 'Bestenliste löschen', loeschenSicher: 'Wirklich alles löschen?', geloescht: 'Bestenliste gelöscht ✓',
       einstellungen: 'Einstellungen', sprache: 'Sprache', auto: 'Auto', ton: 'Ton', fertig: 'Fertig', version: 'Version',
       beendenHinweis: 'Nochmal „Zurück“ zum Beenden',
+      feierErfolg: 'Erfolg geschafft!', feierOrt: 'Neuer Ort!', feierWeiter: 'Weiter', anziehen: 'Gleich anziehen', hinGehen: 'Gleich dort spielen',
+      feierHalstuch: (name) => `Neues Halstuch: „${name}“`, feierOrtText: 'Ab jetzt kannst du hier spielen.', zaehler: (i, n) => `${i} von ${n}`,
+      balkenOrt: (name) => `Ort: ${name}`, knapp: (rest, titel) => `So knapp! Nur noch ${rest} bis „${titel}“.`,
+      knappOrt: (rest, wohin) => `So knapp! Nur noch ${rest} ${rest === 1 ? 'Punkt' : 'Punkte'} bis ${wohin}.`,
       anleitungNochmal: 'Kurzanleitung nochmal zeigen', anleitungOk: 'Kommt beim nächsten Spiel ✓',
       ueber: 'Über das Spiel', widmung1: 'Für Ezra,', widmung2: 'unseren besten Freund auf vier Pfoten.',
       fotoAlt: 'Ezra mit seinem blauen Halstuch', zurueck: 'Zurück',
@@ -533,6 +570,10 @@
       spielen: 'Play', loeschen: 'Clear high scores', loeschenSicher: 'Really clear everything?', geloescht: 'High scores cleared ✓',
       einstellungen: 'Settings', sprache: 'Language', auto: 'Auto', ton: 'Sound', fertig: 'Done', version: 'Version',
       beendenHinweis: 'Press “Back” again to exit',
+      feierErfolg: 'Achievement unlocked!', feierOrt: 'New place!', feierWeiter: 'Continue', anziehen: 'Put it on', hinGehen: 'Play there now',
+      feierHalstuch: (name) => `New bandana: “${name}”`, feierOrtText: 'You can play here from now on.', zaehler: (i, n) => `${i} of ${n}`,
+      balkenOrt: (name) => `Place: ${name}`, knapp: (rest, titel) => `So close! Just ${rest} more for “${titel}”.`,
+      knappOrt: (rest, wohin) => `So close! Just ${rest} more ${rest === 1 ? 'point' : 'points'} to unlock ${wohin}.`,
       anleitungNochmal: 'Show tutorial again', anleitungOk: 'Shown in your next game ✓',
       ueber: 'About', widmung1: 'For Ezra,', widmung2: 'our best friend on four paws.',
       fotoAlt: 'Ezra wearing his blue bandana', zurueck: 'Back',
@@ -688,22 +729,23 @@
   // ---------- Fortschritt: Erfolge, Kleiderschrank, Orte (nur auf dem Gerät) ----------
   const ORTE_AB = { garten: 0, wald: 500, strand: 2000 };
   // s = Summen über alle Runden, r = gerade beendete Runde; belohnung = Halstuch, das der Erfolg freischaltet
+  // geschafft, sobald wert >= ziel; rund = zählt nur innerhalb einer Runde; balken: false = nie als Fortschritt zeigen
   const ERFOLGE = [
-    { id: 'ersterHappen', pruefe: (s) => s.gefangen >= 1 },
-    { id: 'goldrausch', pruefe: (s) => s.gold >= 50 },
-    { id: 'kugelrund', belohnung: 'karo', pruefe: (s, r) => r.punkte >= 150 },
-    { id: 'bodenlos', belohnung: 'gold', pruefe: (s, r) => r.punkte >= 400 },
-    { id: 'gentleman', pruefe: (s, r) => r.punkte >= 100 && r.igitt === 0 },
-    { id: 'ballkuenstler', belohnung: 'punkte', pruefe: (s, r) => r.baelle >= 15 },
-    { id: 'serie25', belohnung: 'sterne', pruefe: (s, r) => r.serieMax >= 50 },
-    { id: 'serie50', pruefe: (s, r) => r.serieMax >= 150 },
-    { id: 'ausdauer', belohnung: 'sonne', pruefe: (s, r) => r.dauer >= 180 },
-    { id: 'allesfresser', pruefe: (s, r) => r.igitt >= 3 },
-    { id: 'leckermaul', belohnung: 'tannen', pruefe: (s) => s.gefangen >= 1500 },
-    { id: 'vielfrass', pruefe: (s) => s.gefangen >= 6000 },
-    { id: 'stammgast', pruefe: (s) => s.runden >= 50 },
-    { id: 'treu', belohnung: 'regenbogen', pruefe: (s) => s.tage.length >= 14 },
-    { id: 'freund', pruefe: (s) => s.gesamt >= 3000 },
+    { id: 'ersterHappen', ziel: 1, wert: (s) => s.gefangen, balken: false },
+    { id: 'goldrausch', ziel: 50, wert: (s) => s.gold },
+    { id: 'kugelrund', belohnung: 'karo', rund: true, ziel: 150, wert: (s, r) => r.punkte },
+    { id: 'bodenlos', belohnung: 'gold', rund: true, ziel: 400, wert: (s, r) => r.punkte },
+    { id: 'gentleman', rund: true, ziel: 100, wert: (s, r) => (r.igitt ? 0 : r.punkte) },
+    { id: 'ballkuenstler', belohnung: 'punkte', rund: true, ziel: 15, wert: (s, r) => r.baelle },
+    { id: 'serie25', belohnung: 'sterne', rund: true, ziel: 50, wert: (s, r) => r.serieMax },
+    { id: 'serie50', rund: true, ziel: 150, wert: (s, r) => r.serieMax },
+    { id: 'ausdauer', belohnung: 'sonne', rund: true, ziel: 180, wert: (s, r) => Math.floor(r.dauer), zeit: true },
+    { id: 'allesfresser', rund: true, ziel: 3, wert: (s, r) => r.igitt, balken: false },
+    { id: 'leckermaul', belohnung: 'tannen', ziel: 1500, wert: (s) => s.gefangen },
+    { id: 'vielfrass', ziel: 6000, wert: (s) => s.gefangen },
+    { id: 'stammgast', ziel: 50, wert: (s) => s.runden },
+    { id: 'treu', belohnung: 'regenbogen', ziel: 14, wert: (s) => s.tage.length },
+    { id: 'freund', ziel: 3000, wert: (s) => s.gesamt },
   ];
   const stand = { gesamt: 0, gefangen: 0, gold: 0, runden: 0, tage: [], erfolge: {}, halstuch: 'standard', ort: 'garten' };
   try { Object.assign(stand, JSON.parse(lies('ezra-fortschritt', '{}'))); } catch (e) {}
@@ -724,6 +766,7 @@
   }
   function rundeAuswerten() {
     const r = { punkte, dauer: zeit, serieMax: besteSerie, ...runde };
+    const alt = { ...stand, tage: [...stand.tage] };
     const vorher = stand.gesamt;
     stand.gesamt += punkte;
     stand.gefangen += r.knochen + r.baelle + r.gold;
@@ -731,12 +774,26 @@
     stand.runden += 1;
     const tag = heute();
     if (!stand.tage.includes(tag)) stand.tage = [...stand.tage, tag].slice(-400);
-    const neueErfolge = ERFOLGE.filter((e) => !stand.erfolge[e.id] && e.pruefe(stand, r));
+    const neueErfolge = ERFOLGE.filter((e) => !stand.erfolge[e.id] && e.wert(stand, r) >= e.ziel);
     neueErfolge.forEach((e) => { stand.erfolge[e.id] = Date.now(); });
     const neueOrte = Object.keys(ORTE_AB).filter((id) => vorher < ORTE_AB[id] && stand.gesamt >= ORTE_AB[id]);
     standSichern();
-    return { neueErfolge, neueOrte };
+    return { neueErfolge, neueOrte, ziele: zieleWaehlen(alt, r) };
   }
+  // Bis zu zwei Fortschrittsbalken für die Endkarte: der nächste Ort und der Erfolg, der am nächsten dran ist
+  function zieleWaehlen(alt, r) {
+    const ziele = [];
+    const ort = Object.keys(ORTE_AB).find((id) => !ortFrei(id));
+    if (ort) ziele.push({ ort, von: alt.gesamt, bis: stand.gesamt, ziel: ORTE_AB[ort] });
+    const kandidaten = ERFOLGE
+      .filter((e) => e.balken !== false && !stand.erfolge[e.id])
+      .map((e) => ({ erfolg: e, von: e.rund ? 0 : e.wert(alt, r), bis: e.wert(stand, r), ziel: e.ziel }))
+      .filter((z) => z.bis > z.von)
+      .sort((a, b) => b.bis / b.ziel - a.bis / a.ziel);
+    return [...ziele, ...kandidaten].slice(0, 2);
+  }
+  const zielTitel = (z) => (z.ort ? T.balkenOrt(T.orte[z.ort]) : T.erfolge[z.erfolg.id][0]);
+  const zielZahl = (z, n) => (z.erfolg?.zeit ? `${Math.floor(n / 60)}:${String(n % 60).padStart(2, '0')}` : String(n));
   function naechstesZiel() {
     const id = ['wald', 'strand'].find((o) => !ortFrei(o));
     return id ? T.ziel(ORTE_AB[id] - stand.gesamt, T.zielOrt[id]) : T.alleOrte;
@@ -1336,7 +1393,7 @@
   }
 
   function zeige(id) {
-    for (const k of ['startKarte', 'sachenKarte', 'pauseKarte', 'endeKarte', 'listeKarte', 'einstellKarte', 'infoKarte']) $(k).hidden = k !== id;
+    for (const k of ['startKarte', 'sachenKarte', 'pauseKarte', 'endeKarte', 'feierKarte', 'listeKarte', 'einstellKarte', 'infoKarte']) $(k).hidden = k !== id;
   }
 
   // ---------- Startkarte und „Ezras Sachen“ ----------
@@ -1442,7 +1499,7 @@
   function einstellungenOeffnen() {
     if (!$('einstellKarte').hidden || !$('infoKarte').hidden) return einstellungenSchliessen();
     if (zustand === 'laeuft') pause();
-    const offen = ['startKarte', 'sachenKarte', 'pauseKarte', 'endeKarte', 'listeKarte'].find((k) => !$(k).hidden);
+    const offen = ['startKarte', 'sachenKarte', 'pauseKarte', 'endeKarte', 'feierKarte', 'listeKarte'].find((k) => !$(k).hidden);
     if (!offen) return;
     vorherKarte = offen;
     loeschenScharf(false);
@@ -1509,30 +1566,222 @@
   let endePlatz = -1;
   // Texte der Endkarte – eigene Funktion, damit ein Sprachwechsel sie neu setzen kann
   function endeTexte() {
-    $('endeTitel').textContent = punkte >= 50 ? T.ende50 : punkte >= 20 ? T.ende20 : T.ende0;
+    $('endeTitel').textContent = punkte >= 150 ? T.ende50 : punkte >= 50 ? T.ende20 : T.ende0;
     $('endeText').textContent = punkte === 1 ? T.punkt : T.punkte;
     $('endeSerie').textContent = besteSerie >= 2 ? T.serieLang(besteSerie) : '';
     if (endePlatz >= 0) $('platzText').textContent = T.platz(endePlatz + 1);
-    // Neu freigeschaltet
-    const neu = $('neueSachen');
-    neu.replaceChildren();
-    if (auswertung) {
-      for (const e of auswertung.neueErfolge) {
-        const [titel, , text] = T.erfolge[e.id];
-        const li = el('li'), inhalt = el('div');
-        inhalt.append(el('b', null, titel), el('span', null, text));
-        li.append(inhalt);
-        neu.append(li);
-      }
-      for (const id of auswertung.neueOrte) {
-        const li = el('li'), inhalt = el('div');
-        inhalt.append(el('b', null, T.neuerOrt(T.orte[id])), el('span', null, T.neuerOrtText));
-        li.append(inhalt);
-        neu.append(li);
-      }
+    balkenMalen(false);
+  }
+
+  // Fortschrittsbalken: laufen beim Öffnen der Endkarte vom alten auf den neuen Stand
+  function balkenMalen(animiert) {
+    const box = $('endeBalken');
+    box.replaceChildren();
+    const ziele = auswertung ? auswertung.ziele : [];
+    const teile = ziele.map((z) => {
+      const kopf = el('div', 'zb-kopf'), zahl = el('span');
+      kopf.append(el('b', null, zielTitel(z)), zahl);
+      const spur = el('div', 'zb-spur'), fuell = el('div', 'zb-fuell');
+      spur.append(fuell);
+      const zeile = el('div');
+      zeile.append(kopf, spur);
+      box.append(zeile);
+      const setze = (n) => {
+        fuell.style.width = `${Math.min(100, n / z.ziel * 100)}%`;
+        zahl.textContent = `${zielZahl(z, Math.round(n))} / ${zielZahl(z, z.ziel)}`;
+      };
+      return { z, setze };
+    });
+    // „So knapp!“: der Balken, der jetzt am nächsten am Ziel ist
+    const knapp = ziele.filter((z) => z.bis / z.ziel >= .8).sort((a, b) => b.bis / b.ziel - a.bis / a.ziel)[0];
+    $('endeZiel').textContent = !knapp ? '' : knapp.ort
+      ? T.knappOrt(knapp.ziel - knapp.bis, T.zielOrt[knapp.ort])
+      : T.knapp(zielZahl(knapp, knapp.ziel - knapp.bis), zielTitel(knapp));
+    if (!animiert || ruhig) { teile.forEach(({ z, setze }) => setze(z.bis)); return; }
+    teile.forEach(({ z, setze }) => setze(z.von));
+    const start = performance.now() + 250, dauer = 1000;
+    let tick = 0;
+    const schritt = (jetzt) => {
+      if ($('endeKarte').hidden) return teile.forEach(({ z, setze }) => setze(z.bis));
+      const t = clamp((jetzt - start) / dauer, 0, 1), e = 1 - (1 - t) ** 3;
+      teile.forEach(({ z, setze }) => setze(z.von + (z.bis - z.von) * e));
+      if (t > 0 && t < 1 && jetzt - tick > 70) { tick = jetzt; piep(700 + e * 600, .03, 'triangle', .025); }
+      if (t < 1) requestAnimationFrame(schritt);
+      else if (teile.length) piep(1175, .08, 'triangle', .04);
+    };
+    requestAnimationFrame(schritt);
+  }
+  function punkteHochzaehlen(neuerRekord) {
+    const ziel = $('endePunkte');
+    const jubeln = () => {
+      if (!neuerRekord) return;
+      $('rekordNeu').classList.remove('knall'); void $('rekordNeu').offsetWidth; $('rekordNeu').classList.add('knall');
+      konfetti(70);
+      [523, 659, 784, 1047].forEach((f, i) => piep(f, .14, 'triangle', .05, 0, i * .08));
+      vibrieren('mittel');
+    };
+    if (ruhig || punkte < 2) { ziel.textContent = punkte; jubeln(); return; }
+    const start = performance.now(), dauer = Math.min(900, 300 + punkte * 3);
+    let tick = 0;
+    const schritt = (jetzt) => {
+      const t = clamp((jetzt - start) / dauer, 0, 1);
+      ziel.textContent = Math.round(punkte * (1 - (1 - t) ** 2));
+      if (t < 1 && jetzt - tick > 60) { tick = jetzt; piep(500 + t * 500, .025, 'square', .015); }
+      if (t < 1) requestAnimationFrame(schritt); else jubeln();
+    };
+    requestAnimationFrame(schritt);
+  }
+  function endeKarteZeigen() {
+    zeige('endeKarte');
+    (endePlatz >= 0 ? $('nameFeld') : $('nochmalKnopf')).focus();
+    punkteHochzaehlen(!$('rekordNeu').hidden);
+    balkenMalen(true);
+  }
+
+  // ---------- Erfolgs-Bildschirm: einer pro neuem Erfolg/Ort, danach die Endkarte ----------
+  let feierListe = [], feierNr = 0, feierUhr = 0;
+  function feierStarten() {
+    feierListe = [
+      ...auswertung.neueErfolge.map((e) => ({ erfolg: e })),
+      ...auswertung.neueOrte.map((id) => ({ ort: id })),
+    ];
+    feierNr = 0;
+    if (feierListe.length) feierZeigen(); else endeKarteZeigen();
+  }
+  function feierZeigen() {
+    const f = feierListe[feierNr];
+    const halstuch = f.erfolg?.belohnung;
+    if (f.erfolg) {
+      const [titel, , text] = T.erfolge[f.erfolg.id];
+      $('feierKopf').textContent = T.feierErfolg;
+      $('feierTitel').textContent = titel;
+      $('feierText').textContent = text;
+      $('feierBelohnung').textContent = halstuch ? T.feierHalstuch(T.halstuch[halstuch]) : '';
+    } else {
+      $('feierKopf').textContent = T.feierOrt;
+      $('feierTitel').textContent = T.orte[f.ort];
+      $('feierText').textContent = T.feierOrtText;
+      $('feierBelohnung').textContent = '';
     }
-    neu.hidden = !neu.children.length;
-    $('endeZiel').textContent = auswertung ? naechstesZiel() : '';
+    const aktion = halstuch ? T.anziehen : f.ort ? T.hinGehen : '';
+    $('feierAktion').textContent = aktion;
+    $('feierAktion').hidden = !aktion;
+    $('feierWeiter').className = aktion ? 'zweit' : 'los';
+    $('feierZaehler').textContent = feierListe.length > 1 ? T.zaehler(feierNr + 1, feierListe.length) : '';
+    zeige('feierKarte');
+    const karte = $('feierInhalt');
+    karte.classList.remove('neu'); void karte.offsetWidth; karte.classList.add('neu');
+    (aktion ? $('feierAktion') : $('feierWeiter')).focus();
+    feierBildLaufen(f);
+    konfetti(120);
+    const melodie = f.ort ? [392, 523, 659, 784, 1047] : [523, 659, 784, 1047, 1319];
+    melodie.forEach((ton, i) => piep(ton, i === melodie.length - 1 ? .4 : .12, 'triangle', .055, 0, i * .09));
+    piep(2093, .25, 'sine', .03, 0, .55);
+    vibrieren('mittel'); setTimeout(() => vibrieren('mittel'), 140);
+  }
+  function feierWeiter() {
+    if ($('feierKarte').hidden) return;
+    feierNr++;
+    if (feierNr < feierListe.length) feierZeigen();
+    else { cancelAnimationFrame(feierUhr); endeKarteZeigen(); }
+  }
+  function feierAktion() {
+    const f = feierListe[feierNr];
+    if (f.erfolg?.belohnung) stand.halstuch = f.erfolg.belohnung;
+    if (f.ort) {
+      stand.ort = f.ort;
+      malHimmel(himmelCv.getContext('2d'));
+      malVorder(vorderCv.getContext('2d'));
+    }
+    standSichern();
+    piep(880, .08, 'triangle', .05); piep(1320, .12, 'triangle', .05, 0, .08);
+    feierWeiter();
+  }
+  // Bild: Strahlen hinter Medaille, Ezra mit neuem Halstuch oder der neue Ort
+  function feierBildLaufen(f) {
+    cancelAnimationFrame(feierUhr);
+    const c = $('feierBild'), g = c.getContext('2d');
+    const t0 = performance.now();
+    const malen = (jetzt) => {
+      const t = (jetzt - t0) / 1000;
+      g.setTransform(1, 0, 0, 1, 0, 0);
+      if (f.ort) {
+        ortVorschau(c, f.ort);
+      } else {
+        g.fillStyle = '#2f4a26'; g.fillRect(0, 0, 640, 400);
+        g.save(); g.translate(320, 200); g.rotate(ruhig ? 0 : t * .25);
+        g.fillStyle = 'rgba(242,212,58,.22)';
+        for (let i = 0; i < 12; i++) { g.rotate(Math.PI / 6); g.beginPath(); g.moveTo(0, 0); g.lineTo(-60, -420); g.lineTo(60, -420); g.closePath(); g.fill(); }
+        g.restore();
+        if (f.erfolg.belohnung) {
+          const alt = stand.halstuch;
+          stand.halstuch = f.erfolg.belohnung;
+          malEzra(g, 320, 360, 2.7, { neig: 0, wedel: ruhig ? 0 : Math.sin(t * 14) * .5, maul: 0, igitt: 0, blinzel: false });
+          stand.halstuch = alt;
+        } else {
+          medailleMalen(g, 320, 190, 1 + (ruhig ? 0 : Math.sin(t * 3) * .03));
+        }
+      }
+      if (!$('feierKarte').hidden && !ruhig && !f.ort) feierUhr = requestAnimationFrame(malen);
+    };
+    feierUhr = requestAnimationFrame(malen);
+  }
+  function medailleMalen(g, x, y, s) {
+    g.save(); g.translate(x, y); g.scale(s, s);
+    g.fillStyle = '#2742c4'; dreieck(g, -70, 40, -20, 40, -55, 170); g.fill(); dreieck(g, 20, 40, 70, 40, 55, 170); g.fill();
+    g.fillStyle = '#1a2d8a'; dreieck(g, -55, 170, -45, 130, -37, 160); g.fill(); dreieck(g, 55, 170, 45, 130, 37, 160); g.fill();
+    g.fillStyle = '#b8860b'; ellipse(g, 0, 0, 108, 108);
+    g.fillStyle = '#f2d43a'; ellipse(g, 0, 0, 96, 96);
+    g.fillStyle = '#ffe680'; ellipse(g, 0, 0, 74, 74);
+    g.fillStyle = '#e0a800';
+    g.beginPath();
+    for (let i = 0; i < 10; i++) {
+      const w = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? 26 : 58;
+      g.lineTo(Math.cos(w) * rr, Math.sin(w) * rr);
+    }
+    g.closePath(); g.fill();
+    g.fillStyle = 'rgba(255,255,255,.5)'; ellipse(g, -38, -52, 22, 9, -.6);
+    g.restore();
+  }
+
+  // ---------- Konfetti ----------
+  const konfettiCv = $('konfetti');
+  let konfettiTeile = [], konfettiLaeuft = false;
+  function konfetti(anzahl) {
+    if (ruhig) return;
+    const dpr = Math.min(2, devicePixelRatio || 1);
+    if (!konfettiLaeuft) { konfettiCv.width = innerWidth * dpr; konfettiCv.height = innerHeight * dpr; }
+    const farben = ['#f2d43a', '#2742c4', '#b4612f', '#d33b2f', '#7bc96f', '#fff6df'];
+    for (let i = 0; i < anzahl; i++) {
+      konfettiTeile.push({
+        x: innerWidth * (.5 + (Math.random() - .5) * .3), y: innerHeight * .35,
+        vx: (Math.random() - .5) * 900, vy: -350 - Math.random() * 650,
+        w: 6 + Math.random() * 6, h: 4 + Math.random() * 4,
+        rot: Math.random() * 6, vrot: (Math.random() - .5) * 14,
+        farbe: farben[i % farben.length], leben: 2.2 + Math.random() * .8,
+      });
+    }
+    if (konfettiLaeuft) return;
+    konfettiLaeuft = true;
+    let zuletzt = performance.now();
+    const schritt = (jetzt) => {
+      const dt = Math.min(.05, (jetzt - zuletzt) / 1000); zuletzt = jetzt;
+      const g = konfettiCv.getContext('2d');
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      g.clearRect(0, 0, innerWidth, innerHeight);
+      for (const k of konfettiTeile) {
+        k.vy += 1100 * dt; k.vx *= 1 - 1.6 * dt; k.vy *= 1 - .9 * dt;
+        k.x += k.vx * dt; k.y += k.vy * dt; k.rot += k.vrot * dt; k.leben -= dt;
+        g.save(); g.translate(k.x, k.y); g.rotate(k.rot);
+        g.globalAlpha = clamp(k.leben / .5, 0, 1);
+        g.fillStyle = k.farbe; g.fillRect(-k.w / 2, -k.h / 2, k.w, Math.abs(Math.cos(k.rot * 1.3)) * k.h + 1);
+        g.restore();
+      }
+      konfettiTeile = konfettiTeile.filter((k) => k.leben > 0 && k.y < innerHeight + 40);
+      if (konfettiTeile.length) requestAnimationFrame(schritt);
+      else { g.clearRect(0, 0, innerWidth, innerHeight); konfettiLaeuft = false; }
+    };
+    requestAnimationFrame(schritt);
   }
   function ende() {
     zustand = 'ende';
@@ -1545,17 +1794,13 @@
     }
     endePlatz = platzFuer(punkte);
     auswertung = rundeAuswerten();
-    if (auswertung.neueErfolge.length) [784, 988, 1175, 1568].forEach((f, i) => piep(f, .12, 'triangle', .05, 0, .75 + i * .08));
     $('rekordNeu').hidden = !neu || punkte === 0;
-    $('endePunkte').textContent = punkte;
+    $('endePunkte').textContent = 0;
     $('eintragen').hidden = endePlatz < 0;
     $('endeKnoepfe').hidden = endePlatz >= 0;
     if (endePlatz >= 0) $('nameFeld').value = letzterName;
     endeTexte();
-    setTimeout(() => {
-      zeige('endeKarte');
-      (endePlatz >= 0 ? $('nameFeld') : $('nochmalKnopf')).focus();
-    }, 650);
+    setTimeout(feierStarten, 650);
     piep(440, .18, 'triangle', .06, .7); piep(330, .3, 'triangle', .06, .6, .18);
   }
 
@@ -1876,6 +2121,7 @@
     AppPlugin.addListener('backButton', () => {
       if (Date.now() < beendenBis) return AppPlugin.exitApp();
       if (!$('infoKarte').hidden) zeige('einstellKarte');
+      else if (!$('feierKarte').hidden) feierWeiter();
       else if (!$('einstellKarte').hidden) einstellungenSchliessen();
       else if (zustand === 'laeuft') { pause(); beendenAnbieten(); }
       else if (!$('sachenKarte').hidden) zumStart();
@@ -1893,6 +2139,10 @@
   $('sachenZu').addEventListener('click', zumStart);
   $('sachenSpielen').addEventListener('click', starten);
   document.querySelectorAll('[data-tab]').forEach((b) => b.addEventListener('click', () => { tab = b.dataset.tab; sachenFuellen(); }));
+  $('feierWeiter').addEventListener('click', feierWeiter);
+  $('feierAktion').addEventListener('click', feierAktion);
+  // Antippen irgendwo außerhalb der Knöpfe geht auch weiter
+  $('feierKarte').addEventListener('click', (e) => { if (!e.target.closest('button')) feierWeiter(); });
   document.querySelectorAll('[data-start]').forEach((k) => k.addEventListener('click', zumStart));
   document.querySelectorAll('[data-liste]').forEach((k) => k.addEventListener('click', () => { letzteId = null; listeZeigen(); }));
   $('eintragen').addEventListener('submit', (e) => {

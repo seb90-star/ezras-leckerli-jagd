@@ -301,6 +301,10 @@
   .neuheiten li { display: grid; grid-template-columns: 24px 1fr; gap: 8px; align-items: start; font-size: 14px; line-height: 1.35; }
   .neuheiten li::before { content: "★"; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--gelb); color: var(--tinte); font-size: 13px; }
   .neuheiten b { display: block; font-family: var(--font-anzeige); font-size: 16px; }
+  .toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 50;
+    max-width: calc(100% - 32px); padding: 10px 18px; border-radius: 999px; background: var(--tinte); color: var(--creme);
+    font-weight: 700; font-size: 15px; text-align: center; pointer-events: none; transition: opacity .2s; }
+  .toast[hidden] { display: block; opacity: 0; }
 </style>
 </head>
 <body>
@@ -413,6 +417,7 @@
         <div class="knopfreihe" id="endeKnoepfe">
           <button class="los" id="nochmalKnopf" type="button" data-t="nochmal">Nochmal</button>
           <button class="zweit" data-liste type="button" data-t="bestenliste">Bestenliste</button>
+          <button class="zweit" data-start type="button" data-t="startseite">Startseite</button>
         </div>
       </div>
     </div>
@@ -426,10 +431,14 @@
           <tbody id="listeZeilen"></tbody>
         </table>
         <p class="klein" data-t="listeHinweis"></p>
-        <button class="los" id="listeSpielen" type="button" data-t="spielen">Spielen</button>
+        <div class="knopfreihe">
+          <button class="los" id="listeSpielen" type="button" data-t="spielen">Spielen</button>
+          <button class="zweit" data-start type="button" data-t="startseite">Startseite</button>
+        </div>
       </div>
     </div>
   </main>
+  <div class="toast" id="toast" role="status" hidden></div>
 </div>
 
 <script>
@@ -449,7 +458,7 @@
         qualle: '<b>Qualle</b>: glibberig und brennt! Kostet ein Leben.',
       },
       r_combo: 'Fang 5 hintereinander für doppelte Punkte, 10 für dreifache.',
-      los: 'Los geht’s', bestenliste: 'Bestenliste', datenschutz: 'Datenschutz', datenschutzSeite: 'datenschutz.html',
+      los: 'Los geht’s', bestenliste: 'Bestenliste', startseite: 'Startseite', datenschutz: 'Datenschutz', datenschutzSeite: 'datenschutz.html',
       vibration: 'Vibration', pause: 'Pause', pauseText: 'Ezra wartet geduldig.', weiter: 'Weiterspielen',
       nochmal: 'Nochmal', punkte: 'Punkte', punkt: 'Punkt', rekord: 'Rekord', leben: 'Leben',
       rekordNeu: 'Neuer Rekord!', platz: (n) => `Platz ${n} in der Bestenliste! Wie heißt du?`,
@@ -458,6 +467,7 @@
       listeHinweis: 'Die Liste wird nur auf diesem Gerät gespeichert.',
       spielen: 'Spielen', loeschen: 'Bestenliste löschen', loeschenSicher: 'Wirklich alles löschen?', geloescht: 'Bestenliste gelöscht ✓',
       einstellungen: 'Einstellungen', sprache: 'Sprache', auto: 'Auto', ton: 'Ton', fertig: 'Fertig', version: 'Version',
+      beendenHinweis: 'Nochmal „Zurück“ zum Beenden',
       anleitungNochmal: 'Kurzanleitung nochmal zeigen', anleitungOk: 'Kommt beim nächsten Spiel ✓',
       ueber: 'Über das Spiel', widmung1: 'Für Ezra,', widmung2: 'unseren besten Freund auf vier Pfoten.',
       fotoAlt: 'Ezra mit seinem blauen Halstuch', zurueck: 'Zurück',
@@ -513,7 +523,7 @@
         qualle: '<b>Jellyfish</b>: slimy and it stings! Costs a life.',
       },
       r_combo: 'Catch 5 in a row for double points, 10 for triple.',
-      los: 'Let’s go', bestenliste: 'High scores', datenschutz: 'Privacy', datenschutzSeite: 'privacy.html',
+      los: 'Let’s go', bestenliste: 'High scores', startseite: 'Home', datenschutz: 'Privacy', datenschutzSeite: 'privacy.html',
       vibration: 'Vibration', pause: 'Paused', pauseText: 'Ezra is waiting patiently.', weiter: 'Resume',
       nochmal: 'Play again', punkte: 'Points', punkt: 'Point', rekord: 'Best', leben: 'Lives',
       rekordNeu: 'New record!', platz: (n) => `#${n} on the high score list! What’s your name?`,
@@ -522,6 +532,7 @@
       listeHinweis: 'This list is only saved on this device.',
       spielen: 'Play', loeschen: 'Clear high scores', loeschenSicher: 'Really clear everything?', geloescht: 'High scores cleared ✓',
       einstellungen: 'Settings', sprache: 'Language', auto: 'Auto', ton: 'Sound', fertig: 'Done', version: 'Version',
+      beendenHinweis: 'Press “Back” again to exit',
       anleitungNochmal: 'Show tutorial again', anleitungOk: 'Shown in your next game ✓',
       ueber: 'About', widmung1: 'For Ezra,', widmung2: 'our best friend on four paws.',
       fotoAlt: 'Ezra wearing his blue bandana', zurueck: 'Back',
@@ -618,8 +629,9 @@
 
   // ---------- App-Funktionen (nur in der Handy-App vorhanden) ----------
   const nativ = !!window.Capacitor?.isNativePlatform?.();
-  const Haptik = nativ ? window.Capacitor.registerPlugin?.('Haptics') : null;
-  const AppPlugin = nativ ? window.Capacitor.registerPlugin?.('App') : null;
+  // Ohne Bundler gibt es kein registerPlugin – die Plugins hängen fertig an Capacitor.Plugins
+  const Haptik = nativ ? window.Capacitor.Plugins?.Haptics : null;
+  const AppPlugin = nativ ? window.Capacitor.Plugins?.App : null;
   const kannVibrieren = !!Haptik || 'vibrate' in navigator;
   let vibration = lies('ezra-vibration', 'an') !== 'aus';
   function vibrieren(art) {
@@ -1342,6 +1354,7 @@
     $('startZiel').textContent = stand.gesamt ? naechstesZiel() : '';
   }
   function zumStart() {
+    if (zustand === 'ende') zustand = 'start';
     startFuellen();
     zeige('startKarte');
     $('losKnopf').focus();
@@ -1848,16 +1861,25 @@
   addEventListener('blur', () => { tasten.links = tasten.rechts = false; pause(); });
   document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
 
-  // Android-Zurück-Taste: im Spiel pausieren statt die App zu schließen
+  // Android-Zurück-Taste: Unterseiten schließen, im Spiel pausieren;
+  // zweimal kurz hintereinander beendet die App (auch aus dem laufenden Spiel)
   if (AppPlugin) {
+    let beendenBis = 0, toastUhr = 0;
+    const beendenAnbieten = () => {
+      beendenBis = Date.now() + 2000;
+      $('toast').textContent = T.beendenHinweis;
+      $('toast').hidden = false;
+      clearTimeout(toastUhr);
+      toastUhr = setTimeout(() => { $('toast').hidden = true; }, 2000);
+    };
     AppPlugin.addListener('backButton', () => {
+      if (Date.now() < beendenBis) return AppPlugin.exitApp();
       if (!$('infoKarte').hidden) zeige('einstellKarte');
       else if (!$('einstellKarte').hidden) einstellungenSchliessen();
-      else if (zustand === 'laeuft') pause();
-      else if (zustand === 'pause') weiter();
+      else if (zustand === 'laeuft') { pause(); beendenAnbieten(); }
       else if (!$('sachenKarte').hidden) zumStart();
       else if (!$('listeKarte').hidden) zustand === 'ende' ? zeige('endeKarte') : zumStart();
-      else AppPlugin.exitApp();
+      else beendenAnbieten();
     });
     AppPlugin.addListener('pause', pause);
   }
@@ -1870,6 +1892,7 @@
   $('sachenZu').addEventListener('click', zumStart);
   $('sachenSpielen').addEventListener('click', starten);
   document.querySelectorAll('[data-tab]').forEach((b) => b.addEventListener('click', () => { tab = b.dataset.tab; sachenFuellen(); }));
+  document.querySelectorAll('[data-start]').forEach((k) => k.addEventListener('click', zumStart));
   document.querySelectorAll('[data-liste]').forEach((k) => k.addEventListener('click', () => { letzteId = null; listeZeigen(); }));
   $('eintragen').addEventListener('submit', (e) => {
     e.preventDefault();

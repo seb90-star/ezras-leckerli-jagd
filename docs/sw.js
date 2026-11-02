@@ -1,6 +1,6 @@
 // Speichert das Spiel auf dem Handy, damit es auch ohne Internet läuft.
 // Bei jeder Änderung am Spiel die Versionsnummer erhöhen.
-const VERSION = 'leckerli-jagd-v30';
+const VERSION = 'leckerli-jagd-v31';
 const DATEIEN = [
   './',
   'index.html',

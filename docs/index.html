@@ -3843,9 +3843,9 @@
   // Ein Wurf aus dem Ereignis: meistens Leckerlis, manchmal Ekliges (nie in „Ohne …“-Leveln)
   function ereignisWurf(x, y, vx, vy, g, nurGut, typ) {
     const gut = EREIGNIS_GUT[spielOrt];
-    if (!typ) typ = !nurGut && levelArt() !== 'sauber' && Math.random() < .2 ? ORTE[spielOrt].gefahr : gut[Math.floor(Math.random() * gut.length)];
+    if (!typ) typ = !nurGut && levelArt() !== 'sauber' && Math.random() < { garten: .1, wald: .2, strand: .25 }[spielOrt] ? ORTE[spielOrt].gefahr : gut[Math.floor(Math.random() * gut.length)];
     const rr = { ball: 12, wurst: 15, nuss: 11, fisch: 15, gold: 14 }[typ] || 14;
-    items.push({ typ, r: rr, x: clamp(x, rr + 4, W - rr - 4), y, vx, vy, g, rot: Math.random() * 6, vr: (Math.random() - .5) * 8, pendel: 0, t: 0, frei: true });
+    items.push({ typ, r: rr, x: clamp(x, rr + 4, W - rr - 4), y, vx, vy, g, rot: Math.random() * 6, vr: (Math.random() - .5) * 8, pendel: 0, t: 0, frei: true, bonus: true });
   }
   function ereignisAktualisieren(dt) {
     blitz = Math.max(0, blitz - dt * 2.2);
@@ -3873,13 +3873,13 @@
       if (e.phase === 'warnung') e.x += (W * .5 - e.x) * Math.min(1, dt * 2.5);
       if (aktiv) {
         e.x = W * .5 + Math.sin(e.zeit * 1.7) * W * .34;
-        if (wurf(.16)) ereignisWurf(e.x + (Math.random() - .5) * 70, e.y + 28, (Math.random() - .5) * 40, 60, 520);
+        if (wurf(.24)) ereignisWurf(e.x + (Math.random() - .5) * 70, e.y + 28, (Math.random() - .5) * 40, 60, 520);
         if (!ruhig && Math.random() < dt * 1.3) { blitz = .4; e.blitzX = W * (.15 + Math.random() * .7); piep(70, .6, 'sawtooth', .06, .6); }
       }
       if (e.phase === 'ende') e.x += (e.x < W / 2 ? -1 : 1) * 160 * dt;
     } else if (e.typ === 'sprenger') {
       e.winkel += dt * (aktiv ? 5 : 1);
-      if (wurf(.2)) ereignisWurf(e.x, e.y - 24, Math.sin(e.winkel) * 250, -(520 + Math.random() * 120), 640);
+      if (wurf(.28)) ereignisWurf(e.x, e.y - 24, Math.sin(e.winkel) * 250, -(520 + Math.random() * 120), 640);
       if (aktiv) for (let n = 0; n < 2; n++) e.teilchen.push({ x: e.x, y: e.y - 22, vx: Math.sin(e.winkel + (Math.random() - .5) * .4) * 260, vy: -380 - Math.random() * 120, g: 700, l: .9, farbe: 'rgba(150,210,255,.8)', r: 2 });
     } else if (e.typ === 'pilze') {
       if (aktiv) e.pilze.forEach((pz, i) => {
@@ -4026,6 +4026,15 @@
 
   function fangen(it, mundY) {
     const tx = ezra.x, ty = mundY - 40 * sk;
+    if (EKLIG[it.typ] && it.bonus) {
+      // Ekliges aus einem Ereignis: igitt und Combo weg, aber kein Leben
+      runde.igitt++;
+      ezra.igitt = .7;
+      piep(210, .28, 'sawtooth', .045, .5);
+      serieAus();
+      texte.push({ x: tx, y: ty, text: it.typ === 'biene' ? T.autsch : T.igitt, farbe: '#ff6a5c', leben: 1 });
+      return;
+    }
     if (EKLIG[it.typ] && powerSchild) {
       // Schutz-Halstuch: prallt ab, kostet nichts
       powerSchild = false;
@@ -4167,7 +4176,9 @@
       }
       if (it.y - it.r > boden + 6) {
         items.splice(i, 1);
-        if (it.typ === 'knochen' && leben > 0) {
+        // Verpasstes aus Ereignissen (und während der Windböe) kostet kein Leben
+        const ohneStrafe = it.bonus || (ereignis && ereignis.typ === 'wind' && ereignis.phase === 'aktiv');
+        if (it.typ === 'knochen' && !ohneStrafe && leben > 0) {
           piep(300, .16, 'square', .03, .7);
           lebenWeg(clamp(px, 40, W - 40), boden - 20, T.daneben);
         }

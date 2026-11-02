@@ -30,11 +30,12 @@ const AUSGABE = path.join(HIER, '..', 'test-ergebnisse');
 // uebersehen: Chance, eine Sache gar nicht zu bemerken
 // vorsicht: wie stark Socken & Co. gemieden werden (0 = gar nicht, 1 = sehr)
 // vorausschau: wie viele Sekunden im Voraus der Spieler plant
+// sparen: Chance, den Knall für einen brenzligen Moment aufzuheben statt ihn sofort zu zünden
 const SPIELER = {
-  kind5: { name: 'Kind 5–6 J.', reaktion: .45, streuung: 22, fingerTempo: 650, ablenkung: .05, ablenkDauer: [.6, 1.6], verwechslung: .1, bemerken: .7, uebersehen: .04, vorsicht: .55, vorausschau: 1 },
-  kind8: { name: 'Kind 8–10 J.', reaktion: .32, streuung: 14, fingerTempo: 900, ablenkung: .025, ablenkDauer: [.4, 1.2], verwechslung: .04, bemerken: .4, uebersehen: .02, vorsicht: .75, vorausschau: 1.2 },
-  erwachsen: { name: 'Erwachsen', reaktion: .24, streuung: 9, fingerTempo: 1100, ablenkung: .01, ablenkDauer: [.3, .8], verwechslung: .015, bemerken: .25, uebersehen: .01, vorsicht: .9, vorausschau: 1.4 },
-  profi: { name: 'Profi', reaktion: .12, streuung: 3, fingerTempo: 1500, ablenkung: 0, ablenkDauer: [0, 0], verwechslung: 0, bemerken: .08, uebersehen: 0, vorsicht: 1, vorausschau: 1.6 },
+  kind5: { name: 'Kind 5–6 J.', reaktion: .45, streuung: 22, fingerTempo: 650, ablenkung: .05, ablenkDauer: [.6, 1.6], verwechslung: .1, bemerken: .7, uebersehen: .04, vorsicht: .55, vorausschau: 1, sparen: 0 },
+  kind8: { name: 'Kind 8–10 J.', reaktion: .32, streuung: 14, fingerTempo: 900, ablenkung: .025, ablenkDauer: [.4, 1.2], verwechslung: .04, bemerken: .4, uebersehen: .02, vorsicht: .75, vorausschau: 1.2, sparen: .5 },
+  erwachsen: { name: 'Erwachsen', reaktion: .24, streuung: 9, fingerTempo: 1100, ablenkung: .01, ablenkDauer: [.3, .8], verwechslung: .015, bemerken: .25, uebersehen: .01, vorsicht: .9, vorausschau: 1.4, sparen: .9 },
+  profi: { name: 'Profi', reaktion: .12, streuung: 3, fingerTempo: 1500, ablenkung: 0, ablenkDauer: [0, 0], verwechslung: 0, bemerken: .08, uebersehen: 0, vorsicht: 1, vorausschau: 1.6, sparen: 1 },
 };
 
 // ---------- Aufruf auswerten ----------
@@ -42,7 +43,7 @@ function argumente() {
   const a = process.argv.slice(2), o = { runden: 30, level: '1-30', spieler: 'alle', endlos: false, ausr: {}, zuschauen: false, maxZeit: 300 };
   for (let i = 0; i < a.length; i++) {
     const k = a[i].replace(/^--/, ''), v = a[i + 1];
-    if (k === 'endlos' || k === 'zuschauen' || k === 'offen') o[k] = true;
+    if (k === 'endlos' || k === 'zuschauen' || k === 'offen' || k === 'ohneWelle') o[k] = true;
     else if (k === 'runden' || k === 'maxZeit') { o[k] = +v; i++; }
     else if (k === 'ausr') { for (const t of v.split(',')) { const [id, st] = t.split(':'); o.ausr[id] = +st || 1; } i++; }
     // --gefahr .2,.42 – anderen Anteil von Socke & Co. ausprobieren (Anfang, volle Schwierigkeit)
@@ -190,6 +191,18 @@ async function botRunde({ nr, p, seed, ausr, maxZeit, zuschauen, gefahr, extra }
   }
 
   if (gefahr) T.gefahr(...gefahr);
+  // Tasche: Knall aufheben (wer spart) bis es eng wird, alles andere gleich zünden
+  let knallSparen = null;
+  function taschePruefen(L) {
+    // alles außer dem Knall gleich zünden
+    const andere = L.tasche.findIndex((typ) => typ !== 'knall');
+    if (andere >= 0) return T.zuenden(andere);
+    const platz = L.tasche.indexOf('knall');
+    if (platz < 0) return;
+    if (knallSparen === null) knallSparen = zufall() < p.sparen;
+    const nahEklig = L.items.filter((it) => it.eklig && !it.bonus && it.y > L.fang.oben - 260 && Math.abs(it.x - L.ezraX) < 90).length;
+    if (!knallSparen || L.welle === 'aktiv' || nahEklig >= 3 || (L.boss && L.boss.phase === 'wut' && nahEklig >= 2)) { knallSparen = null; T.zuenden(platz); }
+  }
   T.starten(nr, ausr, zuschauen ? 'zuschauen' : 'schnell', extra);
   finger = T.lage().ezraX;
   let plan = finger, bisPlan = 0, abgelenkt = 0, schritte = 0;
@@ -203,6 +216,7 @@ async function botRunde({ nr, p, seed, ausr, maxZeit, zuschauen, gefahr, extra }
     bisPlan -= dt;
     if (bisPlan <= 0 && abgelenkt <= 0) {
       plan = planen(L); bisPlan = p.reaktion * (.7 + zufall() * .6);
+      taschePruefen(L);
       letztePlaene.push({ zeit: +L.zeit.toFixed(2), ezraX: Math.round(L.ezraX), plan: Math.round(plan),
         sieht: L.items.map((it) => `${it.typ}@${Math.round(it.x)},${Math.round(it.y)}${bemerktAb.get(it.id) > L.zeit ? '?' : ''}`).join(' ') });
       if (letztePlaene.length > 4) letztePlaene.shift();
@@ -338,7 +352,7 @@ async function main() {
     while (auftraege.length) {
       jetzt = auftraege.shift();
       try {
-        const e = await seite.evaluate(botRunde, { nr: jetzt.nr, p: SPIELER[jetzt.spieler], seed: jetzt.seed, ausr: o.ausr, maxZeit: o.maxZeit, zuschauen: o.zuschauen, gefahr: o.gefahr, extra: { offen: o.offen, stufen: o.stufen } });
+        const e = await seite.evaluate(botRunde, { nr: jetzt.nr, p: SPIELER[jetzt.spieler], seed: jetzt.seed, ausr: o.ausr, maxZeit: o.maxZeit, zuschauen: o.zuschauen, gefahr: o.gefahr, extra: { offen: o.offen, stufen: o.stufen, ohneWelle: o.ohneWelle } });
         ergebnisse.push({ ...jetzt, ...e });
       } catch (err) {
         fehler.push(`${jetzt.nr ? `Level ${jetzt.nr}` : 'Endlos'}, ${SPIELER[jetzt.spieler].name}: ${err.message.split('\n')[0]}`);

@@ -542,6 +542,7 @@
           <li><canvas data-typ="gold" width="68" height="68"></canvas><span data-th="r_gold"></span></li>
           <li><canvas data-typ="pfote" width="68" height="68"></canvas><span data-th="r_pfote"></span></li>
           <li><canvas id="gefahrSymbol" width="68" height="68"></canvas><span id="gefahrRegel"></span></li>
+          <li><canvas data-typ="knall" width="68" height="68"></canvas><span data-th="r_tasche"></span></li>
         </ul>
         <p class="klein" data-t="r_combo"></p>
         <div class="knopfreihe">
@@ -706,7 +707,8 @@
       intro: 'Ezra hat Hunger. Hilf ihm, die Leckerlis aus der Luft zu schnappen.',
       r_knochen: '<b>Leckerli</b>: 1 Punkt. Fällt eins daneben, ist die Combo weg.',
       r_ball: '<b>Ball</b>: 3 Punkte.',
-      r_gold: '<b>Goldenes Leckerli</b>: Alles läuft kurz in Zeitlupe.',
+      r_gold: '<b>Goldenes Leckerli</b>: 5 Punkte und viel Glitzer.',
+      r_tasche: '<b>Knall-Leckerli</b>: wartet unten links. Antippen (oder Leertaste) und BUMM, alles Eklige ist weg!',
       r_pfote: '<b>Pfote</b>: ein Leben zurück.',
       r_gefahr: {
         socke: '<b>Socke</b>: bloß nicht fressen! Kostet ein Leben.',
@@ -770,8 +772,15 @@
         eis: ['Eis am Stiel', 'Schmilzt beim Fallen – je früher, desto mehr Punkte!'],
         magnet: ['Magnet', 'Zieht 6 Sekunden lang Leckerlis zu Ezra.'],
         schild: ['Schutz-Halstuch', 'Die nächste eklige Sache prallt einfach ab.'],
+        zeitlupe: ['Zeitlupe', 'Alles fällt 5 Sekunden lang langsamer.'],
+        knall: ['Knall-Leckerli', 'Bumm! Alles Eklige platzt weg, alles Gute fliegt zu Ezra.'],
+        regen: ['Leckerli-Regen', '4 Sekunden lang regnet es nur Leckerlis.'],
+        riese: ['Riesen-Ezra', 'Ezra wird 6 Sekunden lang riesig und fängt viel leichter.'],
       },
       magnetAn: 'Magnet!', schildAn: 'Schutz-Halstuch!', geschuetzt: 'Abgeprallt!',
+      knallAn: 'BUMM!', regenAn: 'Leckerli-Regen!', rieseAn: 'Riesen-Ezra!',
+      taschenTipp: 'Unten links antippen!', inDieTascheHinweis: 'Wartet unten links, bis du es antippst. Perfekt, wenn es eng wird!', knallBereit: 'Knall bereit!',
+      welleAn: { socke: 'Achtung, Socken-Welle!', zapfen: 'Achtung, Zapfen-Welle!', qualle: 'Achtung, Quallen-Welle!' },
       bossTitel: { garten: 'Die Nachbarskatze!', wald: 'Das freche Eichhörnchen!', strand: 'Die diebische Möwe!' },
       bossName: { garten: 'Katze', wald: 'Eichhörnchen', strand: 'Möwe' },
       bossText: 'Sie wirft Gutes und Ekliges durcheinander. Fang Leckerlis, bis ihr die Geduld ausgeht!',
@@ -844,7 +853,8 @@
       intro: 'Ezra is hungry. Help him snap the treats out of the air.',
       r_knochen: '<b>Treat</b>: 1 point. Miss one and your combo is gone.',
       r_ball: '<b>Ball</b>: 3 points.',
-      r_gold: '<b>Golden treat</b>: Everything slows down for a moment.',
+      r_gold: '<b>Golden treat</b>: 5 points and lots of sparkle.',
+      r_tasche: '<b>Boom treat</b>: waits bottom left. Tap it (or press Space) and BOOM, everything yucky is gone!',
       r_pfote: '<b>Paw</b>: get a life back.',
       r_gefahr: {
         socke: '<b>Sock</b>: don’t eat it! Costs a life.',
@@ -908,8 +918,15 @@
         eis: ['Ice lolly', 'Melts as it falls – catch it early for more points!'],
         magnet: ['Magnet', 'Pulls treats towards Ezra for 6 seconds.'],
         schild: ['Shield bandana', 'The next yucky thing just bounces off.'],
+        zeitlupe: ['Slow-mo', 'Everything falls slower for 5 seconds.'],
+        knall: ['Boom treat', 'Boom! Everything yucky pops, everything good flies to Ezra.'],
+        regen: ['Treat shower', 'Nothing but treats rain down for 4 seconds.'],
+        riese: ['Giant Ezra', 'Ezra gets huge for 6 seconds and catches much more easily.'],
       },
       magnetAn: 'Magnet!', schildAn: 'Shield bandana!', geschuetzt: 'Bounced off!',
+      knallAn: 'BOOM!', regenAn: 'Treat shower!', rieseAn: 'Giant Ezra!',
+      taschenTipp: 'Tap bottom left!', inDieTascheHinweis: 'Waits bottom left until you tap it. Perfect when things get tight!', knallBereit: 'Boom ready!',
+      welleAn: { socke: 'Watch out, sock wave!', zapfen: 'Watch out, pine cone wave!', qualle: 'Watch out, jellyfish wave!' },
       bossTitel: { garten: 'The neighbour’s cat!', wald: 'The cheeky squirrel!', strand: 'The thieving seagull!' },
       bossName: { garten: 'Cat', wald: 'Squirrel', strand: 'Seagull' },
       bossText: 'Throws good and yucky things around. Catch treats until it runs out of patience!',
@@ -1406,6 +1423,40 @@
     c.fillStyle = '#2742c4'; dreieck(c, -8, -5, 8, -5, 0, 7); c.fill();
     c.fillStyle = '#3aa0e4'; c.fillRect(-6, -3, 12, 2.5);
   }
+  // Zeitlupe: goldene Uhr
+  function malZeitlupe(c) {
+    c.fillStyle = 'rgba(255,255,255,.5)'; ellipse(c, 0, 0, 17, 17);
+    c.fillStyle = '#e0a526'; ellipse(c, 0, 1, 11, 11);
+    c.fillStyle = '#fff6df'; ellipse(c, 0, 1, 8, 8);
+    c.fillStyle = '#e0a526'; c.fillRect(-2.5, -13, 5, 3);
+    c.strokeStyle = '#26321f'; c.lineWidth = 1.8; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(0, 1); c.lineTo(0, -4.5); c.moveTo(0, 1); c.lineTo(3.5, 3); c.stroke();
+  }
+  // Knall-Leckerli: rote Kugel mit brennender Zündschnur
+  function malKnall(c) {
+    c.fillStyle = 'rgba(255,255,255,.5)'; ellipse(c, 0, 0, 17, 17);
+    const g = c.createRadialGradient(-3, -1, 1, 0, 2, 11);
+    g.addColorStop(0, '#ff7a5c'); g.addColorStop(1, '#a8231a');
+    c.fillStyle = g; ellipse(c, 0, 2, 10, 10);
+    c.strokeStyle = '#7a4a1e'; c.lineWidth = 2; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(3, -7); c.quadraticCurveTo(6, -12, 9, -11); c.stroke();
+    c.fillStyle = Math.sin(uhr * 20) > 0 ? '#ffd447' : '#ff8a3a'; ellipse(c, 9.5, -11.5, 2.6, 2.6);
+    c.fillStyle = 'rgba(255,255,255,.55)'; ellipse(c, -4, -2, 2.5, 2);
+  }
+  // Leckerli-Regen: Wolke mit drei Leckerlis
+  function malRegen(c) {
+    c.fillStyle = 'rgba(255,255,255,.5)'; ellipse(c, 0, 0, 17, 17);
+    c.fillStyle = '#e3b26c';
+    for (const [x, y] of [[-6, 7], [1, 10], [7, 6]]) { c.beginPath(); c.roundRect(x - 3, y - 1.5, 6, 3, 1.5); c.fill(); }
+    c.fillStyle = '#fbfdff'; ellipse(c, -5, -2, 6, 5); ellipse(c, 3, -4, 7, 6); ellipse(c, 8, -1, 5, 4); ellipse(c, 0, 0, 9, 4);
+  }
+  // Riesen-Ezra: große Pfote mit Pfeil nach oben
+  function malRiese(c) {
+    c.fillStyle = 'rgba(255,255,255,.5)'; ellipse(c, 0, 0, 17, 17);
+    c.fillStyle = '#a0522d'; ellipse(c, -1, 4, 7, 6);
+    ellipse(c, -8, -2, 2.6, 3.2); ellipse(c, -3.5, -6, 2.6, 3.2); ellipse(c, 2, -6, 2.6, 3.2); ellipse(c, 6, -2, 2.6, 3.2);
+    c.fillStyle = '#3b8f2e'; dreieck(c, 9, -12, 14, -5, 4, -5); c.fill(); c.fillRect(7.5, -6, 3, 8);
+  }
   // Nachbarskatze: sitzt auf der Hecke, wirft Socken und Leckerlis
   function malKatze(c, x, y, s, wut) {
     c.save(); c.translate(x, y); c.scale(s, s);
@@ -1452,18 +1503,21 @@
   }
   const MALER = { knochen: (c) => malKnochen(c), gold: malGold, ball: malBall, pfote: malPfote, socke: malSocke, zapfen: malZapfen, qualle: malQualle,
     wurst: malWurst, frisbee: malFrisbee, nuss: malNuss, biene: malBiene, fisch: malFisch, eis: (c) => malEis(c),
-    magnet: malMagnet, schild: malSchild };
-  const POWER = { magnet: true, schild: true };
+    magnet: malMagnet, schild: malSchild, zeitlupe: malZeitlupe, knall: malKnall, regen: malRegen, riese: malRiese };
+  // Power-ups kommen in die Tasche und werden selbst gezündet
+  const POWER = { magnet: true, schild: true, zeitlupe: true, knall: true, regen: true, riese: true };
   const DREHT = { knochen: true, gold: true, ball: true, wurst: true, frisbee: true, nuss: true };
   const EKLIG = { socke: true, zapfen: true, qualle: true, biene: true };
   // Neue Sachen je Ort, ab welchem Level sie auftauchen (im Endlos-Spiel immer)
   const EXTRAS = { garten: ['wurst', 'frisbee'], wald: ['nuss', 'biene'], strand: ['fisch', 'eis'] };
-  const NEU_IN = { 4: 'wurst', 5: 'magnet', 7: 'frisbee', 8: 'schild', 12: 'nuss', 15: 'biene', 22: 'fisch', 25: 'eis' };
+  const NEU_IN = { 3: 'zeitlupe', 4: 'wurst', 5: 'magnet', 7: 'frisbee', 8: 'schild', 9: 'knall', 11: 'regen', 12: 'nuss', 13: 'riese',
+    15: 'biene', 22: 'fisch', 25: 'eis' };
   const NEU_AB = Object.fromEntries(Object.entries(NEU_IN).map(([nr, typ]) => [typ, +nr]));
-  const PUNKTE_FUER = { knochen: 1, ball: 3, gold: 2, wurst: 5, frisbee: 4, nuss: 2, fisch: 4 };
+  const PUNKTE_FUER = { knochen: 1, ball: 3, gold: 5, wurst: 5, frisbee: 4, nuss: 2, fisch: 4 };
   // Symbole in der Anleitung: [Maßstab, Versatz nach unten]
   const SYMBOL = { knochen: [1.9, 0], ball: [2.2, 0], gold: [1.5, 0], pfote: [1.9, 0], socke: [1.45, 7.5], zapfen: [1.6, 1.5], qualle: [1.7, -1.5],
-    wurst: [1.6, 0], frisbee: [1.9, 0], nuss: [2.2, 1], biene: [1.8, 2], fisch: [1.6, 0], eis: [1.7, 1.5], magnet: [1.7, 0], schild: [1.8, 0] };
+    wurst: [1.6, 0], frisbee: [1.9, 0], nuss: [2.2, 1], biene: [1.8, 2], fisch: [1.6, 0], eis: [1.7, 1.5], magnet: [1.7, 0], schild: [1.8, 0],
+    zeitlupe: [1.8, 0], knall: [1.8, 0], regen: [1.8, 0], riese: [1.8, 0] };
   function symbolMalen(c, typ) {
     const g = c.getContext('2d');
     g.setTransform(1, 0, 0, 1, 0, 0);
@@ -2226,9 +2280,10 @@
     meldungenZuruecksetzen();
     auswertung = null;
     items = []; krümel = []; texte = []; werfer = [];
-    powerMagnet = 0; powerSchild = false;
-    ereignis = null; blitz = 0; windKraft = 0;
+    powerMagnet = 0; powerSchild = false; powerRegen = 0; powerRiese = 0; tasche = []; ezraGroesse = 1;
+    ereignis = null; blitz = 0; windKraft = 0; welle = null;
     ereignisPlanen(true);
+    wellePlanen(true);
     rucksackRest = ausr('rucksack');
     bossStarten();
     ezra.x = W / 2; ezra.vx = 0; ezra.maul = 0; ezra.igitt = 0;
@@ -2823,7 +2878,7 @@
     } else if (neu) {
       symbolMalen($('lkNeuBild'), neu);
       $('lkNeuName').textContent = T.dinge[neu][0];
-      $('lkNeuText').textContent = T.dinge[neu][1];
+      $('lkNeuText').textContent = T.dinge[neu][1] + (neu === 'knall' ? ` ${T.inDieTascheHinweis}` : '');
     }
     // Ausrüstung: belegte und freie Plätze, Tipp fürs Level
     $('lkAusr').hidden = nr === 1;
@@ -3630,7 +3685,8 @@
     const w = Math.random();
     let typ;
     const goldLevel = levelArt() === 'gold';
-    if (zeit > (goldLevel ? 4 : 15) && zeitlupe <= 0 && !items.some((i) => i.typ === 'gold') && Math.random() < (goldLevel ? .09 : .035) * (1 + glueck())) typ = 'gold';
+    if (powerRegen > 0) typ = Math.random() < .2 ? 'ball' : 'knochen'; // Leckerli-Regen
+    else if (zeit > (goldLevel ? 4 : 15) && zeitlupe <= 0 && !items.some((i) => i.typ === 'gold') && Math.random() < (goldLevel ? .09 : .035) * (1 + glueck())) typ = 'gold';
     else if (leben < 3 && !items.some((i) => i.typ === 'pfote') && Math.random() < .03) typ = 'pfote';
     else if ((typ = powerWahl())) { /* Power-up */ }
     else if ((typ = extraWahl())) { /* neue Sache des Orts */ }
@@ -3685,17 +3741,115 @@
   function powerWahl() {
     if (zeit < 6) return null;
     const liste = Object.keys(POWER).filter((typ) => {
-      if (items.some((i) => i.typ === typ)) return false;
-      if (typ === 'magnet' && powerMagnet > 0) return false;
-      if (typ === 'schild' && powerSchild) return false;
+      if (items.some((i) => i.typ === typ) || tasche.includes(typ)) return false;
+      if ((typ === 'magnet' && powerMagnet > 0) || (typ === 'schild' && powerSchild) || (typ === 'zeitlupe' && zeitlupe > 0)
+        || (typ === 'regen' && powerRegen > 0) || (typ === 'riese' && powerRiese > 0)) return false;
       return modus !== 'level' || level.nr >= NEU_AB[typ];
     });
     if (!liste.length) return null;
+    if (liste.includes('knall') && welleMoeglich()) liste.push('knall'); // wo Wellen kommen, öfter mal ein Knall
     const typ = liste[Math.floor(Math.random() * liste.length)];
-    const chance = (modus === 'level' && NEU_IN[level.nr] === typ ? .12 : .03) * (1 + glueck());
+    const chance = (modus === 'level' && NEU_IN[level.nr] === typ ? .12 : .045) * (1 + glueck());
     return Math.random() < chance ? typ : null;
   }
-  let powerMagnet = 0, powerSchild = false;
+  let powerMagnet = 0, powerSchild = false, powerRegen = 0, powerRiese = 0;
+
+  // ---------- Rettungs-Platz: nur das Knall-Leckerli wartet unten links, antippen (oder Leertaste) zündet ----------
+  // Alle anderen Power-ups wirken sofort beim Fangen
+  const TASCHE_PLAETZE = 1;
+  let tasche = [], ezraGroesse = 1;
+  const taschenPlatz = () => { const r = clamp((H - boden) * .75, 26, 32); return { x: 12 + r, y: H - r - 6, r }; };
+  const taschenSichtbar = () => modus !== 'level' || level.nr >= NEU_AB.knall;
+  function powerFangen(typ, x, y) {
+    if (typ !== 'knall') return powerWirken(typ);
+    if (tasche.length >= TASCHE_PLAETZE) {
+      // schon ein Knall bereit: dafür gibt es ordentlich Punkte
+      punkte += 10; $('punkte').textContent = punkte;
+      texte.push({ x, y: y - 20, text: '+10 💥', farbe: '#ffd447', leben: 1.4, gross: true });
+      [660, 990].forEach((f, i) => piep(f, .1, 'triangle', .06, 0, i * .07));
+      return;
+    }
+    tasche.push('knall');
+    melden('💥', T.knallBereit, 2);
+    if (lies('ezra-tasche-tipp', '') !== 'gesehen') {
+      schreib('ezra-tasche-tipp', 'gesehen');
+      texte.push({ x: W / 2, y: H * .36, text: T.taschenTipp, farbe: '#ffd447', leben: 3, gross: true });
+    }
+    [784, 1047].forEach((f, i) => piep(f, .08, 'triangle', .05, 0, i * .06));
+    vibrieren('leicht');
+  }
+  function powerWirken(typ) {
+    if (typ === 'magnet') { powerMagnet = 6 + ausr('kappe') * 2; melden('🧲', T.magnetAn, 2); }
+    else if (typ === 'schild') { powerSchild = true; melden('🛡️', T.schildAn, 2); }
+    else if (typ === 'zeitlupe') { zeitlupe = 5; texte.push({ x: W / 2, y: H * .3, text: T.zeitlupe, farbe: '#ffd447', leben: 1.6, gross: true }); }
+    else if (typ === 'regen') { powerRegen = 4; spawnUhr = 0; melden('🌧️', T.regenAn, 2); }
+    else if (typ === 'riese') { powerRiese = 6; melden('🐕', T.rieseAn, 2); }
+    [784, 1047, 1319].forEach((f, i) => piep(f, .1, 'triangle', .05, 0, i * .06));
+    vibrieren('mittel');
+  }
+  function powerZuenden(platz = 0) {
+    if (zustand !== 'laeuft' || !tasche[platz]) return;
+    tasche.splice(platz, 1);
+    knallen();
+  }
+  // Knall: alles Eklige platzt weg, alles Gute fliegt zu Ezra, Socken-Welle und Wutanfall sind vorbei
+  function knallen() {
+    const mundY = boden - 72 * sk;
+    for (const it of [...items]) {
+      items.splice(items.indexOf(it), 1);
+      for (let n = 0; n < 10; n++) {
+        const w = Math.random() * Math.PI * 2, v = 120 + Math.random() * 260;
+        krümel.push({ x: it.x, y: it.y, vx: Math.cos(w) * v, vy: Math.sin(w) * v - 120, leben: .9, farbe: EKLIG[it.typ] ? '#ff6a5c' : '#ffd447' });
+      }
+      if (!EKLIG[it.typ]) fangen(it, mundY);
+    }
+    if (welle) { welle = null; welleUhr = Infinity; }
+    if (boss && boss.phase === 'wut') boss.phaseZeit = 0;
+    blitz = 1; wackeln = ruhig ? 0 : .5;
+    texte.push({ x: W / 2, y: H * .3, text: T.knallAn, farbe: '#ff8a3a', leben: 1.6, gross: true });
+    piep(70, .7, 'sawtooth', .08, .5); piep(140, .5, 'square', .05, .4, .05); piep(900, .3, 'triangle', .04, .3, .1);
+    vibrieren('stark');
+    if (!testTakt) { const r = cv.getBoundingClientRect(); konfetti(40, r.left + ezra.x, r.top + H * .4, 1); }
+  }
+
+  // ---------- Socken-Welle: kurze Warnung, dann 2,5 Sekunden ganz viel Ekliges (ab Level 9, nicht bei Bossen und „Ohne …“) ----------
+  let welle = null, welleUhr = Infinity;
+  const welleMoeglich = () => (modus === 'level' ? level.nr >= 9 && level.art !== 'boss' && level.art !== 'sauber' : true);
+  function wellePlanen(erstesMal) {
+    if (!welleMoeglich()) { welleUhr = Infinity; return; }
+    if (modus === 'level') welleUhr = erstesMal ? 15 + Math.random() * (Math.min(level.zeit || 60, 60) - 28) : Infinity;
+    else welleUhr = erstesMal ? 50 + Math.random() * 20 : 40 + Math.random() * 20;
+  }
+  function welleAktualisieren(dt) {
+    if (!welle) {
+      welleUhr -= dt;
+      if (welleUhr <= 0) {
+        if (ereignis) { welleUhr = 3; return; } // nicht gleichzeitig mit einem Ereignis
+        welle = { phase: 'warnung', zeit: 1.5, wurf: 0 };
+        // Rettungsangebot: wer keinen Knall in der Tasche hat, kann jetzt einen fangen
+        if (!tasche.includes('knall') && !items.some((i) => i.typ === 'knall')) {
+          items.push({ typ: 'knall', r: 16, x: clamp(ezra.x + (Math.random() < .5 ? -1 : 1) * W * (.15 + Math.random() * .2), 30, W - 30), y: -30,
+            vy: 330 * clamp(H / 650, .8, 1.3), rot: 0, vr: 0, pendel: 0, t: 0 });
+        }
+        melden(ORTE[spielOrt].gefahr === 'socke' ? '🧦' : '⚠️', T.welleAn[ORTE[spielOrt].gefahr], 3);
+        piep(160, .5, 'sawtooth', .05, .6); piep(120, .6, 'sawtooth', .05, .6, .25);
+        vibrieren('mittel');
+      }
+      return;
+    }
+    welle.zeit -= dt;
+    if (welle.phase === 'warnung' && welle.zeit <= 0) { welle.phase = 'aktiv'; welle.zeit = 2.5; }
+    else if (welle.phase === 'aktiv') {
+      welle.wurf -= dt;
+      if (welle.wurf <= 0) {
+        welle.wurf = .32;
+        const typ = ORTE[spielOrt].gefahr, r = 14;
+        items.push({ typ, r, x: r + 12 + Math.random() * (W - 2 * r - 24), y: -30, vy: lerp(240, 380, fortschritt()) * clamp(H / 650, .8, 1.3),
+          rot: Math.random() * 6, vr: (Math.random() - .5) * 4, pendel: Math.random() * 6, t: 0 });
+      }
+      if (welle.zeit <= 0) { welle = null; wellePlanen(false); }
+    }
+  }
 
   // ---------- Bosse: werfen Gutes und Ekliges, bis ihnen die Geduld ausgeht ----------
   const BOSS_WIRFT = {
@@ -4057,13 +4211,7 @@
       vibrieren('leicht');
       return;
     }
-    if (POWER[it.typ]) {
-      if (it.typ === 'magnet') { powerMagnet = 6 + ausr('kappe') * 2; melden('🧲', T.magnetAn, 2); }
-      else { powerSchild = true; melden('🛡️', T.schildAn, 2); }
-      [784, 1047, 1319].forEach((f, i) => piep(f, .1, 'triangle', .05, 0, i * .06));
-      vibrieren('mittel');
-      return;
-    }
+    if (POWER[it.typ]) return powerFangen(it.typ, tx, ty);
     if (EKLIG[it.typ]) {
       runde.igitt++;
       ezra.igitt = .7;
@@ -4094,8 +4242,8 @@
       $('punkte').textContent = punkte;
       texte.push({ x: tx, y: ty, text: '+' + p, farbe: it.typ === 'ball' ? '#b8f070' : it.typ === 'gold' ? '#ffd447' : '#ffffff', leben: 1 });
       if (it.typ === 'gold') {
-        zeitlupe = 5;
-        texte.push({ x: W / 2, y: H * .3, text: T.zeitlupe, farbe: '#ffd447', leben: 1.6, gross: true });
+        // Glitzer statt Zeitlupe (die gibt es jetzt als Power-up)
+        for (let n = 0; n < 16; n++) { const w = Math.random() * Math.PI * 2, v = 80 + Math.random() * 160; krümel.push({ x: tx, y: ty, vx: Math.cos(w) * v, vy: Math.sin(w) * v - 80, leben: .8, farbe: n % 2 ? '#ffd447' : '#fff6df' }); }
         [660, 880, 1100, 1320].forEach((f, i) => piep(f, .12, 'sine', .05, 0, i * .06));
         vibrieren('mittel');
       } else {
@@ -4130,8 +4278,10 @@
     spawnUhr -= fdt;
     if (spawnUhr <= 0) {
       // während eines Ausbruchs kommt nichts anderes (außer bei Wind)
-      if (!(ereignis && ereignis.phase === 'aktiv' && ereignis.typ !== 'wind')) spawn();
-      spawnUhr = !boss ? lerp(1.05, .4, stufe) * (.75 + Math.random() * .5)
+      // (und während der Socken-Welle kommt nur die Welle)
+      if (!(ereignis && ereignis.phase === 'aktiv' && ereignis.typ !== 'wind') && !(welle && welle.phase === 'aktiv')) spawn();
+      spawnUhr = powerRegen > 0 && !boss ? .16
+        : !boss ? lerp(1.05, .4, stufe) * (.75 + Math.random() * .5)
         : boss.phase === 'wut' ? (boss.welt === 'garten' ? .9 : boss.welt === 'strand' ? .34 : .45) // nur Ekliges, daher etwas seltener
         : boss.phase === 'muede' ? .32
         : boss.phase === 'warnung' ? 9
@@ -4139,7 +4289,11 @@
     }
     bossBewegen(fdt);
     ereignisAktualisieren(fdt);
+    if (!boss) welleAktualisieren(fdt);
     powerMagnet = Math.max(0, powerMagnet - dt);
+    powerRegen = Math.max(0, powerRegen - dt);
+    powerRiese = Math.max(0, powerRiese - dt);
+    ezraGroesse = lerp(ezraGroesse, powerRiese > 0 ? 1.5 : 1, Math.min(1, dt * 6));
 
     // Ezra bewegen (Ezra bleibt auch in der Zeitlupe schnell)
     const maxTempo = 620 * clamp(W / 500, .8, 1.4) * (1 + ausr('pfoten') * .1); // Turbo-Pfoten
@@ -4183,7 +4337,7 @@
       it.rot += it.typ === 'fisch' ? 0 : it.vr * fdt;
       it.pendel += fdt * 3;
       const px = itX(it);
-      const gefangen = Math.abs(px - ezra.x) < 26 * sk + it.r * .6 && it.y > boden - 120 * sk && it.y < boden - 58 * sk;
+      const gefangen = Math.abs(px - ezra.x) < 26 * sk * (1 + (ezraGroesse - 1) * 1.6) + it.r * .6 && it.y > boden - 120 * sk && it.y < boden - 58 * sk;
       if (gefangen && leben > 0) {
         items.splice(i, 1);
         fangen(it, mundY);
@@ -4288,7 +4442,7 @@
     const laeuft = Math.abs(ezra.vx) > 30;
     const huepf = laeuft && !ruhig ? Math.abs(Math.sin(uhr * 16)) * 4 * sk : 0;
     const wedelTempo = ezra.freude > 0 ? 26 : laeuft ? 14 : 6;
-    malEzra(ctx, ezra.x, boden - huepf, sk, {
+    malEzra(ctx, ezra.x, boden - huepf, sk * ezraGroesse, {
       hoch: huepf,
       neig: clamp(ezra.vx / 4000, -.12, .12),
       wedel: Math.sin(uhr * wedelTempo) * (ezra.freude > 0 ? .6 : .35),
@@ -4298,8 +4452,8 @@
     });
     // Blitz: der ganze Bildschirm hellt kurz auf
     if (blitz > 0) { ctx.fillStyle = `rgba(255,255,235,${blitz * .8})`; ctx.fillRect(0, 0, W, H); }
-    // Wutanfall: Bildschirmrand pulsiert rot
-    if (boss && boss.phase === 'wut') {
+    // Wutanfall und Socken-Welle: Bildschirmrand pulsiert rot
+    if ((boss && boss.phase === 'wut') || (welle && welle.phase === 'aktiv')) {
       const rot = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .35, W / 2, H / 2, Math.max(W, H) * .7);
       rot.addColorStop(0, 'rgba(220,30,20,0)'); rot.addColorStop(1, `rgba(220,30,20,${.28 + .14 * Math.sin(uhr * 10)})`);
       ctx.fillStyle = rot; ctx.fillRect(0, 0, W, H);
@@ -4340,6 +4494,8 @@
       const anzeigen = [];
       if (powerMagnet > 0) anzeigen.push(`🧲 ${Math.ceil(powerMagnet)}`);
       if (powerSchild) anzeigen.push('🛡️');
+      if (powerRegen > 0) anzeigen.push(`🌧️ ${Math.ceil(powerRegen)}`);
+      if (powerRiese > 0) anzeigen.push(`🐕 ${Math.ceil(powerRiese)}`);
       anzeigen.forEach((text, i) => {
         ctx.font = `800 ${Math.round(15 * sk)}px "Baloo 2", sans-serif`;
         const b = ctx.measureText(text).width + 20;
@@ -4351,6 +4507,21 @@
         ctx.beginPath(); ctx.roundRect(bx, by, bw, 10, 5); ctx.fill();
         ctx.fillStyle = '#ffd447';
         ctx.beginPath(); ctx.roundRect(bx, by, bw * zeitlupe / 5, 10, 5); ctx.fill();
+      }
+    }
+
+    // Rettungs-Platz unten links: ein bereiter Knall pulsiert leicht
+    if ((zustand === 'laeuft' || zustand === 'pause') && taschenSichtbar()) {
+      for (let i = 0; i < TASCHE_PLAETZE; i++) {
+        const p = taschenPlatz(i), typ = tasche[i];
+        ctx.fillStyle = typ ? 'rgba(255,246,223,.92)' : 'rgba(20,35,15,.28)';
+        ellipse(ctx, p.x, p.y, p.r, p.r);
+        ctx.strokeStyle = typ ? '#ffd447' : 'rgba(255,246,223,.45)'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.stroke();
+        if (typ) {
+          const f = p.r / 17 * (i === 0 && !ruhig ? 1 + .06 * Math.sin(uhr * 6) : 1);
+          ctx.save(); ctx.translate(p.x, p.y); ctx.scale(f, f); MALER[typ](ctx); ctx.restore();
+        }
       }
     }
 
@@ -4402,8 +4573,15 @@
 
   // ---------- Steuerung ----------
   const posX = (e) => e.clientX - cv.getBoundingClientRect().left;
+  const posY = (e) => e.clientY - cv.getBoundingClientRect().top;
   cv.addEventListener('pointerdown', (e) => {
-    zeigerUnten = true; zielX = posX(e);
+    const x = posX(e), y = posY(e);
+    // Rettungs-Platz angetippt: Knall zünden (Ezra läuft nicht dorthin)
+    if (zustand === 'laeuft' && taschenSichtbar() && tasche.length) {
+      const p = taschenPlatz();
+      if (Math.hypot(x - p.x, y - p.y) < p.r + 10) { powerZuenden(0); return; }
+    }
+    zeigerUnten = true; zielX = x;
     try { cv.setPointerCapture(e.pointerId); } catch (err) {}
   });
   cv.addEventListener('pointermove', (e) => { if (e.pointerType === 'mouse' || zeigerUnten) zielX = posX(e); });
@@ -4417,6 +4595,7 @@
     if (k === 'ArrowLeft' || k === 'a' || k === 'A') { tasten.links = true; zielX = null; e.preventDefault(); }
     else if (k === 'ArrowRight' || k === 'd' || k === 'D') { tasten.rechts = true; zielX = null; e.preventDefault(); }
     else if (k === 'p' || k === 'P' || k === 'Escape') { zustand === 'laeuft' ? pause() : weiter(); }
+    else if (k === ' ' && zustand === 'laeuft') { powerZuenden(0); e.preventDefault(); }
   });
   addEventListener('keyup', (e) => {
     const k = e.key;
@@ -4553,17 +4732,21 @@
         schreib('ezra-anleitung', 'gesehen');
         testTakt = takt; endeBei = null; offen = !!extra.offen;
         if (nr) levelStarten(nr); else starten();
+        if (extra.ohneWelle) welleUhr = Infinity;
       },
       lage() {
         return {
           zustand, W, H, zeit, leben, punkte, ezraX: ezra.x, wind: windKraft,
           fang: { oben: boden - 120 * sk, unten: boden - 58 * sk, breite: 26 * sk },
           boss: boss && { phase: boss.phase, treffer: boss.treffer, hp: boss.hp },
+          tasche: [...tasche], welle: welle && welle.phase,
           items: items.map((it) => ({ id: idVon(it), typ: it.typ, x: itX(it), y: it.y, vx: it.vx || 0, vy: it.vy, g: it.g || 0, r: it.r,
             eklig: !!EKLIG[it.typ], bonus: !!it.bonus, wackelt: it.typ === 'frisbee' || it.typ === 'biene' })),
         };
       },
       finger(x) { zielX = x; },
+      zuenden(platz) { powerZuenden(platz); },
+      tascheFuellen(typen) { tasche = [...typen]; }, welleJetzt() { welleUhr = 0; }, // für Bildschirmfotos
       gefahr(anfang, ende) { gefahrAnteil = [anfang, ende]; }, // zum Ausprobieren anderer Socken-Mengen
       schritt(dt) {
         if (zustand !== 'laeuft') return false;

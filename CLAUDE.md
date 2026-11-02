@@ -26,7 +26,11 @@ Allgemeine Arbeitsweise steht in der globalen CLAUDE.md – vor jeder Änderung 
 - **Leben:** kosten nur eklige Sachen (Socke, Zapfen, Biene, Qualle). Verpasstes kostet nur die Combo.
   Dafür mehr Ekliges (`gefahrAnteil` 28 % → 52 %)
 - **Neue Sachen je Welt** (Einführung auf der Level-Karte): Würstchen, Frisbee, Eicheln (Eichhörnchen), Biene, Fisch, Eis
-- **Power-ups:** Magnet, Schutz-Halstuch
+- **Power-ups** wirken sofort beim Fangen. Nur das Knall-Leckerli wartet im Rettungs-Platz unten links (1 Platz) und wird
+  per Antippen oder Leertaste gezündet (zweiter Knall = +10 Punkte). Zeitlupe (L3), Magnet (L5), Schutz-Halstuch (L8), Knall-Leckerli (L9, räumt alles Eklige weg,
+  sammelt Gutes ein, beendet Welle und Wutanfall), Leckerli-Regen (L11), Riesen-Ezra (L13). Gold gibt nur Punkte, keine Zeitlupe mehr
+- **Socken-Welle** ab Level 9 (nicht Bosse/„Ohne …“), im Endlos-Spiel regelmäßig: Warnung, 2,5 s viel Ekliges;
+  während der Warnung fällt ein Knall-Leckerli als Rettung, falls keins in der Tasche ist
 - **Überraschungs-Ereignisse** (ab Level 3, nie bei Bossen): Gewitterwolke, Rasensprenger, explodierende Pilze,
   Windböe, Riesenwelle, Wal-Fontäne. Sachen daraus sind Bonus: verpasst/eklig kostet kein Leben
 - **Ausrüstung:** Leckerli-Dose (Währung aus gefangenen Leckerlis), Turbo-Pfoten, Kappe, Glücks-Halsband, Rucksack,

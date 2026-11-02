@@ -42,9 +42,14 @@ function argumente() {
   const a = process.argv.slice(2), o = { runden: 30, level: '1-30', spieler: 'alle', endlos: false, ausr: {}, zuschauen: false, maxZeit: 300 };
   for (let i = 0; i < a.length; i++) {
     const k = a[i].replace(/^--/, ''), v = a[i + 1];
-    if (k === 'endlos' || k === 'zuschauen') o[k] = true;
+    if (k === 'endlos' || k === 'zuschauen' || k === 'offen') o[k] = true;
     else if (k === 'runden' || k === 'maxZeit') { o[k] = +v; i++; }
     else if (k === 'ausr') { for (const t of v.split(',')) { const [id, st] = t.split(':'); o.ausr[id] = +st || 1; } i++; }
+    // --gefahr .2,.42 – anderen Anteil von Socke & Co. ausprobieren (Anfang, volle Schwierigkeit)
+    else if (k === 'gefahr') { o.gefahr = v.split(',').map(Number); i++; }
+    // --stufen 10:22,5:30/45/60 – andere Zielzahlen für einzelne Level ausprobieren
+    else if (k === 'stufen') { o.stufen = {}; for (const t of v.split(',')) { const [nr, st] = t.split(':'); o.stufen[nr] = st.split('/').map(Number); } i++; }
+    // --offen: Level enden nicht bei 3 Pfoten – misst, wie weit die Spieler kommen
     // --setze kind8.reaktion=.25,profi.streuung=0 – Spieler-Werte ausprobieren, ohne die Datei zu ändern
     else if (k === 'setze') {
       for (const t of v.split(',')) {
@@ -81,7 +86,7 @@ function serverStarten() {
 }
 
 // ---------- Eine Runde spielen (läuft im Browser) ----------
-async function botRunde({ nr, p, seed, ausr, maxZeit, zuschauen }) {
+async function botRunde({ nr, p, seed, ausr, maxZeit, zuschauen, gefahr, extra }) {
   // gleicher Startwert = gleiche Runde
   let s = seed >>> 0;
   const zufall = () => { s = (s + 0x6D2B79F5) >>> 0; let t = s; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
@@ -98,10 +103,10 @@ async function botRunde({ nr, p, seed, ausr, maxZeit, zuschauen }) {
     if (!it.g) return it.vy > 0 ? (yc - it.y) / it.vy : null;
     return (-it.vy + Math.sqrt(it.vy * it.vy + 2 * it.g * (yc - it.y))) / it.g;
   };
-  // Wie wichtig ist eine Sache? Verpasste Knochen kosten ein Leben
+  // Wie wichtig ist eine Sache? (Verpasstes kostet nur die Combo)
   const wertVon = (it, L) => {
     if (it.bonus) return 1.5;
-    if (it.typ === 'knochen') return 3;
+    if (it.typ === 'knochen') return 2;
     if (it.typ === 'gold') return art === 'gold' ? 8 : 5;
     if (it.typ === 'pfote') return L.leben < 3 ? 5 : 1;
     if (it.typ === 'magnet' || it.typ === 'schild') return 3;
@@ -184,7 +189,8 @@ async function botRunde({ nr, p, seed, ausr, maxZeit, zuschauen }) {
     return clamp(ziel + gauss() * p.streuung, 20, L.W - 20);
   }
 
-  T.starten(nr, ausr, zuschauen ? 'zuschauen' : 'schnell');
+  if (gefahr) T.gefahr(...gefahr);
+  T.starten(nr, ausr, zuschauen ? 'zuschauen' : 'schnell', extra);
   finger = T.lage().ezraX;
   let plan = finger, bisPlan = 0, abgelenkt = 0, schritte = 0;
   const verluste = { verpasst: 0, eklig: 0 }, protokoll = [], letztePlaene = [];
@@ -332,7 +338,7 @@ async function main() {
     while (auftraege.length) {
       jetzt = auftraege.shift();
       try {
-        const e = await seite.evaluate(botRunde, { nr: jetzt.nr, p: SPIELER[jetzt.spieler], seed: jetzt.seed, ausr: o.ausr, maxZeit: o.maxZeit, zuschauen: o.zuschauen });
+        const e = await seite.evaluate(botRunde, { nr: jetzt.nr, p: SPIELER[jetzt.spieler], seed: jetzt.seed, ausr: o.ausr, maxZeit: o.maxZeit, zuschauen: o.zuschauen, gefahr: o.gefahr, extra: { offen: o.offen, stufen: o.stufen } });
         ergebnisse.push({ ...jetzt, ...e });
       } catch (err) {
         fehler.push(`${jetzt.nr ? `Level ${jetzt.nr}` : 'Endlos'}, ${SPIELER[jetzt.spieler].name}: ${err.message.split('\n')[0]}`);

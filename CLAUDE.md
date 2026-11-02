@@ -19,8 +19,12 @@ Allgemeine Arbeitsweise steht in der globalen CLAUDE.md – vor jeder Änderung 
 - **Ezras Reise:** Levelkarte als Startseite, Welten Garten → Wald → Strand (je 10 Level), darüber Nebel mit „?“ (Cliffhanger).
   Karte von oben gezeichnet (Haus, Gartentor, Bach mit Brücke, Meer), Trittsteine, Pfoten-Stempel, Pfotenspur hinter Ezra,
   Ezra läuft nach geschafftem Level weiter, Kamerafahrt bei neuer Welt
-- **Level:** eine Aufgabe, 3 Stufen = 1–3 Pfoten (1 Pfote reicht zum Weiterkommen); Level 10/20/30 sind Bosse
-  (Katze, Eichhörnchen, Möwe) mit Geduld-Leiste und Wutanfällen (Warnung → Wut → Erschöpfung)
+- **Level:** eine Aufgabe mit Zeitlimit (Garten 60 s, Wald 75 s, Strand 90 s; Durchhalten und Bosse ohne Uhr),
+  3 Stufen = 1–3 Pfoten (1 Pfote reicht zum Weiterkommen); Zielzahlen mit dem Spiel-Bot auf die Familie abgestimmt.
+  Level 10/20/30 sind Bosse (Katze 20, Eichhörnchen 25, Möwe 30 Treffer) mit Phasen: normal → Warnung →
+  Wut (nur Ekliges, nur ausweichen) → Erschöpfung (nur Leckerlis)
+- **Leben:** kosten nur eklige Sachen (Socke, Zapfen, Biene, Qualle). Verpasstes kostet nur die Combo.
+  Dafür mehr Ekliges (`gefahrAnteil` 28 % → 52 %)
 - **Neue Sachen je Welt** (Einführung auf der Level-Karte): Würstchen, Frisbee, Eicheln (Eichhörnchen), Biene, Fisch, Eis
 - **Power-ups:** Magnet, Schutz-Halstuch
 - **Überraschungs-Ereignisse** (ab Level 3, nie bei Bossen): Gewitterwolke, Rasensprenger, explodierende Pilze,

@@ -428,6 +428,8 @@
   .level-ziel { position: absolute; top: 44px; left: 12px; z-index: 4; pointer-events: none; font-size: 13px; padding: 3px 10px 3px 8px; }
   .level-ziel .pf { letter-spacing: -1px; }
   .level-ziel .pf i { font-style: normal; filter: grayscale(1); opacity: .3; }
+  .level-ziel .uhr { margin-left: 8px; font-variant-numeric: tabular-nums; }
+  .level-ziel .uhr.knapp { color: #d33b2f; }
   /* Halstuch-Übergabe */
   .ueber.zeremonie { flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; background: rgba(10, 16, 8, .85); }
   #tuchBild { width: min(100%, 340px); aspect-ratio: 340 / 380; display: block; flex: none; }
@@ -702,7 +704,7 @@
     de: {
       titel: 'Ezras Leckerli-Jagd',
       intro: 'Ezra hat Hunger. Hilf ihm, die Leckerlis aus der Luft zu schnappen.',
-      r_knochen: '<b>Leckerli</b>: 1 Punkt. Fällt eins auf den Boden, ist ein Leben weg.',
+      r_knochen: '<b>Leckerli</b>: 1 Punkt. Fällt eins daneben, ist die Combo weg.',
       r_ball: '<b>Ball</b>: 3 Punkte.',
       r_gold: '<b>Goldenes Leckerli</b>: Alles läuft kurz in Zeitlupe.',
       r_pfote: '<b>Pfote</b>: ein Leben zurück.',
@@ -727,7 +729,7 @@
       levelBest: (n) => (n ? `Bestes Ergebnis: ${'🐾'.repeat(n)}` : 'Noch nicht gespielt'),
       levelGeschafft: (n) => `Level ${n} geschafft!`, levelFast: 'Fast geschafft!', levelSuper: 'Super, alle Pfoten!',
       levelNochmal: 'Nochmal', levelWeiter: 'Nächstes Level', pfoteErreicht: (n) => `${n}. Pfote!`,
-      levelErgebnis: (was, wert) => `${was}: ${wert}`,
+      levelErgebnis: (was, wert) => `${was}: ${wert}`, inZeit: (s) => `in ${s} Sekunden`,
       geheim: 'Noch geheim! Ezra schnuppert schon …', baldWeiter: 'Bald geht’s weiter …',
       endlosGesperrt: 'Schaff erst die Proberunde auf der Karte!', levelGesperrt: (n) => `Schaff erst Level ${n}!`,
       geschenkFuerEzra: 'Ein Geschenk für Ezra!', tippenOeffnen: 'Tippen zum Öffnen!', spaeter: 'Später', tuchLos: 'Los geht’s!',
@@ -840,7 +842,7 @@
     en: {
       titel: 'Ezra’s Treat Hunt',
       intro: 'Ezra is hungry. Help him snap the treats out of the air.',
-      r_knochen: '<b>Treat</b>: 1 point. If one hits the ground, you lose a life.',
+      r_knochen: '<b>Treat</b>: 1 point. Miss one and your combo is gone.',
       r_ball: '<b>Ball</b>: 3 points.',
       r_gold: '<b>Golden treat</b>: Everything slows down for a moment.',
       r_pfote: '<b>Paw</b>: get a life back.',
@@ -865,7 +867,7 @@
       levelBest: (n) => (n ? `Best result: ${'🐾'.repeat(n)}` : 'Not played yet'),
       levelGeschafft: (n) => `Level ${n} done!`, levelFast: 'Almost there!', levelSuper: 'Great, all the paws!',
       levelNochmal: 'Try again', levelWeiter: 'Next level', pfoteErreicht: (n) => `Paw ${n}!`,
-      levelErgebnis: (was, wert) => `${was}: ${wert}`,
+      levelErgebnis: (was, wert) => `${was}: ${wert}`, inZeit: (s) => `in ${s} seconds`,
       geheim: 'Still a secret! Ezra is already sniffing around …', baldWeiter: 'More coming soon …',
       endlosGesperrt: 'Finish the warm-up on the map first!', levelGesperrt: (n) => `Finish level ${n} first!`,
       geschenkFuerEzra: 'A gift for Ezra!', tippenOeffnen: 'Tap to open!', spaeter: 'Later', tuchLos: 'Let’s go!',
@@ -1102,22 +1104,25 @@
     { id: 'strand', halstuch: 'muscheln', basis: .45 },
   ];
   // art: was gezählt wird; stufen: ab wann es 1, 2, 3 Pfoten gibt
+  // Mit dem Spiel-Bot abgestimmt (Familie): 1 Pfote schaffen die meisten älteren Kinder, 3 Pfoten gut die Hälfte der Erwachsenen
   const LEVEL = [
-    ['garten', 'gefangen', 10, 15, 20], ['garten', 'punkte', 25, 40, 60], ['garten', 'baelle', 3, 5, 7],
-    ['garten', 'serie', 10, 15, 20], ['garten', 'dauer', 40, 55, 70], ['garten', 'gold', 1, 2, 3],
-    ['garten', 'punkte', 50, 75, 100], ['garten', 'sauber', 30, 45, 60], ['garten', 'baelle', 6, 8, 10],
-    ['garten', 'boss', 30],
-    ['wald', 'punkte', 40, 60, 80], ['wald', 'dauer', 60, 75, 90], ['wald', 'serie', 15, 25, 35],
-    ['wald', 'baelle', 6, 9, 12], ['wald', 'gold', 2, 3, 4], ['wald', 'punkte', 80, 110, 140],
-    ['wald', 'sauber', 50, 70, 90], ['wald', 'dauer', 90, 105, 120], ['wald', 'serie', 25, 35, 50],
-    ['wald', 'boss', 40],
-    ['strand', 'punkte', 60, 90, 120], ['strand', 'baelle', 8, 11, 14], ['strand', 'serie', 30, 40, 55],
-    ['strand', 'dauer', 100, 120, 140], ['strand', 'gold', 3, 4, 5], ['strand', 'punkte', 120, 160, 200],
-    ['strand', 'sauber', 80, 110, 140], ['strand', 'serie', 40, 60, 80], ['strand', 'baelle', 12, 15, 18],
-    ['strand', 'boss', 50],
+    ['garten', 'gefangen', 22, 28, 34], ['garten', 'punkte', 50, 70, 90], ['garten', 'baelle', 6, 9, 12],
+    ['garten', 'serie', 12, 21, 29], ['garten', 'dauer', 45, 70, 100], ['garten', 'gold', 1, 2, 3],
+    ['garten', 'punkte', 100, 140, 180], ['garten', 'sauber', 20, 45, 80], ['garten', 'baelle', 7, 9, 11],
+    ['garten', 'boss', 20],
+    ['wald', 'punkte', 90, 115, 135], ['wald', 'dauer', 60, 90, 120], ['wald', 'serie', 13, 22, 31],
+    ['wald', 'baelle', 9, 12, 15], ['wald', 'gold', 2, 3, 4], ['wald', 'punkte', 75, 120, 165],
+    ['wald', 'sauber', 15, 40, 75], ['wald', 'dauer', 65, 95, 125], ['wald', 'serie', 12, 20, 27],
+    ['wald', 'boss', 25],
+    ['strand', 'punkte', 135, 195, 250], ['strand', 'baelle', 12, 15, 18], ['strand', 'serie', 15, 25, 34],
+    ['strand', 'dauer', 75, 105, 135], ['strand', 'gold', 4, 5, 6], ['strand', 'punkte', 170, 245, 320],
+    ['strand', 'sauber', 15, 50, 100], ['strand', 'serie', 17, 28, 38], ['strand', 'baelle', 19, 24, 28],
+    ['strand', 'boss', 30],
   ].map(([welt, art, ...stufen], i) => {
     const w = WELTEN.findIndex((x) => x.id === welt), imWelt = i % 10;
-    return { nr: i + 1, welt, art, stufen, imWelt, basis: WELTEN[w].basis + imWelt * .03, letztes: imWelt === 9 };
+    // zeit: so viele Sekunden hat man für die Aufgabe (Durchhalten und Bosse ohne Uhr)
+    const zeit = art === 'dauer' || art === 'boss' ? 0 : { garten: 60, wald: 75, strand: 90 }[welt];
+    return { nr: i + 1, welt, art, stufen, zeit, imWelt, basis: WELTEN[w].basis + imWelt * .03, letztes: imWelt === 9 };
   });
   const levelPfotenVon = (s, nr) => (s.levels && s.levels[nr]) || 0;
   const levelOffen = (nr) => devAllesOffen || nr === 1 || levelPfotenVon(stand, nr - 1) > 0;
@@ -2768,6 +2773,10 @@
     const pf = el('span', 'pf');
     for (let i = 0; i < 3; i++) pf.append(i < levelPfoten ? '🐾' : el('i', null, '🐾'));
     box.replaceChildren(pf, el('span', null, `${levelWert()} / ${ziel} ${T.einheit[level.art]}`));
+    if (level.zeit) {
+      const rest = Math.max(0, Math.ceil(level.zeit - zeit));
+      box.append(el('span', rest <= 10 ? 'uhr knapp' : 'uhr', `⏱ ${rest}`));
+    }
     box.hidden = false;
   }
   function levelCheck() {
@@ -2784,7 +2793,8 @@
 
   // ---------- Level: Startfenster ----------
   let gewaehlt = 1;
-  const levelTitel = (l) => (l.art === 'boss' ? T.bossTitel[l.welt] : T.aufgabe[l.art](l.stufen[0], T.ohneGefahr[ORTE[l.welt].gefahr]));
+  const levelTitel = (l) => (l.art === 'boss' ? T.bossTitel[l.welt]
+    : T.aufgabe[l.art](l.stufen[0], T.ohneGefahr[ORTE[l.welt].gefahr]) + (l.zeit ? ` ${T.inZeit(l.zeit)}` : ''));
   function levelKarteZeigen(nr) {
     const l = LEVEL[nr - 1];
     gewaehlt = nr;
@@ -3612,6 +3622,8 @@
     piep(440, .18, 'triangle', .06, .7); piep(330, .3, 'triangle', .06, .6, .18);
   }
 
+  // Anteil von Socke & Co. am Anfang und bei voller Schwierigkeit (nur Ekliges kostet Leben)
+  let gefahrAnteil = [.28, .52];
   function spawn() {
     if (boss) return bossWurf();
     const stufe = fortschritt();
@@ -3623,7 +3635,7 @@
     else if ((typ = powerWahl())) { /* Power-up */ }
     else if ((typ = extraWahl())) { /* neue Sache des Orts */ }
     else {
-      const sockenAnteil = lerp(.14, .34, stufe);
+      const sockenAnteil = lerp(gefahrAnteil[0], gefahrAnteil[1], stufe);
       const ballAnteil = levelArt() === 'baelle' ? .2 : .1;
       typ = w < sockenAnteil ? ORTE[spielOrt].gefahr : w < sockenAnteil + ballAnteil ? 'ball' : 'knochen';
     }
@@ -4107,6 +4119,7 @@
   function aktualisieren(dt) {
     if (Math.floor(zeit + dt) > Math.floor(zeit)) setTimeout(liveCheck);
     zeit += dt;
+    if (modus === 'level' && level.zeit && zeit >= level.zeit) { ende(); return; } // Zeit um
     const stufe = fortschritt();
 
     // Zeitlupe: langsam rein, am Ende sanft wieder raus
@@ -4178,11 +4191,12 @@
       }
       if (it.y - it.r > boden + 6) {
         items.splice(i, 1);
-        // Verpasstes aus Ereignissen (und während der Windböe) kostet kein Leben
+        // Verpasstes kostet nie ein Leben, nur die Combo (aus Ereignissen und während der Windböe nicht mal die)
         const ohneStrafe = it.bonus || (ereignis && ereignis.typ === 'wind' && ereignis.phase === 'aktiv');
         if (it.typ === 'knochen' && !ohneStrafe && leben > 0) {
-          piep(300, .16, 'square', .03, .7);
-          lebenWeg(clamp(px, 40, W - 40), boden - 20, T.daneben);
+          piep(300, .12, 'square', .02, .7);
+          if (serie >= 2) texte.push({ x: clamp(px, 40, W - 40), y: boden - 20, text: T.daneben, farbe: '#ffb08a', leben: .8 });
+          serieAus();
         }
       }
     }
@@ -4526,16 +4540,18 @@
   // Der Bot startet Level, schaut sich die fallenden Sachen an, bewegt den Finger und rechnet das Spiel selbst weiter
   if (ENTWICKLUNG && new URLSearchParams(location.search).has('test')) {
     const ids = new WeakMap();
-    let naechsteId = 1, endeBei = null;
+    let naechsteId = 1, endeBei = null, offen = false;
     const idVon = (it) => { if (!ids.has(it)) ids.set(it, naechsteId++); return ids.get(it); };
+    const stufenOriginal = LEVEL.map((l) => [...l.stufen]);
     window.ezraTest = {
       levels: LEVEL.map((l) => ({ nr: l.nr, welt: l.welt, art: l.art, stufen: l.stufen })),
       // nr: Level (0 = Endlos), ausr: { pfoten: 2, ... }, takt: 'schnell' oder 'zuschauen'
-      starten(nr, ausr = {}, takt = 'schnell') {
-        LEVEL.forEach((l) => { stand.levels[l.nr] = 3; }); // alles geschafft: keine Übergabe-Szenen zwischendurch
+      // extra.offen: Level endet nicht bei 3 Pfoten (zum Messen, wie weit Spieler kommen); extra.stufen: { nr: [..] } zum Ausprobieren
+      starten(nr, ausr = {}, takt = 'schnell', extra = {}) {
+        LEVEL.forEach((l, i) => { stand.levels[l.nr] = 3; l.stufen = (extra.stufen && extra.stufen[l.nr]) || stufenOriginal[i]; }); // alles geschafft: keine Übergabe-Szenen
         stand.ausruestung = { ...ausr }; stand.angelegt = Object.keys(ausr);
         schreib('ezra-anleitung', 'gesehen');
-        testTakt = takt; endeBei = null;
+        testTakt = takt; endeBei = null; offen = !!extra.offen;
         if (nr) levelStarten(nr); else starten();
       },
       lage() {
@@ -4548,12 +4564,13 @@
         };
       },
       finger(x) { zielX = x; },
+      gefahr(anfang, ende) { gefahrAnteil = [anfang, ende]; }, // zum Ausprobieren anderer Socken-Mengen
       schritt(dt) {
         if (zustand !== 'laeuft') return false;
         aktualisieren(dt);
         effekteAktualisieren(dt);
         // wie im echten Spiel: nach 3 Pfoten bzw. besiegtem Boss läuft es noch kurz weiter
-        if (endeBei === null && modus === 'level' && (boss ? boss.besiegt : pfotenFuer(levelWert()) === 3)) endeBei = zeit + (boss ? 1.4 : .7);
+        if (endeBei === null && !offen && modus === 'level' && (boss ? boss.besiegt : pfotenFuer(levelWert()) === 3)) endeBei = zeit + (boss ? 1.4 : .7);
         if (endeBei !== null && zeit >= endeBei && zustand === 'laeuft') ende();
         return zustand === 'laeuft';
       },

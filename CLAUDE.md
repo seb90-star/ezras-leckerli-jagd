@@ -7,9 +7,38 @@ Allgemeine Arbeitsweise steht in der globalen CLAUDE.md – vor jeder Änderung 
 - Spiel: docs/index.html (eine Datei), Android-App über Capacitor (webDir: docs)
 - Offene Aufgaben: TODO.md
 - Native Plugins über `window.Capacitor.Plugins` ansprechen (ohne Bundler gibt es kein `registerPlugin`)
+- GitHub: seb90-star/ezras-leckerli-jagd; GitHub Pages veröffentlicht `main/docs` als Webversion
+
+## Stand (Git)
+- Gearbeitet wird auf dem Zweig `fix/zurueck-taste-startseite` (gepusht, Name passt inhaltlich nicht mehr)
+- `main` ist noch auf dem alten Stand. Beim Übernehmen in `main` dort `ENTWICKLUNG = false` setzen,
+  sonst ist das Entwickler-Menü auf der öffentlichen Webseite sichtbar
+- Sebastian ist kein Git-Profi: Begriffe (Commit, Push, Zweig) kurz und einfach erklären
+
+## Was das Spiel inzwischen hat
+- **Ezras Reise:** Levelkarte als Startseite, Welten Garten → Wald → Strand (je 10 Level), darüber Nebel mit „?“ (Cliffhanger).
+  Karte von oben gezeichnet (Haus, Gartentor, Bach mit Brücke, Meer), Trittsteine, Pfoten-Stempel, Pfotenspur hinter Ezra,
+  Ezra läuft nach geschafftem Level weiter, Kamerafahrt bei neuer Welt
+- **Level:** eine Aufgabe, 3 Stufen = 1–3 Pfoten (1 Pfote reicht zum Weiterkommen); Level 10/20/30 sind Bosse
+  (Katze, Eichhörnchen, Möwe) mit Geduld-Leiste und Wutanfällen (Warnung → Wut → Erschöpfung)
+- **Neue Sachen je Welt** (Einführung auf der Level-Karte): Würstchen, Frisbee, Eicheln (Eichhörnchen), Biene, Fisch, Eis
+- **Power-ups:** Magnet, Schutz-Halstuch
+- **Überraschungs-Ereignisse** (ab Level 3, nie bei Bossen): Gewitterwolke, Rasensprenger, explodierende Pilze,
+  Windböe, Riesenwelle, Wal-Fontäne. Sachen daraus sind Bonus: verpasst/eklig kostet kein Leben
+- **Ausrüstung:** Leckerli-Dose (Währung aus gefangenen Leckerlis), Turbo-Pfoten, Kappe, Glücks-Halsband, Rucksack,
+  Sonnenbrille (je 3 Stufen), 2–4 Plätze, Tipp auf der Level-Karte; Ezra trägt alles sichtbar
+- **Halstücher:** Start nur mit Halsband, nach der Proberunde das Abenteuer-Halstuch; Welt-Tücher Gänseblümchen, Tannenwald,
+  Muscheln; Übergabe als Szene (Geschenk wackelt → antippen → Tuch tanzt → landet auf Ezra). Kein Regenbogen-Tuch (bewusst raus)
+- **Endlos-Spiel** mit Bestenliste und Rekord bleibt erhalten (Knopf auf der Karte)
+- **Feedback:** Meilenstein-/Erfolgs-Schilder im Spiel, Endkarte mit Balken (Leckerlis, Bälle, Goldene, Socken) und Erfolgs-Stapel
+- **Grafik:** Licht/Volumen bei Ezra, Ebenen mit leichter Verschiebung, Dunst, Vignette, Leben (Schmetterlinge, Blätter, Möwen),
+  2,5D (Boden-Schatten der fallenden Sachen, weiche Kulisse)
+- **Zurück-Taste:** 2× schnell beendet die App; Pause-Menü mit Weiter, Nochmal, Zur Karte, Ton, Vibration
 
 ## Entwickler-Menü
-- `const ENTWICKLUNG = true` in docs/index.html schaltet Testhilfen ein (Einstellungen → „🛠 Entwickler“, Pause-Menü: Sieg/Unverwundbar)
+- `const ENTWICKLUNG = true` in docs/index.html schaltet Testhilfen ein:
+  Einstellungen → „🛠 Entwickler“ (Level offen, Welt fertig, Kamerafahrt, Halstuch-Übergabe, +500 🦴, Zurücksetzen),
+  Pause-Menü (Sieg mit 1–3 Pfoten, Unverwundbar, Ereignis jetzt)
 - Vor der Veröffentlichung auf `false` stellen (steht auch in TODO.md)
 
 ## Nach jeder Änderung am Spiel
@@ -17,6 +46,10 @@ Allgemeine Arbeitsweise steht in der globalen CLAUDE.md – vor jeder Änderung 
 - `npx cap sync android`
 
 ## Testen
-- Handy per USB (adb: `%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe`)
-- `android/gradlew.bat installDebug`
+- **Browser:** docs/ mit einem kleinen statischen Node-Server ausliefern (z. B. Port 5178), im eingebauten Browser in
+  Handygröße (412×892) öffnen. Testdaten über localStorage `ezra-fortschritt` setzen. Achtung: Ist der Browser ausgeblendet
+  oder im Hintergrund, läuft das Spiel stark gedrosselt – dann Bereich einblenden oder auf dem Handy testen
+- **Handy per USB** (adb: `%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe`), `android/gradlew.bat installDebug`.
+  Die App-Seite lässt sich per adb-Forward auf `webview_devtools_remote_<pid>` und Chrome DevTools Protocol fernsteuern
 - Beim Testen keine Daten auf dem Handy verändern (Bestenliste, Name, Fortschritt) – oder vorher fragen
+- Vorher/Nachher-Bilder liegen in `.vergleich/` (von Git ausgenommen)

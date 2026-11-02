@@ -250,6 +250,57 @@
   .widmung .los { align-self: stretch; }
   .fusszeile { display: flex; justify-content: space-between; font-size: 12px; opacity: .6; }
   .fusszeile a { color: inherit; }
+
+  /* Ezras Sachen: Erfolge, Kleiderschrank, Orte */
+  .zaehler { font-weight: 600; opacity: .7; margin-left: 2px; font-variant-numeric: tabular-nums; }
+  .ziel { font-size: 14px; font-weight: 700; color: var(--fell); text-align: center; }
+  .ziel:empty { display: none; }
+  .karte.breit { width: min(100%, 460px); }
+  .kopf { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .rund.dunkel { flex: none; border-color: rgba(38, 50, 31, .25); color: var(--tinte); }
+  .tabs { display: flex; gap: 2px; padding: 3px; border-radius: 999px; background: rgba(38, 50, 31, .08); }
+  .tabs button {
+    flex: 1; border: 0; border-radius: 999px;
+    padding: 7px 4px;
+    background: transparent;
+    color: var(--tinte);
+    font: 700 14px var(--font-text);
+    cursor: pointer;
+  }
+  .tabs button[aria-selected="true"] { background: #fff; color: var(--tuch); box-shadow: 0 1px 3px rgba(0, 0, 0, .15); }
+  #tabInhalt { display: flex; flex-direction: column; gap: 10px; }
+  .erfolge { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .erfolg { display: grid; grid-template-columns: 32px 1fr; gap: 10px; align-items: start; padding: 10px 12px; border-radius: 12px; background: rgba(38, 50, 31, .05); }
+  .erfolg .marke { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font: 800 15px var(--font-anzeige); background: rgba(38, 50, 31, .1); color: rgba(38, 50, 31, .45); }
+  .erfolg.frei { background: #fff; }
+  .erfolg.frei .marke { background: var(--gelb); color: var(--tinte); }
+  .erfolg b { display: block; font-family: var(--font-anzeige); font-size: 16px; line-height: 1.2; }
+  .erfolg p { font-size: 14px; line-height: 1.35; }
+  .erfolg small { display: block; margin-top: 4px; font-size: 12px; font-weight: 700; color: var(--fell); }
+  .faecher { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; }
+  .fach {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    padding: 8px; border-radius: 12px; border: 2px solid transparent;
+    background: #fff; color: var(--tinte); cursor: pointer;
+    font: 700 13px var(--font-text); line-height: 1.25; text-align: center;
+  }
+  .fach canvas { width: 100px; height: 80px; }
+  .fach .hinweis { font-weight: 500; font-size: 12px; }
+  .fach[aria-pressed="true"], .ortfach[aria-pressed="true"] { border-color: var(--tuch); }
+  .fach:disabled, .ortfach:disabled { background: rgba(38, 50, 31, .05); color: rgba(38, 50, 31, .65); cursor: default; }
+  .ortfach {
+    display: flex; flex-direction: column; gap: 6px;
+    padding: 8px; border-radius: 14px; border: 2px solid transparent;
+    background: #fff; color: var(--tinte); cursor: pointer;
+    font: 700 15px var(--font-text); text-align: left;
+  }
+  .ortfach canvas { width: 100%; aspect-ratio: 16 / 9; border-radius: 9px; display: block; }
+  .ortfach span { display: flex; justify-content: space-between; gap: 8px; padding: 0 4px 2px; }
+  .ortfach em { font-style: normal; font-weight: 500; font-size: 13px; opacity: .75; }
+  .neu { list-style: none; margin: 0; padding: 10px 12px; border-radius: 12px; background: #fff; display: flex; flex-direction: column; gap: 8px; }
+  .neu li { display: grid; grid-template-columns: 24px 1fr; gap: 8px; align-items: start; font-size: 14px; line-height: 1.35; }
+  .neu li::before { content: "★"; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--gelb); color: var(--tinte); font-size: 13px; }
+  .neu b { display: block; font-family: var(--font-anzeige); font-size: 16px; }
 </style>
 </head>
 <body>
@@ -277,13 +328,31 @@
           <li><canvas data-typ="ball" width="68" height="68"></canvas><span data-th="r_ball"></span></li>
           <li><canvas data-typ="gold" width="68" height="68"></canvas><span data-th="r_gold"></span></li>
           <li><canvas data-typ="pfote" width="68" height="68"></canvas><span data-th="r_pfote"></span></li>
-          <li><canvas data-typ="socke" width="68" height="68"></canvas><span data-th="r_socke"></span></li>
+          <li><canvas id="gefahrSymbol" width="68" height="68"></canvas><span id="gefahrRegel"></span></li>
         </ul>
         <p class="klein" data-t="r_combo"></p>
         <div class="knopfreihe">
           <button class="los" id="losKnopf" type="button" data-t="los">Los geht’s</button>
+          <button class="zweit" id="sachenKnopf" type="button"><span data-t="sachen">Ezras Sachen</span> <span class="zaehler" id="sachenZahl"></span></button>
           <button class="zweit" data-liste type="button" data-t="bestenliste">Bestenliste</button>
         </div>
+        <p class="ziel" id="startZiel"></p>
+      </div>
+    </div>
+
+    <div class="ueber" id="sachenKarte" hidden>
+      <div class="karte breit">
+        <div class="kopf">
+          <h2 data-t="sachen">Ezras Sachen</h2>
+          <button class="rund dunkel" id="sachenZu" type="button" data-ta="schliessen" aria-label="Schließen">✕</button>
+        </div>
+        <div class="tabs" role="tablist">
+          <button type="button" role="tab" data-tab="erfolge" data-t="tabErfolge">Erfolge</button>
+          <button type="button" role="tab" data-tab="kleidung" data-t="tabKleidung">Kleiderschrank</button>
+          <button type="button" role="tab" data-tab="orte" data-t="tabOrte">Orte</button>
+        </div>
+        <div id="tabInhalt" role="tabpanel"></div>
+        <button class="los" id="sachenSpielen" type="button" data-t="spielen">Spielen</button>
       </div>
     </div>
 
@@ -334,6 +403,8 @@
         <div class="gross" id="endePunkte">0</div>
         <p id="endeText">Punkte</p>
         <p class="klein" id="endeSerie"></p>
+        <ul class="neu" id="neueSachen" hidden></ul>
+        <p class="ziel" id="endeZiel"></p>
         <form class="eintragen" id="eintragen" hidden>
           <label for="nameFeld" id="platzText"></label>
           <input id="nameFeld" type="text" maxlength="12" autocomplete="nickname" enterkeyhint="done" data-tp="namePlatzhalter" placeholder="Dein Name">
@@ -368,11 +439,15 @@
     de: {
       titel: 'Ezras Leckerli-Jagd',
       intro: 'Ezra hat Hunger. Hilf ihm, die Leckerlis aus der Luft zu schnappen.',
-      r_knochen: '<b>Leckerli</b>: 1 Punkt. Fällt eins auf den Rasen, ist ein Leben weg.',
+      r_knochen: '<b>Leckerli</b>: 1 Punkt. Fällt eins auf den Boden, ist ein Leben weg.',
       r_ball: '<b>Ball</b>: 3 Punkte.',
       r_gold: '<b>Goldenes Leckerli</b>: Alles läuft kurz in Zeitlupe.',
       r_pfote: '<b>Pfote</b>: ein Leben zurück.',
-      r_socke: '<b>Socke</b>: bloß nicht fressen! Kostet ein Leben.',
+      r_gefahr: {
+        socke: '<b>Socke</b>: bloß nicht fressen! Kostet ein Leben.',
+        zapfen: '<b>Tannenzapfen</b>: pikst im Maul! Kostet ein Leben.',
+        qualle: '<b>Qualle</b>: glibberig und brennt! Kostet ein Leben.',
+      },
       r_combo: 'Fang 5 hintereinander für doppelte Punkte, 10 für dreifache.',
       los: 'Los geht’s', bestenliste: 'Bestenliste', datenschutz: 'Datenschutz', datenschutzSeite: 'datenschutz.html',
       vibration: 'Vibration', pause: 'Pause', pauseText: 'Ezra wartet geduldig.', weiter: 'Weiterspielen',
@@ -393,15 +468,50 @@
       combo: (m) => `Combo x${m}!`, serie: (n) => `Serie ${n}`, anonym: 'Anonym',
       anleitungTouch: 'Wischen, um Ezra zu steuern', anleitungMaus: 'Pfeiltasten oder Maus zum Steuern',
       datum: 'de-DE',
+      sachen: 'Ezras Sachen', schliessen: 'Schließen', tabErfolge: 'Erfolge', tabKleidung: 'Kleiderschrank', tabOrte: 'Orte',
+      geschafft: (n, m) => `${n} von ${m} geschafft`, belohnung: (name) => `Belohnung: Halstuch „${name}“`,
+      kleidungHinweis: 'Erfolge schalten neue Halstücher für Ezra frei.', perErfolg: (titel) => `Erfolg „${titel}“`,
+      orteHinweis: 'Mit deinen Gesamtpunkten spielst du neue Orte frei.', ausgewaehlt: 'ausgewählt',
+      ortAb: (ab, fehlt) => `ab ${ab} Punkten · noch ${fehlt}`,
+      neuerOrt: (name) => `Neuer Ort: ${name}`, neuerOrtText: 'Unter „Ezras Sachen“ kannst du ihn auswählen.',
+      ziel: (fehlt, wohin) => `Noch ${fehlt} Punkte bis ${wohin}`, zielOrt: { wald: 'zum Wald', strand: 'zum Strand' },
+      alleOrte: 'Alle Orte freigespielt!',
+      orte: { garten: 'Garten', wald: 'Wald', strand: 'Strand' },
+      halstuch: {
+        standard: 'Ezras Blaues', karo: 'Rot kariert', punkte: 'Pinke Punkte', sterne: 'Sternenhimmel',
+        sonne: 'Sonnenschein', tannen: 'Tannenwald', regenbogen: 'Regenbogen', gold: 'Goldstück',
+      },
+      // [Titel, wie man ihn schafft, Ezra-Moment danach]
+      erfolge: {
+        ersterHappen: ['Erster Happen', 'Fang dein erstes Leckerli.', 'Ezra hat seinen ersten Happen geschnappt!'],
+        goldrausch: ['Goldrausch', 'Fang insgesamt 10 goldene Leckerlis.', 'Zehn goldene Leckerlis! Ezra fängt langsam an zu glitzern.'],
+        kugelrund: ['Kugelrund', 'Hol 50 Punkte in einer Runde.', 'Fünfzig Punkte! Ezra muss sich jetzt erstmal hinlegen.'],
+        bodenlos: ['Bodenloser Magen', 'Hol 100 Punkte in einer Runde.', 'Hundert Punkte in einer Runde. Wo packt er das bloß hin?'],
+        gentleman: ['Ganz der Gentleman', 'Hol 20 Punkte in einer Runde, ohne etwas Ekliges zu fressen.', 'Zwanzig Punkte und nichts Ekliges im Maul. Was für ein feiner Herr.'],
+        ballkuenstler: ['Ballkünstler', 'Fang 5 Bälle in einer Runde.', 'Fünf Bälle in einer Runde. Ezra ist bereit für den Profivertrag.'],
+        serie25: ['Voll im Lauf', 'Fang 25 am Stück, ohne Fehler.', '25 am Stück! Ezra ist voll im Tunnel.'],
+        serie50: ['Unaufhaltsam', 'Fang 50 am Stück, ohne Fehler.', '50 ohne einen Fehler. Sogar die Eichhörnchen schauen zu.'],
+        ausdauer: ['Bis in die Nacht', 'Halte 2 Minuten in einer Runde durch.', 'Zwei Minuten Vollgas, bis in die Nacht. Jetzt braucht Ezra ein Nickerchen.'],
+        allesfresser: ['Allesfresser', 'Erwisch 3 eklige Sachen in einer Runde.', 'Drei eklige Sachen gefressen. Ezra sagt, so schlimm war es gar nicht.'],
+        leckermaul: ['Leckermaul', 'Fang insgesamt 500 Leckerlis.', '500 Leckerlis! Ezra hat aufgehört zu zählen, du hoffentlich nicht.'],
+        vielfrass: ['Vielfraß', 'Fang insgesamt 2000 Leckerlis.', '2000 Leckerlis. Ezra ist jetzt offiziell Feinschmecker.'],
+        stammgast: ['Stammgast', 'Spiel 25 Runden.', '25 Runden! Ezra wedelt schon, wenn er dich nur sieht.'],
+        treu: ['Treuer Freund', 'Spiel an 7 verschiedenen Tagen.', 'Sieben Tage, sieben Mal Leckerlis. Ezra freut sich jeden Tag auf dich.'],
+        freund: ['Beste Freunde', 'Sammle insgesamt 1000 Punkte.', 'Tausend Punkte! Ezra hat einen neuen besten Freund: dich.'],
+      },
     },
     en: {
       titel: 'Ezra’s Treat Hunt',
       intro: 'Ezra is hungry. Help him snap the treats out of the air.',
-      r_knochen: '<b>Treat</b>: 1 point. If one hits the lawn, you lose a life.',
+      r_knochen: '<b>Treat</b>: 1 point. If one hits the ground, you lose a life.',
       r_ball: '<b>Ball</b>: 3 points.',
       r_gold: '<b>Golden treat</b>: Everything slows down for a moment.',
       r_pfote: '<b>Paw</b>: get a life back.',
-      r_socke: '<b>Sock</b>: don’t eat it! Costs a life.',
+      r_gefahr: {
+        socke: '<b>Sock</b>: don’t eat it! Costs a life.',
+        zapfen: '<b>Pine cone</b>: prickly! Costs a life.',
+        qualle: '<b>Jellyfish</b>: slimy and it stings! Costs a life.',
+      },
       r_combo: 'Catch 5 in a row for double points, 10 for triple.',
       los: 'Let’s go', bestenliste: 'High scores', datenschutz: 'Privacy', datenschutzSeite: 'privacy.html',
       vibration: 'Vibration', pause: 'Paused', pauseText: 'Ezra is waiting patiently.', weiter: 'Resume',
@@ -422,6 +532,36 @@
       combo: (m) => `Combo x${m}!`, serie: (n) => `Streak ${n}`, anonym: 'Anonymous',
       anleitungTouch: 'Swipe to move Ezra', anleitungMaus: 'Use arrow keys or mouse to move',
       datum: undefined,
+      sachen: 'Ezra’s Stuff', schliessen: 'Close', tabErfolge: 'Achievements', tabKleidung: 'Wardrobe', tabOrte: 'Places',
+      geschafft: (n, m) => `${n} of ${m} unlocked`, belohnung: (name) => `Reward: “${name}” bandana`,
+      kleidungHinweis: 'Achievements unlock new bandanas for Ezra.', perErfolg: (titel) => `Achievement “${titel}”`,
+      orteHinweis: 'Your total points unlock new places.', ausgewaehlt: 'selected',
+      ortAb: (ab, fehlt) => `from ${ab} points · ${fehlt} to go`,
+      neuerOrt: (name) => `New place: ${name}`, neuerOrtText: 'Pick it under “Ezra’s Stuff”.',
+      ziel: (fehlt, wohin) => `${fehlt} more points to unlock ${wohin}`, zielOrt: { wald: 'the forest', strand: 'the beach' },
+      alleOrte: 'All places unlocked!',
+      orte: { garten: 'Garden', wald: 'Forest', strand: 'Beach' },
+      halstuch: {
+        standard: 'Ezra’s Blue', karo: 'Red Check', punkte: 'Pink Dots', sterne: 'Starry Night',
+        sonne: 'Sunshine', tannen: 'Pine Forest', regenbogen: 'Rainbow', gold: 'Golden',
+      },
+      erfolge: {
+        ersterHappen: ['First Bite', 'Catch your first treat.', 'Ezra snapped his very first treat!'],
+        goldrausch: ['Gold Rush', 'Catch 10 golden treats in total.', 'Ten golden treats! Ezra is starting to sparkle.'],
+        kugelrund: ['Round and Happy', 'Score 50 points in one round.', 'Fifty points! Ezra needs a little lie-down now.'],
+        bodenlos: ['Bottomless Belly', 'Score 100 points in one round.', 'A hundred points in one round. Where does he put it all?'],
+        gentleman: ['True Gentleman', 'Score 20 points in one round without eating anything yucky.', 'Twenty points and nothing yucky. What a fine fellow.'],
+        ballkuenstler: ['Ball Wizard', 'Catch 5 balls in one round.', 'Five balls in one round. Ezra is ready to go pro.'],
+        serie25: ['On a Roll', 'Catch 25 in a row without a mistake.', '25 in a row! Ezra is in the zone.'],
+        serie50: ['Unstoppable', 'Catch 50 in a row without a mistake.', '50 without a single slip. Even the squirrels are watching.'],
+        ausdauer: ['Into the Night', 'Last 2 minutes in one round.', 'Two minutes flat out, all the way into the night. Time for a nap.'],
+        allesfresser: ['Eats Anything', 'Eat 3 yucky things in one round.', 'Three yucky things. Ezra says they weren’t that bad.'],
+        leckermaul: ['Sweet Tooth', 'Catch 500 treats in total.', '500 treats! Ezra stopped counting. Hopefully you didn’t.'],
+        vielfrass: ['Gourmet', 'Catch 2000 treats in total.', '2000 treats. Ezra is now an official gourmet.'],
+        stammgast: ['Regular', 'Play 25 rounds.', '25 rounds! Ezra wags his tail as soon as he sees you.'],
+        treu: ['Loyal Friend', 'Play on 7 different days.', 'Seven days, seven helpings of treats. Ezra looks forward to you every day.'],
+        freund: ['Best Buddies', 'Collect 1000 points in total.', 'A thousand points! Ezra has a new best friend: you.'],
+      },
     },
   };
   const VERSION = '1.0';
@@ -533,6 +673,63 @@
   rekord = Math.max(parseInt(lies('ezra-rekord', '0'), 10) || 0, listeLaden()[0]?.punkte || 0);
   $('rekord').textContent = rekord;
 
+  // ---------- Fortschritt: Erfolge, Kleiderschrank, Orte (nur auf dem Gerät) ----------
+  const ORTE_AB = { garten: 0, wald: 500, strand: 2000 };
+  // s = Summen über alle Runden, r = gerade beendete Runde; belohnung = Halstuch, das der Erfolg freischaltet
+  const ERFOLGE = [
+    { id: 'ersterHappen', pruefe: (s) => s.gefangen >= 1 },
+    { id: 'goldrausch', pruefe: (s) => s.gold >= 10 },
+    { id: 'kugelrund', belohnung: 'karo', pruefe: (s, r) => r.punkte >= 50 },
+    { id: 'bodenlos', belohnung: 'gold', pruefe: (s, r) => r.punkte >= 100 },
+    { id: 'gentleman', pruefe: (s, r) => r.punkte >= 20 && r.igitt === 0 },
+    { id: 'ballkuenstler', belohnung: 'punkte', pruefe: (s, r) => r.baelle >= 5 },
+    { id: 'serie25', belohnung: 'sterne', pruefe: (s, r) => r.serieMax >= 25 },
+    { id: 'serie50', pruefe: (s, r) => r.serieMax >= 50 },
+    { id: 'ausdauer', belohnung: 'sonne', pruefe: (s, r) => r.dauer >= 120 },
+    { id: 'allesfresser', pruefe: (s, r) => r.igitt >= 3 },
+    { id: 'leckermaul', belohnung: 'tannen', pruefe: (s) => s.gefangen >= 500 },
+    { id: 'vielfrass', pruefe: (s) => s.gefangen >= 2000 },
+    { id: 'stammgast', pruefe: (s) => s.runden >= 25 },
+    { id: 'treu', belohnung: 'regenbogen', pruefe: (s) => s.tage.length >= 7 },
+    { id: 'freund', pruefe: (s) => s.gesamt >= 1000 },
+  ];
+  const stand = { gesamt: 0, gefangen: 0, gold: 0, runden: 0, tage: [], erfolge: {}, halstuch: 'standard', ort: 'garten' };
+  try { Object.assign(stand, JSON.parse(lies('ezra-fortschritt', '{}'))); } catch (e) {}
+  if (!Array.isArray(stand.tage)) stand.tage = [];
+  if (!stand.erfolge || typeof stand.erfolge !== 'object') stand.erfolge = {};
+  const standSichern = () => schreib('ezra-fortschritt', JSON.stringify(stand));
+  const ortFrei = (id) => stand.gesamt >= (ORTE_AB[id] ?? Infinity);
+  const erfolgFuer = (halstuch) => ERFOLGE.find((e) => e.belohnung === halstuch);
+  const halstuchFrei = (id) => id === 'standard' || !!stand.erfolge[erfolgFuer(id)?.id];
+  const anzahlErfolge = () => ERFOLGE.filter((e) => stand.erfolge[e.id]).length;
+  if (!ortFrei(stand.ort)) stand.ort = 'garten';
+  if (!halstuchFrei(stand.halstuch)) stand.halstuch = 'standard';
+
+  let runde = null, auswertung = null;
+  function heute() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+  function rundeAuswerten() {
+    const r = { punkte, dauer: zeit, serieMax: besteSerie, ...runde };
+    const vorher = stand.gesamt;
+    stand.gesamt += punkte;
+    stand.gefangen += r.knochen + r.baelle + r.gold;
+    stand.gold += r.gold;
+    stand.runden += 1;
+    const tag = heute();
+    if (!stand.tage.includes(tag)) stand.tage = [...stand.tage, tag].slice(-400);
+    const neueErfolge = ERFOLGE.filter((e) => !stand.erfolge[e.id] && e.pruefe(stand, r));
+    neueErfolge.forEach((e) => { stand.erfolge[e.id] = Date.now(); });
+    const neueOrte = Object.keys(ORTE_AB).filter((id) => vorher < ORTE_AB[id] && stand.gesamt >= ORTE_AB[id]);
+    standSichern();
+    return { neueErfolge, neueOrte };
+  }
+  function naechstesZiel() {
+    const id = ['wald', 'strand'].find((o) => !ortFrei(o));
+    return id ? T.ziel(ORTE_AB[id] - stand.gesamt, T.zielOrt[id]) : T.alleOrte;
+  }
+
   // ---------- Ton ----------
   let ac = null, ton = lies('ezra-ton', 'an') !== 'aus';
   $('tonSchalter').checked = ton;
@@ -621,8 +818,102 @@
       c.bezierCurveTo(dx - 3, -23, dx + 3, -26, dx, -29); c.stroke();
     }
   }
-  const MALER = { knochen: (c) => malKnochen(c), gold: malGold, ball: malBall, pfote: malPfote, socke: malSocke };
+  function malZapfen(c) {
+    c.fillStyle = '#6b3f1f'; ellipse(c, 0, 0, 10.5, 15.5);
+    // Schuppen, Reihe für Reihe
+    for (let reihe = -11; reihe <= 11; reihe += 5.5) {
+      const breite = Math.sqrt(Math.max(0, 1 - (reihe / 15.5) ** 2)) * 10.5;
+      for (let x = -breite + 3.5; x < breite - 1; x += 5.5) {
+        c.fillStyle = '#9a6234'; ellipse(c, x, reihe, 3.2, 2.6);
+        c.fillStyle = '#c08048'; ellipse(c, x, reihe - .8, 1.8, 1.1);
+      }
+    }
+    c.strokeStyle = '#4e2c14'; c.lineWidth = 3; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(0, -15); c.lineTo(1.5, -20); c.stroke();
+  }
+  function malQualle(c) {
+    c.strokeStyle = 'rgba(190,90,170,.85)'; c.lineWidth = 2; c.lineCap = 'round';
+    for (const dx of [-7, -2.5, 2.5, 7]) {
+      c.beginPath(); c.moveTo(dx, 1); c.bezierCurveTo(dx - 4, 7, dx + 4, 12, dx, 18); c.stroke();
+    }
+    c.beginPath(); c.arc(0, 0, 13, Math.PI, 0); c.quadraticCurveTo(0, 5, -13, 0); c.closePath();
+    c.fillStyle = 'rgba(232,140,210,.92)'; c.fill();
+    c.strokeStyle = '#b25aa0'; c.lineWidth = 1.5; c.stroke();
+    c.fillStyle = 'rgba(255,255,255,.5)'; ellipse(c, -5, -7, 4, 2.5, -.4);
+  }
+  const MALER = { knochen: (c) => malKnochen(c), gold: malGold, ball: malBall, pfote: malPfote, socke: malSocke, zapfen: malZapfen, qualle: malQualle };
   const DREHT = { knochen: true, gold: true, ball: true };
+  const EKLIG = { socke: true, zapfen: true, qualle: true };
+  // Symbole in der Anleitung: [Maßstab, Versatz nach unten]
+  const SYMBOL = { knochen: [1.9, 0], ball: [2.2, 0], gold: [1.5, 0], pfote: [1.9, 0], socke: [1.45, 7.5], zapfen: [1.6, 1.5], qualle: [1.7, -1.5] };
+  function symbolMalen(c, typ) {
+    const g = c.getContext('2d');
+    g.setTransform(1, 0, 0, 1, 0, 0);
+    g.clearRect(0, 0, c.width, c.height);
+    const [f, dy] = SYMBOL[typ];
+    g.setTransform(f, 0, 0, f, c.width / 2, c.height / 2 + dy * f);
+    MALER[typ](g);
+  }
+
+  // ---------- Ezras Kleiderschrank: Halstücher (Platzhalter, bis Fotos von Ezras echten Tüchern da sind) ----------
+  function stern(c, x, y, r) {
+    c.beginPath();
+    for (let i = 0; i < 10; i++) {
+      const w = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * .45 : r;
+      i ? c.lineTo(x + Math.cos(w) * rr, y + Math.sin(w) * rr) : c.moveTo(x + Math.cos(w) * rr, y + Math.sin(w) * rr);
+    }
+    c.closePath(); c.fill();
+  }
+  const tuchFlaeche = (c, f) => { c.fillStyle = f; c.fillRect(-32, -60, 64, 40); };
+  const HALSTUCH = {
+    standard: { schrift: '#d33b2f', muster(c) { tuchFlaeche(c, BLAU); c.fillStyle = HELLBLAU; c.fillRect(-32, -50, 64, 9); } },
+    karo: { schrift: '#fff6df', muster(c) {
+      tuchFlaeche(c, '#c8323a');
+      c.fillStyle = 'rgba(255,255,255,.26)';
+      for (let x = -32; x < 32; x += 10) c.fillRect(x, -60, 4, 40);
+      for (let y = -60; y < -20; y += 10) c.fillRect(-32, y, 64, 4);
+    } },
+    punkte: { schrift: '#fff6df', muster(c) {
+      tuchFlaeche(c, '#e0559a');
+      c.fillStyle = '#fff3f8';
+      for (let y = -57, z = 0; y < -20; y += 7, z++) for (let x = -30 + (z % 2) * 3.5; x < 32; x += 7) ellipse(c, x, y, 1.6, 1.6);
+    } },
+    sterne: { schrift: '#f2d43a', muster(c) {
+      tuchFlaeche(c, '#1d2f6f');
+      c.fillStyle = '#f2d43a';
+      for (const [x, y, r] of [[-20, -55, 3], [-6, -56, 2], [12, -54, 3], [24, -57, 2], [-12, -36, 2.2], [9, -35, 2.6], [0, -27, 2]]) stern(c, x, y, r);
+    } },
+    sonne: { schrift: '#b5461c', muster(c) {
+      tuchFlaeche(c, '#f4c430');
+      c.fillStyle = '#f39b2a'; c.fillRect(-32, -60, 64, 4); c.fillRect(-32, -34, 64, 3);
+    } },
+    tannen: { schrift: '#fff6df', muster(c) {
+      tuchFlaeche(c, '#2f7a3c');
+      c.fillStyle = 'rgba(230,245,220,.75)';
+      for (const [x, y] of [[-22, -52], [-8, -54], [8, -52], [22, -54], [-14, -30], [0, -32], [14, -30]]) { dreieck(c, x - 4, y + 6, x + 4, y + 6, x, y - 4); c.fill(); }
+    } },
+    regenbogen: { schrift: '#ffffff', muster(c) {
+      ['#e53b3b', '#f39b2a', '#f2d43a', '#4caf50', '#2f80ed', '#8e44ad'].forEach((f, i) => { c.fillStyle = f; c.fillRect(-32, -60 + i * 7, 64, 7); });
+    } },
+    gold: { schrift: '#7a4d00', muster(c) {
+      const g = c.createLinearGradient(-30, -60, 30, -20);
+      g.addColorStop(0, '#f7d774'); g.addColorStop(.5, '#d9a520'); g.addColorStop(1, '#f7e09a');
+      tuchFlaeche(c, g);
+      c.fillStyle = 'rgba(255,255,255,.45)'; c.fillRect(-32, -56, 64, 2);
+    } },
+  };
+  function malHalstuch(c, id) {
+    const h = HALSTUCH[id] || HALSTUCH.standard;
+    c.fillStyle = CREME; dreieck(c, -35, -60, 35, -60, 0, -15); c.fill();
+    c.save();
+    dreieck(c, -30, -58, 30, -58, 0, -23); c.clip();
+    h.muster(c);
+    c.restore();
+    c.fillStyle = h.schrift;
+    c.font = '800 8px "Baloo 2", sans-serif';
+    c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.fillText('Ezra', 0, -45);
+  }
 
   // ---------- Zeichnen: Ezra ----------
   function malEzra(c, x, y, s, o) {
@@ -648,17 +939,7 @@
     for (const bx of [-16, 16]) { c.beginPath(); c.moveTo(bx - 8 * Math.sign(bx), -26); c.lineTo(bx - 8 * Math.sign(bx), -4); c.stroke(); }
     c.fillStyle = FELL_H;
     for (const bx of [-16, 16]) ellipse(c, bx, -3, 9, 4.5);
-    // Halstuch
-    c.fillStyle = CREME; dreieck(c, -35, -60, 35, -60, 0, -15); c.fill();
-    c.save();
-    dreieck(c, -30, -58, 30, -58, 0, -23); c.clip();
-    c.fillStyle = BLAU; c.fillRect(-32, -60, 64, 40);
-    c.fillStyle = HELLBLAU; c.fillRect(-32, -50, 64, 9);
-    c.restore();
-    c.fillStyle = '#d33b2f';
-    c.font = '800 8px "Baloo 2", sans-serif';
-    c.textAlign = 'center'; c.textBaseline = 'middle';
-    c.fillText('Ezra', 0, -45);
+    malHalstuch(c, stand.halstuch);
     // Halsband
     c.fillStyle = BLAU_D; c.beginPath(); c.roundRect(-28, -67, 56, 8, 4); c.fill();
     c.strokeStyle = '#f2d43a'; c.lineWidth = 1.6; c.beginPath();
@@ -720,23 +1001,44 @@
     let a = start;
     return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
   }
+  // Jeder Ort hat einen Himmel (hinter Sonne und Mond) und einen Vordergrund (davor)
   function malHimmel(c) {
     c.setTransform(dpr, 0, 0, dpr, 0, 0);
     c.clearRect(0, 0, W, H);
+    ORTE[stand.ort].himmel(c);
+  }
+  function malVorder(c) {
+    c.setTransform(dpr, 0, 0, dpr, 0, 0);
+    c.clearRect(0, 0, W, H);
+    ORTE[stand.ort].vorder(c);
+  }
+  function wolken(c, liste) {
+    c.fillStyle = 'rgba(255,255,255,.85)';
+    for (const [wx, wy, g] of liste) {
+      const x = W * wx, y = H * wy, r = 16 * g * Math.max(1, W / 500);
+      ellipse(c, x, y, r * 2.2, r * .9); ellipse(c, x - r, y - r * .4, r, r * .8); ellipse(c, x + r * .6, y - r * .6, r * 1.1, r);
+    }
+  }
+  // Streifen, die nach unten breiter werden – sieht aus wie Perspektive
+  function bodenStreifen(c, oben, f1, f2) {
+    let y = oben, hoehe = (H - oben) * .1, i = 0;
+    while (y < H) {
+      c.fillStyle = i % 2 ? f1 : f2;
+      c.fillRect(0, y, W, hoehe + 1);
+      y += hoehe; hoehe *= 1.35; i++;
+    }
+  }
+
+  // ---------- Garten ----------
+  function gartenHimmel(c) {
     const himmel = c.createLinearGradient(0, 0, 0, grasOben);
     himmel.addColorStop(0, '#9fd2ea');
     himmel.addColorStop(.75, '#e7efd0');
     himmel.addColorStop(1, '#f6e6b4');
     c.fillStyle = himmel; c.fillRect(0, 0, W, grasOben);
-    c.fillStyle = 'rgba(255,255,255,.85)';
-    for (const [wx, wy, g] of [[.55, .1, 1], [.88, .2, .75], [.32, .25, .6]]) {
-      const x = W * wx, y = H * wy, r = 16 * g * Math.max(1, W / 500);
-      ellipse(c, x, y, r * 2.2, r * .9); ellipse(c, x - r, y - r * .4, r, r * .8); ellipse(c, x + r * .6, y - r * .6, r * 1.1, r);
-    }
+    wolken(c, [[.55, .1, 1], [.88, .2, .75], [.32, .25, .6]]);
   }
-  function malVorder(c) {
-    c.setTransform(dpr, 0, 0, dpr, 0, 0);
-    c.clearRect(0, 0, W, H);
+  function gartenVorder(c) {
     const z = zufall(31);
     // Hecke
     c.fillStyle = '#4d7d3a';
@@ -764,17 +1066,139 @@
     c.strokeStyle = '#2f57c4'; c.lineWidth = 12; c.lineCap = 'round';
     c.beginPath(); c.moveTo(tx + 6, platt); c.quadraticCurveTo(tx - tb * .5, platt + 10, tx - tb * .9, grasOben + 2); c.stroke();
     // Rasen mit Mähstreifen
-    let y = grasOben, hoehe = (H - grasOben) * .1, i = 0;
-    while (y < H) {
-      c.fillStyle = i % 2 ? '#64a14a' : '#70b055';
-      c.fillRect(0, y, W, hoehe + 1);
-      y += hoehe; hoehe *= 1.35; i++;
-    }
+    bodenStreifen(c, grasOben, '#64a14a', '#70b055');
     c.strokeStyle = 'rgba(40,90,30,.45)'; c.lineWidth = 1.3; c.lineCap = 'round';
     for (let n = 0; n < W / 5; n++) {
       const gx = z() * W, gy = grasOben + 6 + z() * (H - grasOben - 6), l = 3 + z() * 5;
       c.beginPath(); c.moveTo(gx, gy); c.lineTo(gx - 1.5, gy - l); c.moveTo(gx + 2, gy); c.lineTo(gx + 3, gy - l * .8); c.stroke();
     }
+  }
+
+  // ---------- Wald: Licht fällt durchs Blätterdach, Sonne und Mond stehen hinter den Stämmen ----------
+  function waldHimmel(c) {
+    const luft = c.createLinearGradient(0, 0, 0, grasOben);
+    luft.addColorStop(0, '#a9cfa0');
+    luft.addColorStop(.6, '#dcebb4');
+    luft.addColorStop(1, '#f1ecc0');
+    c.fillStyle = luft; c.fillRect(0, 0, W, grasOben);
+    c.fillStyle = 'rgba(255,250,210,.22)';
+    for (const [x0, b] of [[.18, .08], [.46, .05], [.7, .1]]) {
+      c.beginPath();
+      c.moveTo(W * x0, 0); c.lineTo(W * (x0 + b), 0);
+      c.lineTo(W * (x0 + b + .18), grasOben); c.lineTo(W * (x0 + .12), grasOben);
+      c.closePath(); c.fill();
+    }
+  }
+  function waldVorder(c) {
+    const z = zufall(7);
+    // Ferne Stämme
+    c.fillStyle = 'rgba(70,100,60,.5)';
+    for (let x = 10; x < W; x += 30 + z() * 30) c.fillRect(x, 0, 6 + z() * 6, grasOben);
+    // Laubdach
+    c.fillStyle = '#244a22';
+    for (let x = -20; x < W + 40; x += 30 + z() * 20) ellipse(c, x, z() * H * .05, 40 + z() * 25, 35 + z() * 20);
+    c.fillStyle = '#31602c';
+    for (let x = -10; x < W + 40; x += 35 + z() * 25) ellipse(c, x, H * .06 + z() * H * .05, 30 + z() * 20, 22 + z() * 14);
+    // Büsche hinten
+    c.fillStyle = '#4f7f38';
+    for (let x = -20; x < W + 40; x += 24 + z() * 18) ellipse(c, x, grasOben - 4 - z() * 10, 20 + z() * 14, 14 + z() * 10);
+    // Vordere Stämme mit Rinde und Wurzeln
+    for (const [fx, b] of [[.05, 26], [.4, 16], [.82, 30]]) {
+      const x = W * fx, breit = b * Math.max(1, W / 500);
+      c.fillStyle = '#5e4029'; c.fillRect(x, 0, breit, grasOben + 8);
+      c.fillStyle = 'rgba(255,255,255,.08)'; c.fillRect(x + breit * .15, 0, breit * .2, grasOben + 8);
+      c.strokeStyle = 'rgba(40,25,15,.4)'; c.lineWidth = 1.2;
+      for (let y = 20; y < grasOben; y += 28 + z() * 20) {
+        c.beginPath(); c.moveTo(x + 3, y); c.quadraticCurveTo(x + breit / 2, y + 6, x + breit - 3, y); c.stroke();
+      }
+      c.fillStyle = '#5e4029'; dreieck(c, x - 10, grasOben + 10, x + breit + 10, grasOben + 10, x + breit / 2, grasOben - 24); c.fill();
+    }
+    // Waldboden mit Laub und Fliegenpilzen
+    bodenStreifen(c, grasOben, '#5f7f33', '#6a8c3a');
+    const laub = ['#c0742c', '#a85a24', '#d79a3c', '#7d5a2a'];
+    for (let n = 0; n < W / 4; n++) {
+      c.fillStyle = laub[n % 4];
+      ellipse(c, z() * W, grasOben + 6 + z() * (H - grasOben - 6), 3 + z() * 2, 1.6 + z(), z() * 3);
+    }
+    for (const fx of [.22, .62, .93]) {
+      const px = W * fx, py = grasOben + (H - grasOben) * .22;
+      c.fillStyle = '#f3ead8'; c.fillRect(px - 2.5, py - 8, 5, 9);
+      c.fillStyle = '#d23a2e'; c.beginPath(); c.arc(px, py - 8, 8, Math.PI, 0); c.fill();
+      c.fillStyle = '#fff'; ellipse(c, px - 3, py - 11, 1.5, 1.5); ellipse(c, px + 3, py - 10, 1.3, 1.3);
+    }
+  }
+
+  // ---------- Strand: Die Sonne geht im Meer unter ----------
+  function strandHimmel(c) {
+    const himmel = c.createLinearGradient(0, 0, 0, heckeOben);
+    himmel.addColorStop(0, '#7cc8ef');
+    himmel.addColorStop(1, '#e3f4fa');
+    c.fillStyle = himmel; c.fillRect(0, 0, W, grasOben);
+    wolken(c, [[.3, .1, .9], [.68, .22, .6]]);
+  }
+  function strandVorder(c) {
+    const z = zufall(11);
+    // Meer
+    const meer = c.createLinearGradient(0, heckeOben, 0, grasOben);
+    meer.addColorStop(0, '#2b86c2');
+    meer.addColorStop(1, '#5fc0dc');
+    c.fillStyle = meer; c.fillRect(0, heckeOben, W, grasOben - heckeOben);
+    c.strokeStyle = 'rgba(255,255,255,.5)'; c.lineWidth = 1.4; c.lineCap = 'round';
+    for (let y = heckeOben + 8, abstand = 8; y < grasOben - 6; abstand *= 1.3, y += abstand) {
+      for (let x = z() * 30; x < W; x += 40 + z() * 40) { c.beginPath(); c.arc(x, y + 4, 6, Math.PI * 1.15, Math.PI * 1.85); c.stroke(); }
+    }
+    // Segelboot am Horizont
+    const bx = W * .62;
+    c.fillStyle = '#7a4a2a'; c.fillRect(bx - 12, heckeOben - 4, 24, 4);
+    c.fillStyle = '#fff'; dreieck(c, bx, heckeOben - 26, bx, heckeOben - 6, bx + 13, heckeOben - 6); c.fill();
+    c.fillStyle = '#d33b2f'; dreieck(c, bx - 1, heckeOben - 22, bx - 1, heckeOben - 6, bx - 9, heckeOben - 6); c.fill();
+    // Sand mit nasser Kante und Schaum
+    bodenStreifen(c, grasOben, '#ecd08e', '#f1d79a');
+    c.fillStyle = '#d9bb7a'; c.fillRect(0, grasOben, W, 6);
+    c.fillStyle = 'rgba(255,255,255,.85)';
+    c.beginPath(); c.moveTo(0, grasOben);
+    for (let x = 0; x <= W + 20; x += 20) c.quadraticCurveTo(x + 10, grasOben + 6, x + 20, grasOben);
+    c.lineTo(W, grasOben - 3); c.lineTo(0, grasOben - 3); c.closePath(); c.fill();
+    c.fillStyle = 'rgba(160,120,60,.35)';
+    for (let n = 0; n < W / 3; n++) c.fillRect(z() * W, grasOben + 8 + z() * (H - grasOben - 8), 1.5, 1.5);
+    // Sonnenschirm
+    const sx = W * .88, schirmY = H * .42, fuss = grasOben + (H - grasOben) * .3;
+    c.strokeStyle = '#efe6d6'; c.lineWidth = 4;
+    c.beginPath(); c.moveTo(sx, schirmY); c.lineTo(sx - 6, fuss); c.stroke();
+    const r = clamp(W * .14, 50, 90);
+    for (let i = 0; i < 6; i++) {
+      c.fillStyle = i % 2 ? '#fff6df' : '#e5484d';
+      c.beginPath(); c.moveTo(sx, schirmY);
+      c.arc(sx, schirmY, r, Math.PI + i * Math.PI / 6, Math.PI + (i + 1) * Math.PI / 6);
+      c.closePath(); c.fill();
+    }
+    // Muscheln und Seestern
+    for (const [fx, fy] of [[.12, .3], [.42, .45], [.7, .2]]) {
+      const mx = W * fx, my = grasOben + (H - grasOben) * fy;
+      c.fillStyle = '#f6c9b4';
+      c.beginPath(); c.moveTo(mx, my + 4); c.arc(mx, my + 4, 7, Math.PI * 1.1, Math.PI * 1.9); c.closePath(); c.fill();
+      c.strokeStyle = '#d99a84'; c.lineWidth = .8;
+      for (const w of [1.3, 1.5, 1.7]) { c.beginPath(); c.moveTo(mx, my + 4); c.lineTo(mx + Math.cos(Math.PI * w) * 6.5, my + 4 + Math.sin(Math.PI * w) * 6.5); c.stroke(); }
+    }
+    c.fillStyle = '#f08a4b'; stern(c, W * .28, grasOben + (H - grasOben) * .18, 7);
+  }
+
+  // gefahr = das eklige Ding des Orts; nachtAb = ab welcher Höhe die Nacht den Vordergrund abdunkelt
+  const ORTE = {
+    garten: { himmel: gartenHimmel, vorder: gartenVorder, gefahr: 'socke', nachtAb: () => heckeOben - 40, gluehwuermchen: true },
+    wald: { himmel: waldHimmel, vorder: waldVorder, gefahr: 'zapfen', nachtAb: () => 0, gluehwuermchen: true },
+    strand: { himmel: strandHimmel, vorder: strandVorder, gefahr: 'qualle', nachtAb: () => heckeOben - 40, gluehwuermchen: false },
+  };
+  // Kleines Vorschaubild eines Orts (für „Ezras Sachen“) – leiht sich kurz die Bildschirmmaße
+  function ortVorschau(c, id) {
+    const alt = [W, H, grasOben, heckeOben];
+    W = c.width; H = c.height; grasOben = H * .62; heckeOben = H * .44;
+    const g = c.getContext('2d');
+    g.setTransform(1, 0, 0, 1, 0, 0);
+    ORTE[id].himmel(g);
+    g.fillStyle = '#fff8d6'; ellipse(g, W * .16, H * .2, 16, 16);
+    ORTE[id].vorder(g);
+    [W, H, grasOben, heckeOben] = alt;
   }
 
   // ---------- Tageszeit: Mittag → Nachmittag → Abend → Nacht, je weiter man kommt ----------
@@ -845,11 +1269,12 @@
     }
     ctx.drawImage(vorderCv, 0, 0, W, H);
     if (tz.nacht > .01) {
+      const ab = ORTE[stand.ort].nachtAb();
       ctx.fillStyle = `rgba(10,18,48,${tz.nacht})`;
-      ctx.fillRect(0, heckeOben - 40, W, H - heckeOben + 40);
+      ctx.fillRect(0, ab, W, H - ab);
     }
     // Glühwürmchen
-    if (sternAlpha > 0 && !ruhig) {
+    if (sternAlpha > 0 && !ruhig && ORTE[stand.ort].gluehwuermchen) {
       for (let i = 0; i < 9; i++) {
         const fx = (W * ((i * .137 + .05) % 1)) + Math.sin(uhr * .7 + i) * 20;
         const fy = heckeOben + 20 + ((i * 53) % Math.max(1, grasOben - heckeOben + 60)) + Math.cos(uhr * .9 + i * 2) * 10;
@@ -885,6 +1310,8 @@
   function neuesSpiel() {
     punkte = 0; leben = 3; zeit = 0;
     serie = 0; besteSerie = 0; zeitlupe = 0; faktor = 1;
+    runde = { knochen: 0, baelle: 0, gold: 0, igitt: 0 };
+    auswertung = null;
     items = []; krümel = []; texte = [];
     ezra.x = W / 2; ezra.vx = 0; ezra.maul = 0; ezra.igitt = 0;
     zielX = null;
@@ -897,7 +1324,104 @@
   }
 
   function zeige(id) {
-    for (const k of ['startKarte', 'pauseKarte', 'endeKarte', 'listeKarte', 'einstellKarte', 'infoKarte']) $(k).hidden = k !== id;
+    for (const k of ['startKarte', 'sachenKarte', 'pauseKarte', 'endeKarte', 'listeKarte', 'einstellKarte', 'infoKarte']) $(k).hidden = k !== id;
+  }
+
+  // ---------- Startkarte und „Ezras Sachen“ ----------
+  function el(tag, klasse, text) {
+    const e = document.createElement(tag);
+    if (klasse) e.className = klasse;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function startFuellen() {
+    const gefahr = ORTE[stand.ort].gefahr;
+    symbolMalen($('gefahrSymbol'), gefahr);
+    $('gefahrRegel').innerHTML = T.r_gefahr[gefahr];
+    $('sachenZahl').textContent = `${anzahlErfolge()}/${ERFOLGE.length}`;
+    $('startZiel').textContent = stand.gesamt ? naechstesZiel() : '';
+  }
+  function zumStart() {
+    startFuellen();
+    zeige('startKarte');
+    $('losKnopf').focus();
+  }
+
+  let tab = 'erfolge';
+  function sachenOeffnen() {
+    sachenFuellen();
+    zeige('sachenKarte');
+    $('sachenZu').focus();
+  }
+  function sachenFuellen() {
+    document.querySelectorAll('[data-tab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === tab)));
+    const ziel = $('tabInhalt');
+    ziel.replaceChildren();
+
+    if (tab === 'erfolge') {
+      ziel.append(el('p', 'klein', T.geschafft(anzahlErfolge(), ERFOLGE.length)));
+      const liste = el('ul', 'erfolge');
+      for (const e of ERFOLGE) {
+        const frei = !!stand.erfolge[e.id];
+        const [titel, hinweis, text] = T.erfolge[e.id];
+        const li = el('li', 'erfolg' + (frei ? ' frei' : ''));
+        const inhalt = el('div');
+        inhalt.append(el('b', null, titel), el('p', null, frei ? text : hinweis));
+        if (e.belohnung) inhalt.append(el('small', null, T.belohnung(T.halstuch[e.belohnung])));
+        li.append(el('span', 'marke', frei ? '✓' : '?'), inhalt);
+        liste.append(li);
+      }
+      ziel.append(liste);
+    }
+
+    if (tab === 'kleidung') {
+      ziel.append(el('p', 'klein', T.kleidungHinweis));
+      const raster = el('div', 'faecher');
+      for (const id of Object.keys(HALSTUCH)) {
+        const frei = halstuchFrei(id);
+        const b = el('button', 'fach');
+        b.type = 'button';
+        b.disabled = !frei;
+        b.setAttribute('aria-pressed', String(stand.halstuch === id));
+        const c = el('canvas');
+        c.width = 200; c.height = 160;
+        const g = c.getContext('2d');
+        g.setTransform(2.6, 0, 0, 2.6, 100, 80 + 37.5 * 2.6);
+        if (!frei) g.globalAlpha = .3;
+        malHalstuch(g, id);
+        b.append(c, el('span', null, T.halstuch[id]));
+        if (!frei) b.append(el('span', 'hinweis', T.perErfolg(T.erfolge[erfolgFuer(id).id][0])));
+        b.addEventListener('click', () => { stand.halstuch = id; standSichern(); sachenFuellen(); });
+        raster.append(b);
+      }
+      ziel.append(raster);
+    }
+
+    if (tab === 'orte') {
+      ziel.append(el('p', 'klein', T.orteHinweis));
+      for (const id of Object.keys(ORTE)) {
+        const frei = ortFrei(id);
+        const b = el('button', 'ortfach');
+        b.type = 'button';
+        b.disabled = !frei;
+        b.setAttribute('aria-pressed', String(stand.ort === id));
+        const c = el('canvas');
+        c.width = 320; c.height = 180;
+        ortVorschau(c, id);
+        if (!frei) { const g = c.getContext('2d'); g.fillStyle = 'rgba(20,30,15,.55)'; g.fillRect(0, 0, 320, 180); }
+        const zeile = el('span');
+        zeile.append(el('b', null, T.orte[id]), el('em', null, frei ? (stand.ort === id ? T.ausgewaehlt : '') : T.ortAb(ORTE_AB[id], ORTE_AB[id] - stand.gesamt)));
+        b.append(c, zeile);
+        b.addEventListener('click', () => {
+          stand.ort = id;
+          standSichern();
+          malHimmel(himmelCv.getContext('2d'));
+          malVorder(vorderCv.getContext('2d'));
+          sachenFuellen();
+        });
+        ziel.append(b);
+      }
+    }
   }
 
   // ---------- Einstellungen ----------
@@ -905,7 +1429,7 @@
   function einstellungenOeffnen() {
     if (!$('einstellKarte').hidden || !$('infoKarte').hidden) return einstellungenSchliessen();
     if (zustand === 'laeuft') pause();
-    const offen = ['startKarte', 'pauseKarte', 'endeKarte', 'listeKarte'].find((k) => !$(k).hidden);
+    const offen = ['startKarte', 'sachenKarte', 'pauseKarte', 'endeKarte', 'listeKarte'].find((k) => !$(k).hidden);
     if (!offen) return;
     vorherKarte = offen;
     loeschenScharf(false);
@@ -918,6 +1442,7 @@
   }
   function einstellungenSchliessen() {
     if (vorherKarte === 'listeKarte') listeZeigen();
+    else if (vorherKarte === 'sachenKarte') sachenOeffnen();
     else zeige(vorherKarte);
   }
 
@@ -975,6 +1500,26 @@
     $('endeText').textContent = punkte === 1 ? T.punkt : T.punkte;
     $('endeSerie').textContent = besteSerie >= 2 ? T.serieLang(besteSerie) : '';
     if (endePlatz >= 0) $('platzText').textContent = T.platz(endePlatz + 1);
+    // Neu freigeschaltet
+    const neu = $('neueSachen');
+    neu.replaceChildren();
+    if (auswertung) {
+      for (const e of auswertung.neueErfolge) {
+        const [titel, , text] = T.erfolge[e.id];
+        const li = el('li'), inhalt = el('div');
+        inhalt.append(el('b', null, titel), el('span', null, text));
+        li.append(inhalt);
+        neu.append(li);
+      }
+      for (const id of auswertung.neueOrte) {
+        const li = el('li'), inhalt = el('div');
+        inhalt.append(el('b', null, T.neuerOrt(T.orte[id])), el('span', null, T.neuerOrtText));
+        li.append(inhalt);
+        neu.append(li);
+      }
+    }
+    neu.hidden = !neu.children.length;
+    $('endeZiel').textContent = auswertung ? naechstesZiel() : '';
   }
   function ende() {
     zustand = 'ende';
@@ -986,6 +1531,8 @@
       schreib('ezra-rekord', String(rekord));
     }
     endePlatz = platzFuer(punkte);
+    auswertung = rundeAuswerten();
+    if (auswertung.neueErfolge.length) [784, 988, 1175, 1568].forEach((f, i) => piep(f, .12, 'triangle', .05, 0, .75 + i * .08));
     $('rekordNeu').hidden = !neu || punkte === 0;
     $('endePunkte').textContent = punkte;
     $('eintragen').hidden = endePlatz < 0;
@@ -1007,7 +1554,7 @@
     else if (leben < 3 && !items.some((i) => i.typ === 'pfote') && Math.random() < .03) typ = 'pfote';
     else {
       const sockenAnteil = lerp(.14, .34, stufe);
-      typ = w < sockenAnteil ? 'socke' : w < sockenAnteil + .1 ? 'ball' : 'knochen';
+      typ = w < sockenAnteil ? ORTE[stand.ort].gefahr : w < sockenAnteil + .1 ? 'ball' : 'knochen';
     }
     const r = { ball: 12, pfote: 16 }[typ] || 14;
     const tempo = lerp(150, 390, stufe) * clamp(H / 650, .8, 1.3) * (.85 + Math.random() * .3);
@@ -1038,7 +1585,8 @@
 
   function fangen(it, mundY) {
     const tx = ezra.x, ty = mundY - 40 * sk;
-    if (it.typ === 'socke') {
+    if (EKLIG[it.typ]) {
+      runde.igitt++;
       ezra.igitt = .7;
       piep(210, .28, 'sawtooth', .045, .5);
       lebenWeg(tx, ty, T.igitt);
@@ -1058,6 +1606,7 @@
     } else {
       const p = { knochen: 1, ball: 3, gold: 2 }[it.typ] * mult;
       punkte += p;
+      runde[{ knochen: 'knochen', ball: 'baelle', gold: 'gold' }[it.typ]]++;
       $('punkte').textContent = punkte;
       texte.push({ x: tx, y: ty, text: '+' + p, farbe: it.typ === 'ball' ? '#b8f070' : it.typ === 'gold' ? '#ffd447' : '#ffffff', leben: 1 });
       if (it.typ === 'gold') {
@@ -1188,7 +1737,7 @@
       ctx.save();
       ctx.translate(it.x + Math.sin(it.pendel) * 6, it.y);
       if (DREHT[it.typ]) ctx.rotate(it.rot);
-      else if (it.typ === 'socke') ctx.rotate(Math.sin(it.rot) * .5);
+      else if (EKLIG[it.typ]) ctx.rotate(Math.sin(it.rot) * .5);
       MALER[it.typ](ctx);
       ctx.restore();
     }
@@ -1306,7 +1855,8 @@
       else if (!$('einstellKarte').hidden) einstellungenSchliessen();
       else if (zustand === 'laeuft') pause();
       else if (zustand === 'pause') weiter();
-      else if (!$('listeKarte').hidden) zeige(zustand === 'ende' ? 'endeKarte' : 'startKarte');
+      else if (!$('sachenKarte').hidden) zumStart();
+      else if (!$('listeKarte').hidden) zustand === 'ende' ? zeige('endeKarte') : zumStart();
       else AppPlugin.exitApp();
     });
     AppPlugin.addListener('pause', pause);
@@ -1316,6 +1866,10 @@
   $('nochmalKnopf').addEventListener('click', starten);
   $('weiterKnopf').addEventListener('click', weiter);
   $('listeSpielen').addEventListener('click', starten);
+  $('sachenKnopf').addEventListener('click', sachenOeffnen);
+  $('sachenZu').addEventListener('click', zumStart);
+  $('sachenSpielen').addEventListener('click', starten);
+  document.querySelectorAll('[data-tab]').forEach((b) => b.addEventListener('click', () => { tab = b.dataset.tab; sachenFuellen(); }));
   document.querySelectorAll('[data-liste]').forEach((k) => k.addEventListener('click', () => { letzteId = null; listeZeigen(); }));
   $('eintragen').addEventListener('submit', (e) => {
     e.preventDefault();
@@ -1364,6 +1918,7 @@
     const anleitungAus = $('anleitungKnopf').disabled, geloescht = $('loeschKnopf').disabled;
     texteSetzen();
     endeTexte();
+    startFuellen();
     loeschenScharf(false);
     if (anleitungAus) $('anleitungKnopf').textContent = T.anleitungOk;
     if (geloescht && $('loeschKnopf').dataset.geloescht) $('loeschKnopf').textContent = T.geloescht;
@@ -1375,14 +1930,9 @@
   });
 
   // Symbole in der Anleitung
-  document.querySelectorAll('canvas[data-typ]').forEach((c) => {
-    const g = c.getContext('2d');
-    const typ = c.dataset.typ;
-    const f = { knochen: 1.9, ball: 2.2, gold: 1.5, pfote: 1.9, socke: 1.45 }[typ];
-    g.setTransform(f, 0, 0, f, 34, typ === 'socke' ? 34 + 7.5 * f : 34);
-    MALER[typ](g);
-  });
+  document.querySelectorAll('canvas[data-typ]').forEach((c) => symbolMalen(c, c.dataset.typ));
 
+  startFuellen();
   groesse();
   requestAnimationFrame(schleife);
 

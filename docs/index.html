@@ -2481,7 +2481,7 @@
     piep(520, .09, 'triangle', .06); piep(780, .12, 'triangle', .06, 0, .09);
   }
   function pause() {
-    if (zustand !== 'laeuft') return;
+    if (zustand !== 'laeuft' || testTakt === 'schnell') return; // der Bot spielt in unsichtbaren Fenstern ohne Fokus
     zustand = 'pause';
     $('pauseTon').checked = ton;
     $('pauseVib').checked = vibration;
@@ -2777,7 +2777,7 @@
     if (n > levelPfoten) {
       levelPfoten = n;
       melden('🐾', T.pfoteErreicht(n), 3);
-      if (n === 3) setTimeout(() => { if (zustand === 'laeuft') ende(); }, 700);
+      if (n === 3 && !testTakt) setTimeout(() => { if (zustand === 'laeuft') ende(); }, 700); // beim Bot beendet der Test-Zugang
     }
     levelZielZeigen();
   }
@@ -3695,7 +3695,7 @@
   function bossStarten() {
     boss = level && level.art === 'boss'
       ? { welt: level.welt, hp: level.stufen[0], treffer: 0, x: W * .5, zielX: W * .5, y: 0, wut: 0, uhr: 0, richtung: 1, seite: 1, besiegt: false, flucht: 0,
-        // Phasen: normal → warnung (1 s) → wut → muede (nur Leckerlis) → normal
+        // Phasen: normal → warnung (1 s) → wut (nur Ekliges: ausweichen) → muede (nur Leckerlis) → normal
         phase: 'normal', phaseZeit: 0, pause: 6, mini: false,
         wutBei: [Math.floor(level.stufen[0] / 3), Math.floor(level.stufen[0] * 2 / 3)] }
       : null;
@@ -3712,7 +3712,7 @@
     for (let n = 0; n < anzahl; n++) {
       let typ;
       if (b.phase === 'muede') typ = Math.random() < .25 ? 'gold' : gut[Math.floor(Math.random() * gut.length)];
-      else if (b.phase === 'wut') typ = Math.random() < .65 ? eklig[Math.floor(Math.random() * eklig.length)] : gut[Math.floor(Math.random() * gut.length)];
+      else if (b.phase === 'wut') typ = eklig[Math.floor(Math.random() * eklig.length)]; // Wut: nur ausweichen, nichts zu fangen
       else {
         typ = liste[Math.floor(Math.random() * liste.length)];
         if (leben < 3 && Math.random() < .04) typ = 'pfote';
@@ -3810,7 +3810,7 @@
       b.besiegt = true;
       melden('👑', T.bossBesiegt(T.bossMitArtikel[b.welt]), 3);
       [523, 659, 784, 1047, 1319].forEach((f, i) => piep(f, .16, 'triangle', .05, 0, i * .09));
-      setTimeout(() => { if (zustand === 'laeuft') ende(); }, 1400);
+      if (!testTakt) setTimeout(() => { if (zustand === 'laeuft') ende(); }, 1400);
     }
     levelZielZeigen();
   }
@@ -4119,7 +4119,7 @@
       // während eines Ausbruchs kommt nichts anderes (außer bei Wind)
       if (!(ereignis && ereignis.phase === 'aktiv' && ereignis.typ !== 'wind')) spawn();
       spawnUhr = !boss ? lerp(1.05, .4, stufe) * (.75 + Math.random() * .5)
-        : boss.phase === 'wut' ? (boss.welt === 'garten' ? .6 : boss.welt === 'strand' ? .22 : .3)
+        : boss.phase === 'wut' ? (boss.welt === 'garten' ? .9 : boss.welt === 'strand' ? .34 : .45) // nur Ekliges, daher etwas seltener
         : boss.phase === 'muede' ? .32
         : boss.phase === 'warnung' ? 9
         : lerp(1.15, .5, boss.treffer / boss.hp) * (.8 + Math.random() * .4);

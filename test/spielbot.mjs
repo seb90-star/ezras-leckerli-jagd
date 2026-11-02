@@ -218,6 +218,7 @@ async function botRunde({ nr, p, seed, ausr, maxZeit, zuschauen }) {
     if (zuschauen) await new Promise((ok) => requestAnimationFrame(ok));
     else if (++schritte % 300 === 0) await new Promise((ok) => setTimeout(ok, 0));
   }
+  if (T.lage().zustand !== 'ende') throw new Error(`Runde unterbrochen (Zustand: ${T.lage().zustand})`);
   return { ...T.ergebnis(), verluste, protokoll };
 }
 

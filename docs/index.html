@@ -1792,11 +1792,13 @@
   function malVorder(c) {
     c.setTransform(dpr, 0, 0, dpr, 0, 0);
     c.clearRect(0, 0, W, H);
+    const sz = ORTE[spielOrt].szenen[szene] || ORTE[spielOrt].szenen[0];
     ORTE[spielOrt].vorder(c);
+    if (sz.vorder) sz.vorder(c);
     const m = mitteCv.getContext('2d');
     m.setTransform(dpr, 0, 0, dpr, RAND * dpr, 0);
     m.clearRect(-RAND, 0, W + 2 * RAND, H);
-    if (ORTE[spielOrt].mitte) { ORTE[spielOrt].mitte(m); weichzeichnen(mitteCv, .6, false); }
+    sz.mitte(m); weichzeichnen(mitteCv, .6, false);
   }
   function wolken(c, liste) {
     c.fillStyle = 'rgba(255,255,255,.85)';
@@ -1837,8 +1839,8 @@
     dunst.addColorStop(0, 'rgba(246,240,214,0)'); dunst.addColorStop(1, 'rgba(246,240,214,.55)');
     c.fillStyle = dunst; c.fillRect(0, heckeOben - H * .08, W, H * .08 + 24);
   }
-  // Mittlere Ebene: Hecke, Zaun und Spielturm (wird beim Laufen leicht verschoben)
-  function gartenMitte(c) {
+  // Mittlere Ebene: Hecke und Zaun (wird beim Laufen leicht verschoben) – Grundlage aller Garten-Szenen
+  function gartenHecke(c) {
     const z = zufall(31);
     // Hecke
     c.fillStyle = '#4d7d3a';
@@ -1860,7 +1862,10 @@
     c.beginPath(); c.moveTo(-RAND, heckeOben + 34); c.lineTo(W + RAND, heckeOben + 34); c.stroke();
     c.fillStyle = '#d9ddd2';
     for (let x = W * .06; x < W; x += W * .3) c.fillRect(x, heckeOben + 26, 4, grasOben - heckeOben - 26);
-    // Spielturm wie im Garten
+  }
+  // Szene 1: Spielturm
+  function gartenMitte(c) {
+    gartenHecke(c);
     const tb = clamp(W * .2, 80, 140);
     const tx = W - tb - Math.max(16, W * .05);
     const tOben = H * .2, platt = H * .4;
@@ -2047,21 +2052,6 @@
     for (let n = 0; n < W / 3; n++) c.fillRect(z() * W, grasOben + 8 + z() * (H - grasOben - 8), 1.5, 1.5);
     c.fillStyle = 'rgba(255,255,255,.35)';
     for (let n = 0; n < W / 6; n++) c.fillRect(z() * W, grasOben + 8 + z() * (H - grasOben - 8), 1, 1);
-    // Sonnenschirm mit Schatten im Sand
-    const sx = W * .88, schirmY = H * .42, fuss = grasOben + (H - grasOben) * .3;
-    const r = clamp(W * .14, 50, 90);
-    c.fillStyle = 'rgba(120,80,30,.22)'; ellipse(c, sx - r * .5, fuss + 4, r * .9, r * .18);
-    c.strokeStyle = '#efe6d6'; c.lineWidth = 4;
-    c.beginPath(); c.moveTo(sx, schirmY); c.lineTo(sx - 6, fuss); c.stroke();
-    for (let i = 0; i < 6; i++) {
-      c.fillStyle = i % 2 ? '#fff6df' : '#e5484d';
-      c.beginPath(); c.moveTo(sx, schirmY);
-      c.arc(sx, schirmY, r, Math.PI + i * Math.PI / 6, Math.PI + (i + 1) * Math.PI / 6);
-      c.closePath(); c.fill();
-    }
-    const schirm = c.createLinearGradient(sx - r, 0, sx + r, 0);
-    schirm.addColorStop(0, 'rgba(255,255,255,.25)'); schirm.addColorStop(.5, 'rgba(255,255,255,0)'); schirm.addColorStop(1, 'rgba(0,0,0,.18)');
-    c.fillStyle = schirm; c.beginPath(); c.moveTo(sx, schirmY); c.arc(sx, schirmY, r, Math.PI, 0); c.closePath(); c.fill();
     // Muscheln und Seestern mit kleinem Schatten
     for (const [fx, fy] of [[.12, .3], [.42, .45], [.7, .2]]) {
       const mx = W * fx, my = grasOben + (H - grasOben) * fy;
@@ -2079,11 +2069,327 @@
     c.fillStyle = 'rgba(255,255,255,.35)'; ellipse(c, stx - 1.5, sty - 2, 1.4, 1);
   }
 
+  // ---------- Weitere Schauplätze: je Welt drei, sie wechseln alle drei Level ----------
+  // Garten, Szene 2: Gewächshaus und Wäscheleine
+  function gartenBeetMitte(c) {
+    gartenHecke(c);
+    // Gewächshaus
+    const gx = W * .08, gb = clamp(W * .3, 110, 190), gh = grasOben - heckeOben + 24, gy = grasOben + 2 - gh;
+    c.fillStyle = 'rgba(60,110,50,.55)'; // Pflanzen drinnen
+    for (let k = 0; k < 6; k++) ellipse(c, gx + gb * (.12 + k * .15), grasOben - 14 - (k % 2) * 8, 13, 16);
+    c.fillStyle = '#d6453a';
+    for (let k = 0; k < 9; k++) ellipse(c, gx + gb * (.1 + k * .1), grasOben - 18 - (k % 3) * 7, 2.6, 2.6);
+    c.fillStyle = 'rgba(225,242,250,.42)';
+    c.fillRect(gx, gy, gb, gh);
+    dreieck(c, gx - 4, gy, gx + gb + 4, gy, gx + gb / 2, gy - gb * .28); c.fill();
+    c.strokeStyle = 'rgba(255,255,255,.9)'; c.lineWidth = 2.2;
+    c.strokeRect(gx, gy, gb, gh);
+    for (let k = 1; k < 4; k++) { c.beginPath(); c.moveTo(gx + gb * k / 4, gy); c.lineTo(gx + gb * k / 4, gy + gh); c.stroke(); }
+    c.beginPath(); c.moveTo(gx, gy + gh * .45); c.lineTo(gx + gb, gy + gh * .45); c.stroke();
+    c.beginPath(); c.moveTo(gx - 4, gy); c.lineTo(gx + gb / 2, gy - gb * .28); c.lineTo(gx + gb + 4, gy); c.stroke();
+    c.fillStyle = 'rgba(255,255,255,.35)'; // Spiegelung auf dem Glas
+    dreieck(c, gx + gb * .55, gy + 4, gx + gb * .7, gy + 4, gx + gb * .5, gy + gh - 4); c.fill();
+    // Wäscheleine mit Wäsche (und natürlich einer Socke)
+    const p1 = W * .6, p2 = W * .94, ly = heckeOben + 2;
+    c.fillStyle = '#c9cfc4'; c.fillRect(p1 - 2, ly - 6, 4, grasOben - ly + 6); c.fillRect(p2 - 2, ly - 6, 4, grasOben - ly + 6);
+    c.strokeStyle = 'rgba(250,250,245,.9)'; c.lineWidth = 1.2;
+    c.beginPath(); c.moveTo(p1, ly); c.quadraticCurveTo((p1 + p2) / 2, ly + 14, p2, ly); c.stroke();
+    const leineY = (x) => { const t = (x - p1) / (p2 - p1); return ly + 4 * 14 * t * (1 - t) / 2; };
+    const waesche = [['#f2d43a', 'hemd'], ['#5aa0e0', 'tuch'], ['#ff8fb1', 'socke'], ['#fff6df', 'hemd'], ['#7cc47a', 'tuch']];
+    waesche.forEach(([farbe, art], i) => {
+      const x = p1 + (p2 - p1) * (.12 + i * .19), y = leineY(x);
+      c.fillStyle = farbe;
+      if (art === 'hemd') { c.fillRect(x - 9, y, 18, 20); c.fillRect(x - 15, y, 6, 8); c.fillRect(x + 9, y, 6, 8); }
+      else if (art === 'tuch') c.fillRect(x - 8, y, 16, 22);
+      else { c.fillRect(x - 3, y, 6, 14); c.beginPath(); c.roundRect(x - 3, y + 10, 11, 6, 3); c.fill(); }
+      c.fillStyle = 'rgba(0,0,0,.12)'; c.fillRect(x + 2, y, 3, art === 'socke' ? 14 : 20);
+      c.fillStyle = '#c78a4a'; c.fillRect(x - 1, y - 3, 2, 5); // Klammer
+    });
+  }
+  function gartenBeetVorder(c) {
+    // Hochbeet mit Karotten und Salat am hinteren Rasenrand
+    const bx = W * .04, by = grasOben + 6, bb = clamp(W * .34, 120, 220), bh = 22;
+    c.fillStyle = 'rgba(30,50,15,.25)'; ellipse(c, bx + bb / 2, by + bh + 3, bb * .55, 5);
+    c.fillStyle = '#9a6a3c'; c.fillRect(bx, by, bb, bh);
+    c.fillStyle = '#b07c48'; for (let y = by + 2; y < by + bh; y += 7) c.fillRect(bx, y, bb, 3);
+    c.fillStyle = '#5a3a22'; c.fillRect(bx, by - 3, bb, 4);
+    for (let k = 0; k < 9; k++) {
+      const x = bx + 10 + k * (bb - 20) / 8;
+      if (k % 3 === 2) { c.fillStyle = '#8fd060'; ellipse(c, x, by - 6, 8, 6); c.fillStyle = '#6cb04a'; ellipse(c, x, by - 4, 5, 4); }
+      else {
+        c.fillStyle = '#ef8a2c'; dreieck(c, x - 3, by - 1, x + 3, by - 1, x, by + 6); c.fill();
+        c.strokeStyle = '#4f9a3a'; c.lineWidth = 1.6; c.lineCap = 'round';
+        for (const w of [-.5, 0, .5]) { c.beginPath(); c.moveTo(x, by - 1); c.lineTo(x + w * 8, by - 12); c.stroke(); }
+      }
+    }
+    // Gießkanne
+    const kx = W * .9, ky = grasOben + 26;
+    c.fillStyle = 'rgba(30,50,15,.25)'; ellipse(c, kx, ky + 2, 16, 4);
+    c.fillStyle = '#3d8f6a'; c.beginPath(); c.roundRect(kx - 11, ky - 18, 22, 18, 3); c.fill();
+    c.strokeStyle = '#3d8f6a'; c.lineWidth = 3;
+    c.beginPath(); c.moveTo(kx + 10, ky - 10); c.lineTo(kx + 22, ky - 22); c.stroke();
+    c.beginPath(); c.arc(kx, ky - 18, 8, Math.PI, 0); c.stroke();
+    c.fillStyle = 'rgba(255,255,255,.25)'; c.fillRect(kx - 8, ky - 16, 3, 13);
+  }
+  // Garten, Szene 3: Gartenhaus, Trampolin, Apfelbaum und Ezras Hundehütte
+  function gartenHuetteMitte(c) {
+    gartenHecke(c);
+    // Gartenhaus links
+    const hx = W * .06, hb = clamp(W * .28, 100, 170), hh = grasOben - heckeOben + 6, hy = grasOben + 2 - hh;
+    c.fillStyle = '#a7774a'; c.fillRect(hx, hy, hb, hh);
+    c.strokeStyle = 'rgba(80,50,25,.35)'; c.lineWidth = 1;
+    for (let x = hx + 9; x < hx + hb; x += 9) { c.beginPath(); c.moveTo(x, hy); c.lineTo(x, hy + hh); c.stroke(); }
+    c.fillStyle = '#8c3a2e'; dreieck(c, hx - 10, hy + 2, hx + hb + 10, hy + 2, hx + hb / 2, hy - hb * .32); c.fill();
+    c.fillStyle = 'rgba(0,0,0,.15)'; dreieck(c, hx + hb / 2, hy - hb * .32, hx + hb + 10, hy + 2, hx + hb / 2, hy + 2); c.fill();
+    c.fillStyle = '#5c3d22'; c.fillRect(hx + hb * .58, hy + hh * .28, hb * .26, hh * .72);
+    c.fillStyle = '#e8c35a'; ellipse(c, hx + hb * .62, hy + hh * .64, 1.8, 1.8);
+    c.fillStyle = '#cfe6f2'; c.fillRect(hx + hb * .14, hy + hh * .3, hb * .26, hh * .3);
+    c.strokeStyle = '#fff'; c.lineWidth = 2; c.strokeRect(hx + hb * .14, hy + hh * .3, hb * .26, hh * .3);
+    c.beginPath(); c.moveTo(hx + hb * .27, hy + hh * .3); c.lineTo(hx + hb * .27, hy + hh * .6); c.stroke();
+    c.fillStyle = '#d9467e'; for (let k = 0; k < 4; k++) ellipse(c, hx + hb * (.17 + k * .065), hy + hh * .62, 3, 3);
+    // Trampolin
+    const tx = W * .5, tr = clamp(W * .15, 52, 90), ty = grasOben - 30, netz = tr * .75;
+    c.strokeStyle = '#4a4f55'; c.lineWidth = 3;
+    for (const f of [-.8, -.3, .3, .8]) { c.beginPath(); c.moveTo(tx + tr * f, ty + 2); c.lineTo(tx + tr * f * 1.05, grasOben + 2); c.stroke(); }
+    c.fillStyle = '#2f57c4'; ellipse(c, tx, ty, tr, tr * .22);
+    c.fillStyle = '#26292e'; ellipse(c, tx, ty - 1, tr * .86, tr * .16);
+    // Sicherheitsnetz mit Stangen
+    c.fillStyle = 'rgba(30,35,40,.18)'; c.fillRect(tx - tr, ty - netz, tr * 2, netz);
+    c.strokeStyle = 'rgba(40,45,50,.35)'; c.lineWidth = .8;
+    for (let x = tx - tr + 6; x < tx + tr; x += 6) { c.beginPath(); c.moveTo(x, ty - netz); c.lineTo(x, ty); c.stroke(); }
+    c.strokeStyle = '#3d4248'; c.lineWidth = 2.5;
+    for (const f of [-1, -.5, 0, .5, 1]) { c.beginPath(); c.moveTo(tx + tr * f, ty); c.lineTo(tx + tr * f, ty - netz); c.stroke(); }
+    c.strokeStyle = '#2f57c4'; c.lineWidth = 3; c.beginPath(); c.moveTo(tx - tr, ty - netz); c.lineTo(tx + tr, ty - netz); c.stroke();
+    // Apfelbaum rechts
+    const ax = W * .8, kr = clamp(W * .14, 50, 80);
+    c.fillStyle = '#6b4a2e'; c.fillRect(ax - 6, heckeOben - 10, 12, grasOben - heckeOben + 12);
+    c.fillStyle = '#3f7a34'; ellipse(c, ax, heckeOben - kr * .5, kr, kr * .8);
+    c.fillStyle = '#4f8f3e'; ellipse(c, ax - kr * .35, heckeOben - kr * .65, kr * .55, kr * .45); ellipse(c, ax + kr * .4, heckeOben - kr * .4, kr * .5, kr * .42);
+    c.fillStyle = 'rgba(255,250,200,.18)'; ellipse(c, ax - kr * .3, heckeOben - kr * .9, kr * .45, kr * .25);
+    const z = zufall(44); c.fillStyle = '#d8382c';
+    for (let k = 0; k < 9; k++) ellipse(c, ax + (z() - .5) * kr * 1.5, heckeOben - kr * .5 + (z() - .5) * kr, 3.2, 3.2);
+  }
+  function gartenHuetteVorder(c) {
+    // Ezras Hundehütte mit Namensschild, davor Napf und Knochen
+    const hx = W * .72, hb = clamp(W * .2, 70, 110), hy = grasOben + (H - grasOben) * .16, hh = hb * .62;
+    c.fillStyle = 'rgba(30,50,15,.28)'; ellipse(c, hx + 6, hy + 3, hb * .62, 7);
+    c.fillStyle = '#c0874e'; c.fillRect(hx - hb / 2, hy - hh, hb, hh);
+    c.strokeStyle = 'rgba(90,55,25,.35)'; c.lineWidth = 1;
+    for (let y = hy - hh + 8; y < hy; y += 8) { c.beginPath(); c.moveTo(hx - hb / 2, y); c.lineTo(hx + hb / 2, y); c.stroke(); }
+    c.fillStyle = '#2742c4'; dreieck(c, hx - hb / 2 - 8, hy - hh + 2, hx + hb / 2 + 8, hy - hh + 2, hx, hy - hh - hb * .42); c.fill();
+    c.fillStyle = 'rgba(0,0,0,.15)'; dreieck(c, hx, hy - hh - hb * .42, hx + hb / 2 + 8, hy - hh + 2, hx, hy - hh + 2); c.fill();
+    c.fillStyle = '#3a2414'; c.beginPath(); c.moveTo(hx - hb * .2, hy); c.lineTo(hx - hb * .2, hy - hh * .5); c.arc(hx, hy - hh * .5, hb * .2, Math.PI, 0); c.lineTo(hx + hb * .2, hy); c.closePath(); c.fill();
+    c.fillStyle = '#fff6df'; c.beginPath(); c.roundRect(hx - hb * .24, hy - hh - hb * .2, hb * .48, hb * .16, 3); c.fill();
+    c.fillStyle = '#26321f'; c.font = `800 ${Math.round(hb * .12)}px "Baloo 2", sans-serif`; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.fillText('EZRA', hx, hy - hh - hb * .12 + 1);
+    // Napf mit Knochen
+    const nx = hx - hb * .85, ny = hy + 2;
+    c.fillStyle = 'rgba(30,50,15,.25)'; ellipse(c, nx + 2, ny + 2, 15, 3.5);
+    c.fillStyle = '#d33b2f'; c.beginPath(); c.moveTo(nx - 13, ny - 9); c.lineTo(nx + 13, ny - 9); c.lineTo(nx + 9, ny); c.lineTo(nx - 9, ny); c.closePath(); c.fill();
+    c.fillStyle = '#b02a20'; ellipse(c, nx, ny - 9, 13, 3);
+    c.fillStyle = '#7a4a24'; ellipse(c, nx, ny - 9.5, 10, 2);
+    c.save(); c.translate(nx + 26, ny - 2); c.rotate(-.3); c.scale(.7, .7); malKnochen(c); c.restore();
+  }
+  // Wald, Szene 2: Bach mit Steinen und Farn
+  function waldBachMitte(c) {
+    waldMitte(c);
+    const z = zufall(46);
+    c.fillStyle = '#7d8a7a';
+    for (let x = -RAND; x < W + RAND; x += 40 + z() * 50) { ellipse(c, x, grasOben - 6, 16 + z() * 10, 10 + z() * 5); }
+    c.fillStyle = 'rgba(120,170,70,.6)';
+    for (let x = -RAND; x < W + RAND; x += 40 + z() * 50) ellipse(c, x + 3, grasOben - 12, 10 + z() * 6, 4);
+    farn(c, W * .3, grasOben - 2, 1.1); farn(c, W * .68, grasOben - 2, .9);
+  }
+  function farn(c, x, y, gr) {
+    c.strokeStyle = '#3f7f34'; c.lineWidth = 1.6 * gr; c.lineCap = 'round';
+    for (let k = -3; k <= 3; k++) {
+      const w = -Math.PI / 2 + k * .32, l = (26 - Math.abs(k) * 3) * gr;
+      const ex = x + Math.cos(w) * l, ey = y + Math.sin(w) * l;
+      c.beginPath(); c.moveTo(x, y); c.quadraticCurveTo(x + Math.cos(w) * l * .5, y + Math.sin(w) * l * .7 - 4, ex, ey); c.stroke();
+      for (let t = .3; t < 1; t += .15) {
+        const px = x + (ex - x) * t, py = y + (ey - y) * t;
+        c.beginPath(); c.moveTo(px, py); c.lineTo(px - 4 * gr * (1 - t), py + 3 * gr); c.moveTo(px, py); c.lineTo(px + 4 * gr * (1 - t), py + 3 * gr); c.stroke();
+      }
+    }
+  }
+  function waldBachVorder(c) {
+    // Bach schlängelt sich quer durch den hinteren Waldboden
+    const y0 = grasOben + (H - grasOben) * .08, breit = 16;
+    const bahn = (x) => y0 + Math.sin(x / W * 5 + .6) * 9;
+    c.fillStyle = 'rgba(40,60,30,.35)';
+    c.beginPath(); c.moveTo(0, bahn(0) - breit - 3);
+    for (let x = 0; x <= W; x += 10) c.lineTo(x, bahn(x) - breit - 3);
+    for (let x = W; x >= 0; x -= 10) c.lineTo(x, bahn(x) + breit + 4);
+    c.closePath(); c.fill();
+    const wasser = c.createLinearGradient(0, y0 - breit, 0, y0 + breit);
+    wasser.addColorStop(0, '#4f8fa8'); wasser.addColorStop(1, '#7cc0cf');
+    c.fillStyle = wasser;
+    c.beginPath(); c.moveTo(0, bahn(0) - breit);
+    for (let x = 0; x <= W; x += 10) c.lineTo(x, bahn(x) - breit);
+    for (let x = W; x >= 0; x -= 10) c.lineTo(x, bahn(x) + breit);
+    c.closePath(); c.fill();
+    c.strokeStyle = 'rgba(255,255,255,.55)'; c.lineWidth = 1.4; c.lineCap = 'round';
+    const z = zufall(47);
+    for (let n = 0; n < W / 22; n++) { const x = z() * W, y = bahn(x) + (z() - .5) * breit; c.beginPath(); c.moveTo(x, y); c.lineTo(x + 8 + z() * 8, y); c.stroke(); }
+    for (const fx of [.22, .3, .38]) { const x = W * fx; c.fillStyle = '#8c968a'; ellipse(c, x, bahn(x) + 1, 9, 5); c.fillStyle = 'rgba(255,255,255,.3)'; ellipse(c, x - 2, bahn(x) - 1, 4, 1.6); }
+    farn(c, W * .06, bahn(W * .06) + breit + 10, 1.2); farn(c, W * .94, bahn(W * .94) + breit + 12, 1.3);
+  }
+  // Wald, Szene 3: Hochsitz und Pilzhain
+  function waldHochsitzMitte(c) {
+    waldMitte(c);
+    const hx = W * .62, hb = clamp(W * .16, 56, 90), boden = grasOben + 2, plat = heckeOben - 20;
+    c.strokeStyle = '#6b4a2e'; c.lineWidth = 6; c.lineCap = 'butt';
+    c.beginPath(); c.moveTo(hx - 6, boden); c.lineTo(hx + 6, plat); c.moveTo(hx + hb + 6, boden); c.lineTo(hx + hb - 6, plat); c.stroke();
+    c.lineWidth = 3; c.strokeStyle = '#7a5636';
+    for (let y = plat + 22; y < boden; y += 24) { c.beginPath(); c.moveTo(hx + 4, y); c.lineTo(hx + hb - 4, y); c.stroke(); }
+    // Leiter
+    c.strokeStyle = '#8a6440'; c.lineWidth = 3;
+    c.beginPath(); c.moveTo(hx - 26, boden); c.lineTo(hx + 2, plat + 4); c.moveTo(hx - 14, boden); c.lineTo(hx + 12, plat + 4); c.stroke();
+    for (let t = .1; t < 1; t += .14) { const ax = lerp(hx - 26, hx + 2, t), bx = lerp(hx - 14, hx + 12, t), y = lerp(boden, plat + 4, t); c.beginPath(); c.moveTo(ax, y); c.lineTo(bx, y); c.stroke(); }
+    // Kanzel
+    c.fillStyle = '#7f5a38'; c.fillRect(hx - 4, plat - 34, hb + 8, 36);
+    c.strokeStyle = 'rgba(60,35,15,.4)'; c.lineWidth = 1;
+    for (let x = hx + 4; x < hx + hb; x += 8) { c.beginPath(); c.moveTo(x, plat - 34); c.lineTo(x, plat + 2); c.stroke(); }
+    c.fillStyle = '#2b1d12'; c.fillRect(hx + hb * .25, plat - 26, hb * .5, 10);
+    c.fillStyle = '#4a3a2a'; dreieck(c, hx - 12, plat - 32, hx + hb + 12, plat - 32, hx + hb / 2, plat - 52); c.fill();
+    // umgestürzter Baumstamm mit Moos
+    const sx = W * .12, sb = clamp(W * .3, 100, 180);
+    c.fillStyle = '#6b4a2e'; c.beginPath(); c.roundRect(sx, grasOben - 16, sb, 16, 8); c.fill();
+    c.fillStyle = '#c8a070'; ellipse(c, sx + sb, grasOben - 8, 5, 8);
+    c.strokeStyle = '#8a6440'; c.lineWidth = 1; c.beginPath(); c.arc(sx + sb, grasOben - 8, 3, 0, Math.PI * 2); c.stroke();
+    c.fillStyle = 'rgba(120,170,70,.75)'; ellipse(c, sx + sb * .35, grasOben - 15, sb * .25, 4);
+  }
+  function steinpilz(c, x, y, gr) {
+    c.save(); c.translate(x, y); c.scale(gr, gr);
+    c.fillStyle = 'rgba(20,30,10,.25)'; ellipse(c, 2, 1, 10, 2.5);
+    c.fillStyle = '#efe2c4'; c.beginPath(); c.roundRect(-4, -10, 8, 11, 3); c.fill();
+    const hut = c.createRadialGradient(-3, -14, 1, 0, -10, 10);
+    hut.addColorStop(0, '#a8683a'); hut.addColorStop(1, '#6e3f1e');
+    c.fillStyle = hut; c.beginPath(); c.ellipse(0, -10, 9, 6, 0, Math.PI, 0); c.fill();
+    c.restore();
+  }
+  function waldHochsitzVorder(c) {
+    const z = zufall(48);
+    for (const [fx, fy] of [[.22, .06], [.48, .14], [.66, .04], [.86, .1]]) {
+      for (let k = 0; k < 3; k++) steinpilz(c, W * fx + (z() - .5) * 30, grasOben + (H - grasOben) * fy + z() * 6, .7 + z() * .5);
+    }
+  }
+  // Strand, Szene 2: Dünen mit Leuchtturm
+  function strandLeuchtturmMitte(c) {
+    strandMitte(c);
+    // Felsnase rechts mit Leuchtturm
+    const lx = W * .82, fuss = heckeOben + 6, hoch = heckeOben - H * .14, br = clamp(W * .05, 18, 28);
+    // kleine Felseninsel aus runden Steinen, oben heller (Licht), unten dunkler im Wasser
+    const zf = zufall(50);
+    for (let k = 0; k < 9; k++) {
+      const fx = lx + (k - 4) * br * .55 + (zf() - .5) * 8, fr = br * (.7 + zf() * .6);
+      c.fillStyle = k % 2 ? '#6f7570' : '#7f857e'; ellipse(c, fx, fuss + 4, fr, fr * .55);
+      c.fillStyle = 'rgba(255,255,255,.16)'; ellipse(c, fx - fr * .25, fuss + 4 - fr * .3, fr * .45, fr * .18);
+    }
+    c.strokeStyle = 'rgba(255,255,255,.6)'; c.lineWidth = 1.4; // Gischt um die Felsen
+    c.beginPath(); c.ellipse(lx, fuss + 8, br * 3.1, 5, 0, 0, Math.PI); c.stroke();
+    // Turm: rot-weiß gestreift, nach oben schmaler
+    const turm = (y) => br * (1 - .35 * (fuss - y) / hoch);
+    for (let k = 0; k < 6; k++) {
+      const y1 = fuss - hoch * k / 6, y2 = fuss - hoch * (k + 1) / 6;
+      c.fillStyle = k % 2 ? '#fff6df' : '#d33b2f';
+      c.beginPath(); c.moveTo(lx - turm(y1), y1); c.lineTo(lx + turm(y1), y1); c.lineTo(lx + turm(y2), y2); c.lineTo(lx - turm(y2), y2); c.closePath(); c.fill();
+    }
+    c.fillStyle = 'rgba(0,0,0,.14)'; c.fillRect(lx + 2, fuss - hoch, br * .6, hoch);
+    const top = fuss - hoch;
+    c.fillStyle = '#2b2b2b'; c.fillRect(lx - br * .9, top - 3, br * 1.8, 4);
+    c.fillStyle = '#ffe58a'; c.fillRect(lx - br * .5, top - 16, br, 13);
+    c.fillStyle = '#d33b2f'; dreieck(c, lx - br * .75, top - 16, lx + br * .75, top - 16, lx, top - 30); c.fill();
+    const licht = c.createRadialGradient(lx, top - 10, 2, lx, top - 10, 40);
+    licht.addColorStop(0, 'rgba(255,240,170,.5)'); licht.addColorStop(1, 'rgba(255,240,170,0)');
+    c.fillStyle = licht; c.fillRect(lx - 40, top - 50, 80, 80);
+  }
+  function strandDuenenVorder(c) {
+    // Düne links mit Strandhafer
+    c.fillStyle = '#e2c27c';
+    c.beginPath(); c.moveTo(0, grasOben + 30); c.quadraticCurveTo(W * .12, grasOben - 18, W * .3, grasOben + 6); c.lineTo(W * .3, grasOben + 34); c.lineTo(0, grasOben + 40); c.closePath(); c.fill();
+    c.fillStyle = 'rgba(255,255,255,.2)'; ellipse(c, W * .1, grasOben - 2, W * .07, 5, -.15);
+    c.strokeStyle = '#8fa85a'; c.lineWidth = 1.5; c.lineCap = 'round';
+    const z = zufall(49);
+    for (let n = 0; n < 26; n++) { const x = W * (.02 + z() * .24), y = grasOben + 2 + z() * 14 - (x < W * .15 ? 10 : 0); c.beginPath(); c.moveTo(x, y); c.quadraticCurveTo(x + 2, y - 10, x + (z() - .3) * 10, y - 18 - z() * 8); c.stroke(); }
+    // Sandburg
+    const bx = W * .7, by = grasOben + (H - grasOben) * .16;
+    c.fillStyle = 'rgba(120,80,30,.2)'; ellipse(c, bx + 4, by + 2, 30, 5);
+    c.fillStyle = '#e6c27a'; c.fillRect(bx - 24, by - 16, 48, 16); c.fillRect(bx - 28, by - 28, 14, 28); c.fillRect(bx + 14, by - 28, 14, 28); c.fillRect(bx - 8, by - 34, 16, 18);
+    c.fillStyle = '#d4ae66'; for (const x of [bx - 28, bx - 21, bx + 14, bx + 21]) c.fillRect(x, by - 32, 5, 4);
+    c.fillStyle = '#7a5a30'; c.beginPath(); c.arc(bx, by, 5, Math.PI, 0); c.fill();
+    c.strokeStyle = '#555'; c.lineWidth = 1; c.beginPath(); c.moveTo(bx, by - 34); c.lineTo(bx, by - 46); c.stroke();
+    c.fillStyle = '#e5484d'; dreieck(c, bx, by - 46, bx + 10, by - 42, bx, by - 38); c.fill();
+  }
+  // Strand, Szene 3: Bootssteg mit Fischerbooten
+  function strandStegMitte(c) {
+    strandMitte(c);
+    // Steg führt vom Strand aufs Wasser (nach hinten schmaler)
+    const vx = W * .2, nah = grasOben + 4, fern = heckeOben + 18, bNah = clamp(W * .12, 40, 70), bFern = bNah * .35;
+    c.fillStyle = '#5c3d22';
+    for (let t = 0; t <= 1; t += .2) { const y = lerp(nah, fern, t), b = lerp(bNah, bFern, t), x = lerp(vx, vx + W * .1, t); c.fillRect(x - b / 2, y, 3, 14 * (1 - t * .6)); c.fillRect(x + b / 2 - 3, y, 3, 14 * (1 - t * .6)); }
+    c.fillStyle = '#a7774a';
+    c.beginPath(); c.moveTo(vx - bNah / 2, nah); c.lineTo(vx + bNah / 2, nah); c.lineTo(vx + W * .1 + bFern / 2, fern); c.lineTo(vx + W * .1 - bFern / 2, fern); c.closePath(); c.fill();
+    c.strokeStyle = 'rgba(80,50,25,.45)'; c.lineWidth = 1;
+    for (let t = .05; t < 1; t += .07) { const y = lerp(nah, fern, t), b = lerp(bNah, bFern, t), x = lerp(vx, vx + W * .1, t); c.beginPath(); c.moveTo(x - b / 2, y); c.lineTo(x + b / 2, y); c.stroke(); }
+    // Fischerboote
+    const boot = (x, y, gr, farbe) => {
+      c.fillStyle = farbe;
+      c.beginPath(); c.moveTo(x - 22 * gr, y - 8 * gr); c.lineTo(x + 22 * gr, y - 8 * gr); c.lineTo(x + 16 * gr, y); c.lineTo(x - 16 * gr, y); c.closePath(); c.fill();
+      c.fillStyle = '#fff6df'; c.fillRect(x - 22 * gr, y - 10 * gr, 44 * gr, 2.5 * gr);
+      c.fillStyle = '#e8e2d2'; c.fillRect(x - 6 * gr, y - 18 * gr, 12 * gr, 10 * gr);
+      c.fillStyle = '#26321f'; c.fillRect(x - 3 * gr, y - 15 * gr, 6 * gr, 3 * gr);
+      c.strokeStyle = 'rgba(255,255,255,.5)'; c.lineWidth = 1; c.beginPath(); c.moveTo(x - 20 * gr, y + 2); c.lineTo(x + 20 * gr, y + 2); c.stroke();
+    };
+    boot(W * .45, heckeOben + 30, .9, '#2f6fb4'); boot(W * .78, heckeOben + 46, 1.2, '#d33b2f');
+  }
+  function strandKorbVorder(c) {
+    // Strandkorb rechts, blau-weiß gestreift
+    const kx = W * .82, ky = grasOben + (H - grasOben) * .3, kb = clamp(W * .17, 60, 100), kh = kb * 1.1;
+    c.fillStyle = 'rgba(120,80,30,.25)'; ellipse(c, kx + 8, ky + 4, kb * .7, 8);
+    c.fillStyle = '#d9c08a'; c.fillRect(kx - kb / 2, ky - kh * .45, kb, kh * .45);
+    c.strokeStyle = 'rgba(140,100,50,.5)'; c.lineWidth = 1;
+    for (let y = ky - kh * .45 + 4; y < ky; y += 5) { c.beginPath(); c.moveTo(kx - kb / 2, y); c.lineTo(kx + kb / 2, y); c.stroke(); }
+    c.fillStyle = '#e9d6a6'; c.beginPath(); c.roundRect(kx - kb / 2, ky - kh, kb, kh * .58, [kb * .4, kb * .4, 4, 4]); c.fill();
+    c.save(); c.beginPath(); c.roundRect(kx - kb / 2 + 6, ky - kh + 6, kb - 12, kh * .52, [kb * .35, kb * .35, 2, 2]); c.clip();
+    for (let x = kx - kb / 2; x < kx + kb / 2; x += 10) { c.fillStyle = (x / 10 | 0) % 2 ? '#2f6fb4' : '#fff6df'; c.fillRect(x, ky - kh, 10, kh); }
+    c.restore();
+    c.fillStyle = '#c9a868'; c.fillRect(kx - kb / 2 - 4, ky - kh * .45, 8, 6); c.fillRect(kx + kb / 2 - 4, ky - kh * .45, 8, 6);
+    // Eimer und Schaufel
+    const ex = W * .14, ey = grasOben + (H - grasOben) * .22;
+    c.fillStyle = 'rgba(120,80,30,.25)'; ellipse(c, ex + 2, ey + 2, 12, 3);
+    c.fillStyle = '#e5484d'; c.beginPath(); c.moveTo(ex - 10, ey - 16); c.lineTo(ex + 10, ey - 16); c.lineTo(ex + 7, ey); c.lineTo(ex - 7, ey); c.closePath(); c.fill();
+    c.strokeStyle = '#e5484d'; c.lineWidth = 1.5; c.beginPath(); c.arc(ex, ey - 16, 9, Math.PI, 0); c.stroke();
+    c.strokeStyle = '#f2d43a'; c.lineWidth = 3; c.beginPath(); c.moveTo(ex + 14, ey - 2); c.lineTo(ex + 22, ey - 22); c.stroke();
+    c.fillStyle = '#f2d43a'; ellipse(c, ex + 13, ey, 5, 3);
+  }
+
+  function strandSchirm(c) {
+    // Sonnenschirm mit Schatten im Sand
+    const sx = W * .88, schirmY = H * .42, fuss = grasOben + (H - grasOben) * .3;
+    const r = clamp(W * .14, 50, 90);
+    c.fillStyle = 'rgba(120,80,30,.22)'; ellipse(c, sx - r * .5, fuss + 4, r * .9, r * .18);
+    c.strokeStyle = '#efe6d6'; c.lineWidth = 4;
+    c.beginPath(); c.moveTo(sx, schirmY); c.lineTo(sx - 6, fuss); c.stroke();
+    for (let i = 0; i < 6; i++) {
+      c.fillStyle = i % 2 ? '#fff6df' : '#e5484d';
+      c.beginPath(); c.moveTo(sx, schirmY);
+      c.arc(sx, schirmY, r, Math.PI + i * Math.PI / 6, Math.PI + (i + 1) * Math.PI / 6);
+      c.closePath(); c.fill();
+    }
+    const schirm = c.createLinearGradient(sx - r, 0, sx + r, 0);
+    schirm.addColorStop(0, 'rgba(255,255,255,.25)'); schirm.addColorStop(.5, 'rgba(255,255,255,0)'); schirm.addColorStop(1, 'rgba(0,0,0,.18)');
+    c.fillStyle = schirm; c.beginPath(); c.moveTo(sx, schirmY); c.arc(sx, schirmY, r, Math.PI, 0); c.closePath(); c.fill();
+  }
+
   // gefahr = das eklige Ding des Orts; nachtAb = ab welcher Höhe die Nacht den Vordergrund abdunkelt
   const ORTE = {
-    garten: { himmel: gartenHimmel, mitte: gartenMitte, vorder: gartenVorder, gefahr: 'socke', nachtAb: () => heckeOben - 40, gluehwuermchen: true },
-    wald: { himmel: waldHimmel, mitte: waldMitte, vorder: waldVorder, gefahr: 'zapfen', nachtAb: () => 0, gluehwuermchen: true },
-    strand: { himmel: strandHimmel, mitte: strandMitte, vorder: strandVorder, gefahr: 'qualle', nachtAb: () => heckeOben - 40, gluehwuermchen: false },
+    garten: { himmel: gartenHimmel, mitte: gartenMitte, vorder: gartenVorder, gefahr: 'socke', nachtAb: () => heckeOben - 40, gluehwuermchen: true,
+      szenen: [{ mitte: gartenMitte }, { mitte: gartenBeetMitte, vorder: gartenBeetVorder }, { mitte: gartenHuetteMitte, vorder: gartenHuetteVorder }] },
+    wald: { himmel: waldHimmel, mitte: waldMitte, vorder: waldVorder, gefahr: 'zapfen', nachtAb: () => 0, gluehwuermchen: true,
+      szenen: [{ mitte: waldMitte }, { mitte: waldBachMitte, vorder: waldBachVorder }, { mitte: waldHochsitzMitte, vorder: waldHochsitzVorder }] },
+    strand: { himmel: strandHimmel, mitte: strandMitte, vorder: strandVorder, gefahr: 'qualle', nachtAb: () => heckeOben - 40, gluehwuermchen: false,
+      szenen: [{ mitte: strandMitte, vorder: strandSchirm }, { mitte: strandLeuchtturmMitte, vorder: strandDuenenVorder }, { mitte: strandStegMitte, vorder: strandKorbVorder }] },
   };
   // Kleines Vorschaubild eines Orts (für „Ezras Sachen“) – leiht sich kurz die Bildschirmmaße
   function ortVorschau(c, id) {
@@ -2093,8 +2399,10 @@
     g.setTransform(1, 0, 0, 1, 0, 0);
     ORTE[id].himmel(g);
     g.fillStyle = '#fff8d6'; ellipse(g, W * .16, H * .2, 16, 16);
-    if (ORTE[id].mitte) ORTE[id].mitte(g);
+    const sz = ORTE[id].szenen[0];
+    sz.mitte(g);
     ORTE[id].vorder(g);
+    if (sz.vorder) sz.vorder(g);
     [W, H, grasOben, heckeOben] = alt;
   }
 
@@ -2116,6 +2424,10 @@
   }
   const fortschritt = () => Math.min(1, modus === 'level' ? level.basis + zeit / 240 : zeit / 120);
   const levelArt = () => (modus === 'level' ? level.art : null);
+  // Schauplatz der Welt: Level 1–3, 4–6, 7–9 + Boss (Endlos: zufällig je Runde)
+  let szene = 0;
+  // Tageszeit-Start je Schauplatz: Morgen, Mittag, Nachmittag – der Boss kämpft in der Abenddämmerung
+  const tagStart = () => (modus !== 'level' ? 0 : level.art === 'boss' ? .55 : [0, .2, .38][szene]);
   function ortSetzen(id) {
     spielOrt = id;
     malHimmel(himmelCv.getContext('2d'));
@@ -2181,7 +2493,7 @@
     }
   }
   function malHintergrund() {
-    const st = Math.min(1, zeit / 120);
+    const st = modus === 'level' ? Math.min(1, tagStart() + zeit / 600) : Math.min(1, zeit / 120);
     const tz = tageszeit(st);
     const kamera = ruhig ? 0 : clamp((ezra.x - W / 2) / (W / 2), -1, 1);
     ctx.drawImage(himmelCv, -W * .02 - kamera * 5, 0, W * 1.04, H);
@@ -2537,7 +2849,8 @@
   function starten() {
     if (!levelPfotenVon(stand, 1)) return levelKarteZeigen(1);
     modus = 'endlos'; level = null;
-    if (spielOrt !== stand.ort) ortSetzen(stand.ort);
+    szene = Math.floor(Math.random() * 3); // jede Endlos-Runde an einem anderen Schauplatz
+    ortSetzen(stand.ort);
     tonStarten();
     neuesSpiel();
     zustand = 'laeuft';
@@ -2901,6 +3214,7 @@
     ezraVon = null; // wer direkt weiterspielt, sieht den Lauf auf der Karte nicht mehr
     modus = 'level';
     level = LEVEL[nr - 1];
+    szene = Math.min(2, Math.floor(level.imWelt / 3));
     ortSetzen(level.welt);
     tonStarten();
     neuesSpiel();

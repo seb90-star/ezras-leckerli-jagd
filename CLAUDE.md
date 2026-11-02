@@ -43,6 +43,10 @@ Allgemeine Arbeitsweise steht in der globalen CLAUDE.md – vor jeder Änderung 
 - **Feedback:** Meilenstein-/Erfolgs-Schilder im Spiel, Endkarte mit Balken (Leckerlis, Bälle, Goldene, Socken) und Erfolgs-Stapel
 - **Grafik:** Licht/Volumen bei Ezra, Ebenen mit leichter Verschiebung, Dunst, Vignette, Leben (Schmetterlinge, Blätter, Möwen),
   2,5D (Boden-Schatten der fallenden Sachen, weiche Kulisse)
+- **Schauplätze:** je Welt drei, wechseln alle 3 Level (`ORTE[welt].szenen`, Variable `szene`; Endlos zufällig je Runde).
+  Garten: Spielturm / Gewächshaus + Wäscheleine + Hochbeet / Gartenhaus + Trampolin + Ezras Hundehütte.
+  Wald: Lichtung / Bach mit Trittsteinen / Hochsitz + Steinpilze. Strand: Sonnenschirm / Leuchtturm + Düne + Sandburg /
+  Bootssteg + Strandkorb. Tageszeit je Abschnitt (Morgen, Mittag, Nachmittag), Bosse in der Abenddämmerung
 - **Zurück-Taste:** 2× schnell beendet die App; Pause-Menü mit Weiter, Nochmal, Zur Karte, Ton, Vibration
 
 ## Entwickler-Menü

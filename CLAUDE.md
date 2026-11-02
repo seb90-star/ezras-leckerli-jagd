@@ -8,6 +8,10 @@ Allgemeine Arbeitsweise steht in der globalen CLAUDE.md – vor jeder Änderung 
 - Offene Aufgaben: TODO.md
 - Native Plugins über `window.Capacitor.Plugins` ansprechen (ohne Bundler gibt es kein `registerPlugin`)
 
+## Entwickler-Menü
+- `const ENTWICKLUNG = true` in docs/index.html schaltet Testhilfen ein (Einstellungen → „🛠 Entwickler“, Pause-Menü: Sieg/Unverwundbar)
+- Vor der Veröffentlichung auf `false` stellen (steht auch in TODO.md)
+
 ## Nach jeder Änderung am Spiel
 - Version in docs/sw.js erhöhen
 - `npx cap sync android`

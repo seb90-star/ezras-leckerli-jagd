@@ -236,6 +236,12 @@
   .schiebe:checked::after { transform: translateX(20px); }
   .schiebe:focus-visible { outline: 3px solid var(--gelb); outline-offset: 2px; }
   .trenner { height: 1px; background: rgba(38, 50, 31, .12); }
+  /* Entwickler-Menü (nur mit ENTWICKLUNG = true) */
+  .entwickler { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; border: 2px dashed var(--fell); border-radius: 12px; padding: 8px; }
+  .entwickler b { grid-column: 1 / -1; font: 800 15px var(--font-anzeige); color: var(--fell); }
+  .entwickler small { grid-column: 1 / -1; font-weight: 700; opacity: .6; margin-top: 4px; }
+  .entwickler button { font-size: 12px; padding: 5px 6px; border-width: 1.5px; }
+  .entwickler .breit { grid-column: 1 / -1; }
   .widmung { align-items: center; gap: 16px; text-align: center; }
   .ezra-foto {
     width: min(200px, 55vw); height: auto;
@@ -356,7 +362,7 @@
     background: radial-gradient(60% 30% at 20% 25%, rgba(244, 246, 249, .95), transparent 70%),
       radial-gradient(55% 30% at 80% 55%, rgba(236, 240, 245, .95), transparent 70%),
       radial-gradient(70% 35% at 40% 85%, rgba(240, 243, 247, .95), transparent 70%),
-      rgba(214, 222, 230, .9);
+      rgb(214, 222, 230);
     background-size: 160% 160%; animation: wabern 10s ease-in-out infinite alternate; }
   @keyframes wabern { to { background-position: 40% 25%; } }
   .schildchen { position: absolute; left: 50%; transform: translateX(-50%); background: var(--fell); color: var(--creme); font: 800 15px var(--font-anzeige); padding: 6px 14px; border-radius: 8px; box-shadow: 0 3px 0 rgba(0, 0, 0, .25); white-space: nowrap; }
@@ -519,6 +525,31 @@
           <button class="zweit klein" id="anleitungKnopf" type="button" data-t="anleitungNochmal">Kurzanleitung nochmal zeigen</button>
           <button class="zweit klein" id="loeschKnopf" type="button">Bestenliste löschen</button>
           <button class="zweit klein" id="infoKnopf" type="button" data-t="ueber">Über das Spiel</button>
+          <div class="entwickler" id="devBereich" hidden>
+            <b>🛠 Entwickler</b>
+            <button class="zweit breit" type="button" data-dev="offen">Alle Level offen: aus</button>
+            <small>Welt fertig machen</small>
+            <button class="zweit" type="button" data-dev="welt" data-welt="garten" data-pf="1">Garten 🐾</button>
+            <button class="zweit" type="button" data-dev="welt" data-welt="garten" data-pf="3">Garten 🐾🐾🐾</button>
+            <button class="zweit" type="button" data-dev="welt" data-welt="wald" data-pf="1">Wald 🐾</button>
+            <button class="zweit" type="button" data-dev="welt" data-welt="wald" data-pf="3">Wald 🐾🐾🐾</button>
+            <button class="zweit" type="button" data-dev="welt" data-welt="strand" data-pf="1">Strand 🐾</button>
+            <button class="zweit" type="button" data-dev="welt" data-welt="strand" data-pf="3">Strand 🐾🐾🐾</button>
+            <small>Karte</small>
+            <button class="zweit breit" type="button" data-dev="lauf">Ezra-Lauf zum aktuellen Level</button>
+            <button class="zweit" type="button" data-dev="fahrt" data-welt="wald">Kamerafahrt Wald</button>
+            <button class="zweit" type="button" data-dev="fahrt" data-welt="strand">Kamerafahrt Strand</button>
+            <small>Halstuch-Übergabe ansehen</small>
+            <button class="zweit" type="button" data-dev="tuch" data-tuch="standard">Abenteuer</button>
+            <button class="zweit" type="button" data-dev="tuch" data-tuch="gaensebluemchen">Gänseblümchen</button>
+            <button class="zweit" type="button" data-dev="tuch" data-tuch="tannen">Tannenwald</button>
+            <button class="zweit" type="button" data-dev="tuch" data-tuch="muscheln">Muscheln</button>
+            <small>Freischalten / Zurücksetzen</small>
+            <button class="zweit breit" type="button" data-dev="allesfrei">Alle Erfolge und Halstücher frei</button>
+            <button class="zweit" type="button" data-dev="resetLevel">Level zurück</button>
+            <button class="zweit" type="button" data-dev="resetErfolge">Erfolge zurück</button>
+            <button class="zweit warnung breit" type="button" data-dev="resetAlles">Alles zurück (wie neu installiert)</button>
+          </div>
         </div>
         <button class="los" id="fertigKnopf" type="button" data-t="fertig">Fertig</button>
         <p class="fusszeile"><a id="datenschutzLink" href="datenschutz.html" data-t="datenschutz">Datenschutz</a><span id="versionText">Version 1.0</span></p>
@@ -541,6 +572,13 @@
           <button class="los" id="weiterKnopf" type="button" data-t="weiter">Weiterspielen</button>
           <button class="zweit" id="pauseNochmal" type="button" data-t="levelNochmal">Nochmal</button>
           <button class="zweit" id="pauseKarte2" type="button"><span aria-hidden="true">🏠</span> <span data-t="zurKarte">Zur Karte</span></button>
+        </div>
+        <div class="entwickler" id="devPause" hidden>
+          <b>🛠 Entwickler</b>
+          <button class="zweit" type="button" data-sieg="1">Sieg 🐾</button>
+          <button class="zweit" type="button" data-sieg="2">Sieg 🐾🐾</button>
+          <button class="zweit" type="button" data-sieg="3">Sieg 🐾🐾🐾</button>
+          <button class="zweit" type="button" id="devUnverwundbar">Unverwundbar: aus</button>
         </div>
         <div class="einstellungen">
           <label class="zeile" for="pauseTon"><span data-t="ton">Ton</span><input class="schiebe" type="checkbox" role="switch" id="pauseTon"></label>
@@ -846,6 +884,9 @@
   const schreib = (k, v) => { try { v === null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} };
 
   // ---------- App-Funktionen (nur in der Handy-App vorhanden) ----------
+  // Entwickler-Menü zum Testen – für die Veröffentlichung auf false stellen!
+  const ENTWICKLUNG = true;
+  let devAllesOffen = false, devUnverwundbar = false, devPfoten = null;
   const nativ = !!window.Capacitor?.isNativePlatform?.();
   // Ohne Bundler gibt es kein registerPlugin – die Plugins hängen fertig an Capacitor.Plugins
   const Haptik = nativ ? window.Capacitor.Plugins?.Haptics : null;
@@ -930,8 +971,8 @@
     return { nr: i + 1, welt, art, stufen, imWelt, basis: WELTEN[w].basis + imWelt * .03, letztes: imWelt === 9 };
   });
   const levelPfotenVon = (s, nr) => (s.levels && s.levels[nr]) || 0;
-  const levelOffen = (nr) => nr === 1 || levelPfotenVon(stand, nr - 1) > 0;
-  const weltOffen = (id) => { const i = WELTEN.findIndex((w) => w.id === id); return i === 0 || levelPfotenVon(stand, i * 10) > 0; };
+  const levelOffen = (nr) => devAllesOffen || nr === 1 || levelPfotenVon(stand, nr - 1) > 0;
+  const weltOffen = (id) => { const i = WELTEN.findIndex((w) => w.id === id); return devAllesOffen || i === 0 || levelPfotenVon(stand, i * 10) > 0; };
   const weltGeschafft = (id) => { const i = WELTEN.findIndex((w) => w.id === id); return levelPfotenVon(stand, i * 10 + 10) > 0; };
   const pfotenSumme = (s) => LEVEL.reduce((n, l) => n + levelPfotenVon(s, l.nr), 0);
   const weltVoll = (s, id) => LEVEL.filter((l) => l.welt === id && levelPfotenVon(s, l.nr) === 3).length;
@@ -969,7 +1010,7 @@
   const ortFrei = (id) => weltOffen(id);
   const erfolgFuer = (halstuch) => ERFOLGE.find((e) => e.belohnung === halstuch);
   const weltFuer = (halstuch) => WELTEN.find((w) => w.halstuch === halstuch);
-  const halstuchFrei = (id) => id === 'keins' ? true
+  const halstuchFrei = (id) => id === 'keins' || stand.devTuecher ? true
     : id === 'standard' ? levelPfotenVon(stand, 1) > 0
     : weltFuer(id) ? weltGeschafft(weltFuer(id).id)
     : !!stand.erfolge[erfolgFuer(id)?.id];
@@ -1830,6 +1871,7 @@
     $('pauseTon').checked = ton;
     $('pauseVib').checked = vibration;
     $('pauseVibZeile').hidden = !kannVibrieren;
+    $('devPause').hidden = !ENTWICKLUNG;
     zeige('pauseKarte');
     $('weiterKnopf').focus();
   }
@@ -2150,7 +2192,8 @@
   // ---------- Level: Ende ----------
   function levelEnde() {
     vibrieren(levelPfoten ? 'mittel' : 'stark');
-    const nr = level.nr, n = pfotenFuer(levelWert()), vorher = levelPfotenVon(stand, nr);
+    const nr = level.nr, n = devPfoten ?? pfotenFuer(levelWert()), vorher = levelPfotenVon(stand, nr);
+    devPfoten = null;
     if (n > vorher) stand.levels[nr] = n;
     auswertung = rundeAuswerten();
     const extras = [];
@@ -2520,8 +2563,8 @@
       n.style.top = `${weltOben(i) - 20}px`; n.style.height = `${WELT_HOEHE + 40}px`;
       const vorige = WELTEN[i - 1];
       const anteil = weltOffen(vorige.id) ? LEVEL.filter((l) => l.welt === vorige.id && levelPfotenVon(stand, l.nr)).length / 10 : 0;
-      // a = Anteil geschaffter Level der vorigen Welt: 0 = dichter Nebel, 1 = unten fast klar
-      const maske = (a) => `linear-gradient(to top, rgba(0,0,0,${1 - a * .9}) ${a * 55}%, #000 ${a * 55 + 30}%)`;
+      // a = Anteil geschaffter Level der vorigen Welt: 0 = dichter Nebel, gegen Ende schimmert unten etwas durch
+      const maske = (a) => `linear-gradient(to top, rgba(0,0,0,${1 - a * .55}) 0%, #000 ${a * 35 + 8}%)`;
       const alt = nebelVorher && nebelVorher[welt.id] != null ? nebelVorher[welt.id] : anteil;
       n.style.webkitMaskImage = n.style.maskImage = maske(alt);
       if (alt !== anteil) requestAnimationFrame(() => setTimeout(() => { n.style.webkitMaskImage = n.style.maskImage = maske(anteil); }, 300));
@@ -2691,6 +2734,7 @@
     serie = 0;
   }
   function lebenWeg(x, y, text) {
+    if (devUnverwundbar) { serieAus(); texte.push({ x, y, text, farbe: '#ff6a5c', leben: 1 }); return; }
     leben--;
     serieAus();
     lebenAnzeigen();
@@ -2998,6 +3042,86 @@
 
   $('losKnopf').addEventListener('click', starten);
   $('endlosKnopf').addEventListener('click', endlosZeigen);
+
+  // ---------- Entwickler-Menü ----------
+  if (ENTWICKLUNG) {
+    $('devBereich').hidden = false;
+    const fertig = (text = '✓ erledigt') => { standSichern(); toast(text); };
+    // Erfolge, die nur vom Gesamtstand abhängen, nachziehen (z. B. Meister nach „Welt fertig“)
+    const erfolgeNachziehen = () => ERFOLGE.forEach((e) => {
+      if (!e.rund && !stand.erfolge[e.id] && e.wert(stand) >= e.ziel) stand.erfolge[e.id] = Date.now();
+    });
+    const zurEinstellung = () => zeige('einstellKarte');
+    const devAktionen = {
+      offen(b) {
+        devAllesOffen = !devAllesOffen;
+        b.textContent = `Alle Level offen: ${devAllesOffen ? 'an' : 'aus'}`;
+        toast(devAllesOffen ? 'Alle Level und Orte offen' : 'Level wieder normal');
+      },
+      welt(b) {
+        const wi = WELTEN.findIndex((w) => w.id === b.dataset.welt), pf = +b.dataset.pf;
+        LEVEL.forEach((l) => {
+          const li = WELTEN.findIndex((w) => w.id === l.welt);
+          if (li < wi && !levelPfotenVon(stand, l.nr)) stand.levels[l.nr] = 1;
+          if (li === wi) stand.levels[l.nr] = pf;
+        });
+        if (stand.halstuch === 'keins') stand.halstuch = 'standard';
+        erfolgeNachziehen();
+        fertig(`${T.orte[b.dataset.welt]} mit ${pf} Pfote(n) fertig`);
+      },
+      lauf() {
+        const jetzt = LEVEL.find((l) => levelOffen(l.nr) && !levelPfotenVon(stand, l.nr));
+        if (!jetzt || jetzt.nr === 1) return toast('Erst mindestens ein Level schaffen');
+        ezraVon = jetzt.nr - 1;
+        kartenZeigen();
+      },
+      fahrt(b) {
+        const wi = WELTEN.findIndex((w) => w.id === b.dataset.welt);
+        LEVEL.forEach((l) => { if (l.nr <= wi * 10 && !levelPfotenVon(stand, l.nr)) stand.levels[l.nr] = 1; });
+        LEVEL.forEach((l) => { if (l.nr > wi * 10 && l.nr <= wi * 10 + 10) delete stand.levels[l.nr]; });
+        if (stand.halstuch === 'keins') stand.halstuch = 'standard';
+        standSichern();
+        ezraVon = wi * 10; weltNeu = b.dataset.welt;
+        kartenZeigen();
+      },
+      tuch(b) {
+        const alt = stand.halstuch, id = b.dataset.tuch;
+        tuchZeremonie(id, id === 'standard', () => { stand.halstuch = alt; standSichern(); zurEinstellung(); });
+      },
+      allesfrei() {
+        ERFOLGE.forEach((e) => { stand.erfolge[e.id] = stand.erfolge[e.id] || Date.now(); });
+        stand.devTuecher = true;
+        fertig('Alle Erfolge und Halstücher frei');
+      },
+      resetLevel() {
+        stand.levels = {};
+        if (!halstuchFrei(stand.halstuch)) stand.halstuch = 'keins';
+        fertig('Level zurückgesetzt');
+      },
+      resetErfolge() {
+        stand.erfolge = {}; stand.devTuecher = false;
+        if (!halstuchFrei(stand.halstuch)) stand.halstuch = levelPfotenVon(stand, 1) ? 'standard' : 'keins';
+        fertig('Erfolge zurückgesetzt');
+      },
+      resetAlles(b) {
+        if (!b.dataset.sicher) { b.dataset.sicher = '1'; b.textContent = 'Wirklich alles? Nochmal tippen'; return; }
+        ['ezra-fortschritt', 'ezra-anleitung', 'ezra-bestenliste', 'ezra-rekord', 'ezra-name'].forEach((k) => schreib(k, null));
+        location.reload();
+      },
+    };
+    document.querySelectorAll('[data-dev]').forEach((b) => b.addEventListener('click', () => devAktionen[b.dataset.dev](b)));
+    // Pause-Menü: Level sofort gewinnen, Unverwundbar
+    document.querySelectorAll('[data-sieg]').forEach((b) => b.addEventListener('click', () => {
+      if (modus !== 'level') return toast('Nur in einem Level');
+      devPfoten = +b.dataset.sieg;
+      zustand = 'laeuft';
+      ende();
+    }));
+    $('devUnverwundbar').addEventListener('click', (e) => {
+      devUnverwundbar = !devUnverwundbar;
+      e.target.textContent = `Unverwundbar: ${devUnverwundbar ? 'an' : 'aus'}`;
+    });
+  }
   $('tuchAn').addEventListener('click', () => tuchFertig(true));
   $('tuchSpaeter').addEventListener('click', () => tuchFertig(false));
   $('tuchKarte').addEventListener('click', (e) => { if (!e.target.closest('button') && tuchAntippen) tuchAntippen(); });

@@ -642,6 +642,7 @@
           <button class="zweit" type="button" data-sieg="2">Sieg 🐾🐾</button>
           <button class="zweit" type="button" data-sieg="3">Sieg 🐾🐾🐾</button>
           <button class="zweit" type="button" id="devUnverwundbar">Unverwundbar: aus</button>
+          <button class="zweit" type="button" id="devEreignis">Ereignis jetzt</button>
         </div>
         <div class="einstellungen">
           <label class="zeile" for="pauseTon"><span data-t="ton">Ton</span><input class="schiebe" type="checkbox" role="switch" id="pauseTon"></label>
@@ -797,6 +798,10 @@
         brille: ['Sonnenbrille', (st) => ['', 'Ekliges leuchtet rot', 'Ekliges leuchtet, Schatten früher', 'Dazu fällt Ekliges langsamer'][st]],
       },
       rucksackHilft: 'Rucksack!',
+      ereignis: {
+        wolke: 'Die Wolke wird wütend!', sprenger: 'Der Rasensprenger springt an!', pilze: 'Die Pilze wachsen …',
+        wind: 'Achtung, Windböe!', welle: 'Eine Riesenwelle kommt!', wal: 'Da bläst ein Wal!',
+      },
       geschafft: (n, m) => `${n} von ${m} geschafft`, belohnung: (name) => `Belohnung: Halstuch „${name}“`,
       kleidungHinweis: 'Erfolge schalten neue Halstücher für Ezra frei.', perErfolg: (titel) => `Erfolg „${titel}“`,
       orteHinweis: 'Neue Orte erreichst du auf Ezras Reise. Hier wählst du, wo das Endlos-Spiel läuft.', ausgewaehlt: 'ausgewählt',
@@ -931,6 +936,10 @@
         brille: ['Sunglasses', (st) => ['', 'Yucky things glow red', 'Glow, and shadows show earlier', 'Plus yucky things fall slower'][st]],
       },
       rucksackHilft: 'Backpack!',
+      ereignis: {
+        wolke: 'The cloud is getting angry!', sprenger: 'The sprinkler pops up!', pilze: 'The mushrooms are growing …',
+        wind: 'Watch out, gust of wind!', welle: 'A giant wave is coming!', wal: 'Thar she blows – a whale!',
+      },
       geschafft: (n, m) => `${n} of ${m} unlocked`, belohnung: (name) => `Reward: “${name}” bandana`,
       kleidungHinweis: 'Achievements unlock new bandanas for Ezra.', perErfolg: (titel) => `Achievement “${titel}”`,
       orteHinweis: 'You reach new places on Ezra’s journey. Pick where endless mode is played.', ausgewaehlt: 'selected',
@@ -1903,17 +1912,26 @@
       c.fillStyle = laub[n % 4];
       ellipse(c, z() * W, grasOben + 6 + z() * (H - grasOben - 6), 3 + z() * 2, 1.6 + z(), z() * 3);
     }
-    // Fliegenpilze mit Glanz und Schatten
-    for (const fx of [.22, .62, .93]) {
-      const px = W * fx, py = grasOben + (H - grasOben) * .22;
-      c.fillStyle = 'rgba(20,30,10,.25)'; ellipse(c, px + 2, py + 1, 9, 2.5);
-      c.fillStyle = '#f3ead8'; c.fillRect(px - 2.5, py - 8, 5, 9);
-      c.fillStyle = 'rgba(0,0,0,.12)'; c.fillRect(px - 2.5, py - 8, 5, 2.5);
-      const hut = c.createRadialGradient(px - 3, py - 13, 1, px, py - 8, 9);
-      hut.addColorStop(0, '#f05a4a'); hut.addColorStop(1, '#b8281e');
-      c.fillStyle = hut; c.beginPath(); c.arc(px, py - 8, 8, Math.PI, 0); c.fill();
-      c.fillStyle = '#fff'; ellipse(c, px - 3, py - 11, 1.5, 1.5); ellipse(c, px + 3, py - 10, 1.3, 1.3); ellipse(c, px, py - 14, 1, 1);
+    // Fliegenpilze in kleinen Grüppchen, hinten kleiner, vorne größer
+    const pz = zufall(21);
+    for (const [gx, gy] of [[.16, .1], [.56, .3], [.9, .16], [.34, .58], [.74, .72]]) {
+      const anzahl = 1 + Math.floor(pz() * 3);
+      for (let k = 0; k < anzahl; k++) {
+        const tiefe = clamp(gy + (pz() - .5) * .09, .04, .95);
+        pilzMalen(c, W * gx + (pz() - .5) * 34, grasOben + (H - grasOben) * tiefe, (.55 + tiefe * 1.1) * (k ? .7 + pz() * .3 : 1));
+      }
     }
+  }
+  function pilzMalen(c, px, py, gr) {
+    c.save(); c.translate(px, py); c.scale(gr, gr);
+    c.fillStyle = 'rgba(20,30,10,.25)'; ellipse(c, 2, 1, 9, 2.5);
+    c.fillStyle = '#f3ead8'; c.fillRect(-2.5, -8, 5, 9);
+    c.fillStyle = 'rgba(0,0,0,.12)'; c.fillRect(-2.5, -8, 5, 2.5);
+    const hut = c.createRadialGradient(-3, -13, 1, 0, -8, 9);
+    hut.addColorStop(0, '#f05a4a'); hut.addColorStop(1, '#b8281e');
+    c.fillStyle = hut; c.beginPath(); c.arc(0, -8, 8, Math.PI, 0); c.fill();
+    c.fillStyle = '#fff'; ellipse(c, -3, -11, 1.5, 1.5); ellipse(c, 3, -10, 1.3, 1.3); ellipse(c, 0, -14, 1, 1);
+    c.restore();
   }
 
   // ---------- Strand: Die Sonne geht im Meer unter ----------
@@ -2202,6 +2220,8 @@
     auswertung = null;
     items = []; krümel = []; texte = []; werfer = [];
     powerMagnet = 0; powerSchild = false;
+    ereignis = null; blitz = 0; windKraft = 0;
+    ereignisPlanen(true);
     rucksackRest = ausr('rucksack');
     bossStarten();
     ezra.x = W / 2; ezra.vx = 0; ezra.maul = 0; ezra.igitt = 0;
@@ -3566,6 +3586,7 @@
   function ende() {
     if (zustand === 'ende') return;
     zustand = 'ende';
+    ereignis = null; blitz = 0;
     meldungenZuruecksetzen();
     stapelLeeren();
     $('levelZiel').hidden = true;
@@ -3792,6 +3813,192 @@
     levelZielZeigen();
   }
   const bossPfoten = () => (boss && boss.besiegt ? 1 + (leben >= 2) + (leben >= 3) : 0);
+  // ---------- Überraschungs-Ereignisse: je Welt zwei, kurze Warnung → Ausbruch → Ruhe ----------
+  const EREIGNISSE = { garten: ['wolke', 'sprenger'], wald: ['pilze', 'wind'], strand: ['welle', 'wal'] };
+  const EREIGNIS_ZEICHEN = { wolke: '⛈️', sprenger: '💦', pilze: '🍄', wind: '🍂', welle: '🌊', wal: '🐳' };
+  const EREIGNIS_GUT = { garten: ['knochen', 'knochen', 'wurst', 'ball'], wald: ['knochen', 'nuss', 'knochen', 'ball'], strand: ['knochen', 'fisch', 'knochen', 'ball'] };
+  let ereignis = null, ereignisUhr = Infinity, blitz = 0, windKraft = 0;
+  // Level: höchstens eins (ab Level 3, nicht bei Bossen); Endlos: immer wieder
+  function ereignisPlanen(erstesMal) {
+    if (modus === 'level') ereignisUhr = erstesMal && level.art !== 'boss' && level.nr >= 3 ? 14 + Math.random() * 14 : Infinity;
+    else ereignisUhr = erstesMal ? 22 + Math.random() * 12 : 40 + Math.random() * 20;
+  }
+  function ereignisStarten() {
+    const liste = EREIGNISSE[spielOrt];
+    const typ = liste[Math.floor(Math.random() * liste.length)];
+    const e = { typ, phase: 'warnung', zeit: 0, dauer: 1.8, wurfUhr: 0, seite: Math.random() < .5 ? -1 : 1, teilchen: [], winkel: 0, schlecht: Math.random() < .5 };
+    e.x = W * (.3 + Math.random() * .4);
+    if (typ === 'wolke') { e.x = e.seite < 0 ? -70 : W + 70; e.y = H * .15; }
+    if (typ === 'sprenger') e.y = grasOben + (H - grasOben) * .32;
+    if (typ === 'pilze') e.pilze = [0, 1, 2].map((k) => ({ x: W * (.2 + k * .3 + (Math.random() - .5) * .08), y: grasOben + (H - grasOben) * (.2 + Math.random() * .2), geplatzt: false }));
+    if (typ === 'wind') e.kraft = e.seite * 150 * clamp(W / 400, .8, 1.4);
+    ereignis = e;
+    melden(EREIGNIS_ZEICHEN[typ], T.ereignis[typ], 2);
+    if (typ === 'wolke' || typ === 'welle') { piep(80, .9, 'sawtooth', .05, .7); piep(60, 1, 'sawtooth', .04, .8, .3); }
+    else if (typ === 'wind') piep(300, 1.2, 'sawtooth', .025, .3);
+    else if (typ === 'wal') { piep(110, .8, 'sine', .07, .8); piep(90, .9, 'sine', .06, .7, .5); }
+    else [400, 500, 620].forEach((f, i) => piep(f, .1, 'triangle', .04, 1.2, i * .25));
+    vibrieren('mittel');
+  }
+  // Ein Wurf aus dem Ereignis: meistens Leckerlis, manchmal Ekliges (nie in „Ohne …“-Leveln)
+  function ereignisWurf(x, y, vx, vy, g, nurGut, typ) {
+    const gut = EREIGNIS_GUT[spielOrt];
+    if (!typ) typ = !nurGut && levelArt() !== 'sauber' && Math.random() < .2 ? ORTE[spielOrt].gefahr : gut[Math.floor(Math.random() * gut.length)];
+    const rr = { ball: 12, wurst: 15, nuss: 11, fisch: 15, gold: 14 }[typ] || 14;
+    items.push({ typ, r: rr, x: clamp(x, rr + 4, W - rr - 4), y, vx, vy, g, rot: Math.random() * 6, vr: (Math.random() - .5) * 8, pendel: 0, t: 0, frei: true });
+  }
+  function ereignisAktualisieren(dt) {
+    blitz = Math.max(0, blitz - dt * 2.2);
+    windKraft = 0;
+    const e = ereignis;
+    if (!e) {
+      if (!boss && zustand === 'laeuft') { ereignisUhr -= dt; if (ereignisUhr <= 0) { ereignisUhr = Infinity; ereignisStarten(); } }
+      return;
+    }
+    e.zeit += dt; e.wurfUhr -= dt;
+    for (const t of e.teilchen) { t.vy += (t.g || 0) * dt; t.x += t.vx * dt; t.y += t.vy * dt; t.l -= dt; }
+    e.teilchen = e.teilchen.filter((t) => t.l > 0);
+    // Phasen weiterschalten
+    if (e.zeit >= e.dauer) {
+      e.zeit = 0;
+      if (e.phase === 'warnung') { e.phase = 'aktiv'; e.dauer = e.typ === 'wind' ? 4.5 : 4; }
+      else if (e.phase === 'aktiv') {
+        e.phase = 'ende'; e.dauer = 1.6;
+        if (e.typ === 'wolke') ereignisWurf(e.x, e.y + 20, 0, 40, 460, true, 'gold'); // Abschiedsgeschenk
+      } else { ereignis = null; ereignisPlanen(false); return; }
+    }
+    const k = e.zeit / e.dauer, aktiv = e.phase === 'aktiv';
+    const wurf = (abstand) => { if (aktiv && e.wurfUhr <= 0) { e.wurfUhr = abstand; return true; } return false; };
+    if (e.typ === 'wolke') {
+      if (e.phase === 'warnung') e.x += (W * .5 - e.x) * Math.min(1, dt * 2.5);
+      if (aktiv) {
+        e.x = W * .5 + Math.sin(e.zeit * 1.7) * W * .34;
+        if (wurf(.16)) ereignisWurf(e.x + (Math.random() - .5) * 70, e.y + 28, (Math.random() - .5) * 40, 60, 520);
+        if (!ruhig && Math.random() < dt * 1.3) { blitz = .4; e.blitzX = W * (.15 + Math.random() * .7); piep(70, .6, 'sawtooth', .06, .6); }
+      }
+      if (e.phase === 'ende') e.x += (e.x < W / 2 ? -1 : 1) * 160 * dt;
+    } else if (e.typ === 'sprenger') {
+      e.winkel += dt * (aktiv ? 5 : 1);
+      if (wurf(.2)) ereignisWurf(e.x, e.y - 24, Math.sin(e.winkel) * 250, -(520 + Math.random() * 120), 640);
+      if (aktiv) for (let n = 0; n < 2; n++) e.teilchen.push({ x: e.x, y: e.y - 22, vx: Math.sin(e.winkel + (Math.random() - .5) * .4) * 260, vy: -380 - Math.random() * 120, g: 700, l: .9, farbe: 'rgba(150,210,255,.8)', r: 2 });
+    } else if (e.typ === 'pilze') {
+      if (aktiv) e.pilze.forEach((pz, i) => {
+        if (pz.geplatzt || e.zeit < i * 1.2) return;
+        pz.geplatzt = true;
+        for (let n = 0; n < 5; n++) ereignisWurf(pz.x + (Math.random() - .5) * 20, pz.y - 26, (Math.random() - .5) * 170, -(560 + Math.random() * 180), 620, false, Math.random() < .12 ? 'zapfen' : null);
+        for (let n = 0; n < 24; n++) { const w = Math.random() * Math.PI * 2, v = 40 + Math.random() * 120; e.teilchen.push({ x: pz.x, y: pz.y - 20, vx: Math.cos(w) * v, vy: Math.sin(w) * v - 60, g: -20, l: 1.4, farbe: n % 2 ? 'rgba(220,240,120,.7)' : 'rgba(255,255,255,.7)', r: 3 + Math.random() * 3 }); }
+        piep(220, .12, 'sine', .07, 2.5); piep(880, .1, 'triangle', .04, 0, .06);
+        vibrieren('leicht');
+      });
+    } else if (e.typ === 'wind') {
+      if (aktiv) windKraft = e.kraft * Math.sin(Math.PI * k);
+    } else if (e.typ === 'welle') {
+      if (aktiv && e.zeit < dt * 1.5) { // die Welle bricht: ein großer Schwall
+        for (let n = 0; n < 8; n++) ereignisWurf(W * (.1 + .8 * n / 7), grasOben - 6, (Math.random() - .5) * 120, -(430 + Math.random() * 220), 600);
+        for (let n = 0; n < 40; n++) e.teilchen.push({ x: W * Math.random(), y: grasOben, vx: (Math.random() - .5) * 80, vy: -150 - Math.random() * 250, g: 500, l: 1, farbe: 'rgba(255,255,255,.85)', r: 3 + Math.random() * 3 });
+        piep(160, .5, 'sawtooth', .05, .4); vibrieren('stark');
+      }
+      if (wurf(.35) && e.zeit > .5) ereignisWurf(W * (.1 + Math.random() * .8), grasOben - 6, (Math.random() - .5) * 100, -(420 + Math.random() * 180), 600);
+    } else if (e.typ === 'wal') {
+      if (wurf(.18)) ereignisWurf(e.x + (Math.random() - .5) * 20, heckeOben - 24, (Math.random() - .5) * 230, -(560 + Math.random() * 160), 560, !e.schlecht, e.schlecht && Math.random() < .25 ? 'qualle' : null);
+      if (aktiv) for (let n = 0; n < 3; n++) e.teilchen.push({ x: e.x + (Math.random() - .5) * 10, y: heckeOben - 8, vx: (Math.random() - .5) * 90, vy: -260 - Math.random() * 160, g: 420, l: .9, farbe: 'rgba(200,235,255,.85)', r: 2.5 });
+    }
+  }
+  function wolkeMalen(x, y, dunkel, groesse, gesicht) {
+    const f = Math.round(lerp(250, 95, dunkel)), farbe = `rgb(${f},${f + 4},${f + 12})`;
+    ctx.save(); ctx.translate(x, y); ctx.scale(groesse, groesse);
+    ctx.fillStyle = 'rgba(0,0,0,.12)'; ellipse(ctx, 4, 26, 58, 10);
+    ctx.fillStyle = farbe;
+    ellipse(ctx, 0, 6, 60, 24); ellipse(ctx, -28, -4, 26, 22); ellipse(ctx, 6, -14, 32, 28); ellipse(ctx, 34, -2, 24, 20);
+    ctx.fillStyle = `rgba(255,255,255,${.25 * (1 - dunkel)})`; ellipse(ctx, -6, -24, 18, 8);
+    ctx.fillStyle = '#2a2a33'; ctx.strokeStyle = '#2a2a33'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+    if (gesicht === 'boese') {
+      ellipse(ctx, -12, 0, 4, 4.5); ellipse(ctx, 12, 0, 4, 4.5);
+      ctx.beginPath(); ctx.moveTo(-20, -9); ctx.lineTo(-6, -5); ctx.moveTo(20, -9); ctx.lineTo(6, -5); ctx.stroke();
+      ctx.beginPath(); ctx.arc(0, 16, 7, Math.PI * 1.15, Math.PI * 1.85); ctx.stroke();
+      ctx.fillStyle = 'rgba(255,90,80,.55)'; ellipse(ctx, -24, 8, 6, 4); ellipse(ctx, 24, 8, 6, 4);
+    } else {
+      ellipse(ctx, -10, 0, 3, 3.5); ellipse(ctx, 10, 0, 3, 3.5);
+      ctx.beginPath(); ctx.arc(0, 6, 6, Math.PI * .15, Math.PI * .85); ctx.stroke();
+    }
+    ctx.restore();
+  }
+  function ereignisMalen() {
+    const e = ereignis;
+    if (!e) return;
+    const k = e.zeit / e.dauer, aktiv = e.phase === 'aktiv';
+    if (e.typ === 'wolke') {
+      const dunkel = e.phase === 'warnung' ? k : aktiv ? 1 : 1 - k;
+      if (aktiv) { // Regen
+        ctx.strokeStyle = 'rgba(170,200,230,.6)'; ctx.lineWidth = 1.5;
+        for (let n = 0; n < 26; n++) { const rx = e.x - 70 + (n * 53 % 140), ry = e.y + 20 + ((uhr * 600 + n * 47) % (boden - e.y)); ctx.beginPath(); ctx.moveTo(rx, ry); ctx.lineTo(rx - 3, ry + 12); ctx.stroke(); }
+      }
+      if (blitz > .2 && e.blitzX != null) {
+        ctx.strokeStyle = `rgba(255,250,200,${blitz * 2})`; ctx.lineWidth = 3;
+        ctx.beginPath(); let bx = e.x, by = e.y + 20; ctx.moveTo(bx, by);
+        for (let n = 1; n <= 6; n++) { bx = lerp(e.x, e.blitzX, n / 6) + (n % 2 ? 14 : -14); by = e.y + 20 + (grasOben - e.y) * n / 6; ctx.lineTo(bx, by); }
+        ctx.stroke();
+      }
+      wolkeMalen(e.x, e.y, dunkel, (e.phase === 'ende' ? 1 - k * .5 : 1 + (aktiv ? .15 : k * .15)) * sk + (aktiv && !ruhig ? Math.sin(uhr * 30) * .02 : 0), e.phase === 'ende' ? 'lieb' : 'boese');
+    } else if (e.typ === 'sprenger') {
+      const hoch = e.phase === 'warnung' ? Math.min(1, k * 1.5) : aktiv ? 1 : 1 - k;
+      ctx.fillStyle = 'rgba(60,40,20,.3)'; ellipse(ctx, e.x, e.y + 2, 16, 5);
+      ctx.fillStyle = '#7a7f86'; ctx.fillRect(e.x - 5, e.y - 22 * hoch, 10, 22 * hoch);
+      ctx.save(); ctx.translate(e.x, e.y - 22 * hoch); ctx.rotate(Math.sin(e.winkel) * .9);
+      ctx.fillStyle = '#e5484d'; ctx.beginPath(); ctx.roundRect(-9, -6, 18, 8, 3); ctx.fill();
+      ctx.fillStyle = '#c33a3e'; ctx.fillRect(-2, -12, 4, 7);
+      ctx.restore();
+    } else if (e.typ === 'pilze') {
+      e.pilze.forEach((pz, i) => {
+        const wachs = e.phase === 'warnung' ? Math.min(1, k * 1.2) : 1;
+        const schwell = pz.geplatzt ? .6 : 1 + (aktiv ? (e.zeit / (i * 1.2 + .01)) * .25 : 0) * (ruhig ? 0 : 1);
+        if (!pz.geplatzt) { const gl = ctx.createRadialGradient(pz.x, pz.y - 14, 2, pz.x, pz.y - 14, 34); gl.addColorStop(0, `rgba(255,240,120,${.3 + .2 * Math.sin(uhr * 10)})`); gl.addColorStop(1, 'rgba(255,240,120,0)'); ctx.fillStyle = gl; ellipse(ctx, pz.x, pz.y - 14, 34, 34); }
+        const wackel = !pz.geplatzt && !ruhig ? Math.sin(uhr * 25 + i) * 2 * wachs : 0;
+        pilzMalen(ctx, pz.x + wackel, pz.y, 2.2 * sk * wachs * Math.min(1.4, schwell));
+      });
+    } else if (e.typ === 'wind') {
+      const staerke = e.phase === 'warnung' ? k * .5 : aktiv ? Math.sin(Math.PI * k) : 0;
+      ctx.strokeStyle = `rgba(255,255,255,${.5 * staerke})`; ctx.lineWidth = 2; ctx.lineCap = 'round';
+      for (let n = 0; n < 10; n++) {
+        const ly = H * (.1 + .08 * n), lx = ((uhr * 700 * e.seite + n * 137) % (W + 200) + W + 200) % (W + 200) - 100;
+        ctx.beginPath(); ctx.moveTo(lx, ly); ctx.quadraticCurveTo(lx + 30 * e.seite, ly - 6, lx + 70 * e.seite, ly); ctx.stroke();
+      }
+      const farben = ['#d79a3c', '#c0742c', '#e0b04a'];
+      for (let n = 0; n < 14 * staerke; n++) {
+        const lx = ((uhr * 520 * e.seite + n * 97) % (W + 100) + W + 100) % (W + 100) - 50, ly = H * (.15 + (n * .061) % .7) + Math.sin(uhr * 4 + n) * 20;
+        ctx.save(); ctx.translate(lx, ly); ctx.rotate(uhr * 6 + n); ctx.fillStyle = farben[n % 3]; ellipse(ctx, 0, 0, 5, 2.6); ctx.restore();
+      }
+    } else if (e.typ === 'welle') {
+      const wachs = e.phase === 'warnung' ? k : aktiv ? Math.max(0, 1 - e.zeit * 3) : 0;
+      if (wachs > 0) {
+        const kamm = grasOben - 10 - (grasOben - heckeOben) * .9 * wachs;
+        const wg = ctx.createLinearGradient(0, kamm, 0, grasOben);
+        wg.addColorStop(0, '#2a7fb8'); wg.addColorStop(1, '#6fd0e0');
+        ctx.fillStyle = wg; ctx.beginPath(); ctx.moveTo(0, grasOben);
+        for (let x = 0; x <= W; x += 12) ctx.lineTo(x, kamm + Math.sin(x * .02 + uhr * 3) * 8 * wachs);
+        ctx.lineTo(W, grasOben); ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.lineWidth = 5; ctx.beginPath();
+        for (let x = 0; x <= W; x += 12) ctx.lineTo(x, kamm + Math.sin(x * .02 + uhr * 3) * 8 * wachs);
+        ctx.stroke();
+      }
+    } else if (e.typ === 'wal') {
+      const auf = e.phase === 'warnung' ? Math.min(1, k * 1.4) : aktiv ? 1 : 1 - k;
+      const wy = heckeOben + 14 - 14 * auf;
+      ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, heckeOben + 16); ctx.clip();
+      ctx.fillStyle = '#3c5a78'; ellipse(ctx, e.x, wy, 46 * sk, 16 * sk);
+      ctx.fillStyle = '#5a7a98'; ellipse(ctx, e.x - 8 * sk, wy - 6 * sk, 30 * sk, 6 * sk);
+      ctx.fillStyle = '#1a2a3a'; ellipse(ctx, e.x + 26 * sk, wy - 3 * sk, 2.2, 2.2);
+      if (e.schlecht) { ctx.strokeStyle = '#1a2a3a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(e.x + 20 * sk, wy - 9 * sk); ctx.lineTo(e.x + 30 * sk, wy - 6 * sk); ctx.stroke(); }
+      ctx.restore();
+      if (aktiv) { // Fontäne
+        const sg = ctx.createLinearGradient(0, heckeOben - 90, 0, heckeOben);
+        sg.addColorStop(0, 'rgba(220,240,255,0)'); sg.addColorStop(1, 'rgba(220,240,255,.85)');
+        ctx.fillStyle = sg; ctx.beginPath(); ctx.moveTo(e.x - 4, heckeOben); ctx.quadraticCurveTo(e.x - 16, heckeOben - 70, e.x - 30, heckeOben - 90); ctx.lineTo(e.x + 30, heckeOben - 90); ctx.quadraticCurveTo(e.x + 16, heckeOben - 70, e.x + 4, heckeOben); ctx.closePath(); ctx.fill();
+      }
+    }
+    for (const t of e.teilchen) { ctx.globalAlpha = clamp(t.l, 0, 1); ctx.fillStyle = t.farbe; ellipse(ctx, t.x, t.y, t.r, t.r); }
+    ctx.globalAlpha = 1;
+  }
   let werfer = [];
   const itX = (it) => it.x + (it.frei ? 0 : Math.sin(it.pendel) * 6);
 
@@ -3898,7 +4105,8 @@
 
     spawnUhr -= fdt;
     if (spawnUhr <= 0) {
-      spawn();
+      // während eines Ausbruchs kommt nichts anderes (außer bei Wind)
+      if (!(ereignis && ereignis.phase === 'aktiv' && ereignis.typ !== 'wind')) spawn();
       spawnUhr = !boss ? lerp(1.05, .4, stufe) * (.75 + Math.random() * .5)
         : boss.phase === 'wut' ? (boss.welt === 'garten' ? .6 : boss.welt === 'strand' ? .22 : .3)
         : boss.phase === 'muede' ? .32
@@ -3906,6 +4114,7 @@
         : lerp(1.15, .5, boss.treffer / boss.hp) * (.8 + Math.random() * .4);
     }
     bossBewegen(fdt);
+    ereignisAktualisieren(fdt);
     powerMagnet = Math.max(0, powerMagnet - dt);
 
     // Ezra bewegen (Ezra bleibt auch in der Zeitlupe schnell)
@@ -3945,6 +4154,7 @@
         it.x += (ezra.x - it.x) * zug;
         if (it.x0 != null) it.x0 += (ezra.x - it.x0) * zug;
       }
+      if (windKraft) { it.x += windKraft * fdt; if (it.x0 != null) it.x0 += windKraft * fdt; it.x = clamp(it.x, it.r + 4, W - it.r - 4); }
       if (it.frei) it.x = clamp(it.x, it.r + 4, W - it.r - 4);
       it.rot += it.typ === 'fisch' ? 0 : it.vr * fdt;
       it.pendel += fdt * 3;
@@ -4012,6 +4222,7 @@
 
     for (const w of werfer) { ctx.globalAlpha = Math.min(1, w.zeit * 3); malEichhoernchen(ctx, w.x, w.y, w.seite); ctx.globalAlpha = 1; }
     bossMalen();
+    ereignisMalen();
     // Schatten am Boden: wächst und wird dunkler, je näher etwas kommt – so sieht man, wann es landet
     for (const it of items) {
       const nah = clamp(it.y / boden, 0, 1);
@@ -4058,6 +4269,8 @@
       igitt: ezra.igitt,
       blinzel: ezra.blinzelUhr < 0,
     });
+    // Blitz: der ganze Bildschirm hellt kurz auf
+    if (blitz > 0) { ctx.fillStyle = `rgba(255,255,235,${blitz * .8})`; ctx.fillRect(0, 0, W, H); }
     // Wutanfall: Bildschirmrand pulsiert rot
     if (boss && boss.phase === 'wut') {
       const rot = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .35, W / 2, H / 2, Math.max(W, H) * .7);
@@ -4290,6 +4503,7 @@
       zustand = 'laeuft';
       ende();
     }));
+    $('devEreignis').addEventListener('click', () => { ereignisUhr = .5; weiter(); });
     $('devUnverwundbar').addEventListener('click', (e) => {
       devUnverwundbar = !devUnverwundbar;
       e.target.textContent = `Unverwundbar: ${devUnverwundbar ? 'an' : 'aus'}`;

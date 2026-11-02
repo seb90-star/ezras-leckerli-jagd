@@ -326,10 +326,66 @@
   .schild button:disabled { border-color: transparent; color: #3b6d11; }
 
   /* Meldungen während des Spiels */
-  .meldung { position: absolute; top: 58px; left: 50%; transform: translateX(-50%); z-index: 5; pointer-events: none; white-space: nowrap; box-shadow: 0 4px 12px rgba(0, 0, 0, .18); }
+  .meldung { position: absolute; top: 96px; left: 50%; transform: translateX(-50%); z-index: 5; pointer-events: none; white-space: nowrap; box-shadow: 0 4px 12px rgba(0, 0, 0, .18); }
   .meldung.knall { animation: meldungRein .4s cubic-bezier(.3, 1.6, .5, 1) both; }
   @keyframes meldungRein { from { transform: translateX(-50%) scale(.4); opacity: 0; } }
   @media (prefers-reduced-motion: reduce) { .stapel .schild, .meldung.knall, .rekord-neu.knall { animation: none; } }
+  /* Levelkarte: Ezras Reise */
+  .ueber.reise { padding: 0; flex-direction: column; overflow: hidden; background: var(--hecke-d); }
+  .reise-kopf { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: var(--hecke); flex-wrap: wrap; }
+  .reise-kopf b { font: 800 19px var(--font-anzeige); color: var(--creme); flex: 1; }
+  .reise-kopf .summe { font-weight: 700; color: var(--gelb); font-size: 14px; }
+  .reise-kopf .zweit { flex: 1 1 40%; padding: 5px 12px; font-size: 14px; border-color: rgba(255, 246, 223, .5); color: var(--creme); }
+  .reise-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+  .reise-karte { position: relative; overflow: hidden; }
+  .reise-karte canvas.welt { position: absolute; left: 0; display: block; }
+  .reise-karte svg { position: absolute; inset: 0; pointer-events: none; }
+  .weltname { position: absolute; left: 12px; font: 800 13px var(--font-anzeige); letter-spacing: .08em; text-transform: uppercase; color: var(--creme); background: rgba(20, 35, 15, .55); padding: 2px 10px; border-radius: 999px; }
+  .lvl { position: absolute; width: 40px; height: 40px; margin: -20px 0 0 -20px; border-radius: 50%; border: 3px solid var(--creme); background: var(--tuch); color: #fff; font: 800 16px var(--font-anzeige); cursor: pointer; box-shadow: 0 3px 0 rgba(0, 0, 0, .25); padding: 0; }
+  .lvl.zu { background: #8d8f86; }
+  .lvl.jetzt { background: var(--gelb); color: var(--tinte); width: 50px; height: 50px; margin: -25px 0 0 -25px; font-size: 19px; animation: hupf 1.4s ease-in-out infinite; }
+  @keyframes hupf { 50% { transform: translateY(-4px); } }
+  .lvl .pf { position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 2px; font-size: 10px; white-space: nowrap; letter-spacing: -1px; text-shadow: 0 1px 2px rgba(0, 0, 0, .4); }
+  .lvl.geheim { background: #b9c0c6; color: #fff; }
+  .geschenk { position: absolute; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 12px; background: rgba(255, 246, 223, .92); border: 2px dashed var(--fell); display: grid; place-items: center; }
+  .geschenk.da { border: 2px solid var(--gelb); }
+  .geschenk canvas { width: 40px; height: 32px; }
+  .ezra-marke { position: absolute; width: 64px; height: 64px; margin: -60px 0 0 -32px; pointer-events: none; }
+  .ezra-marke.laeuft { animation: hupf .3s ease-in-out infinite; }
+  .nebel { position: absolute; left: 0; right: 0; pointer-events: none; transition: -webkit-mask-position 1.6s ease, mask-position 1.6s ease;
+    background: radial-gradient(60% 30% at 20% 25%, rgba(244, 246, 249, .95), transparent 70%),
+      radial-gradient(55% 30% at 80% 55%, rgba(236, 240, 245, .95), transparent 70%),
+      radial-gradient(70% 35% at 40% 85%, rgba(240, 243, 247, .95), transparent 70%),
+      rgba(214, 222, 230, .9);
+    background-size: 160% 160%; animation: wabern 10s ease-in-out infinite alternate; }
+  @keyframes wabern { to { background-position: 40% 25%; } }
+  .schildchen { position: absolute; left: 50%; transform: translateX(-50%); background: var(--fell); color: var(--creme); font: 800 15px var(--font-anzeige); padding: 6px 14px; border-radius: 8px; box-shadow: 0 3px 0 rgba(0, 0, 0, .25); white-space: nowrap; }
+
+  /* Level-Karte (vor dem Start) und Level-Ende */
+  .lk-stufen { display: flex; flex-direction: column; gap: 6px; background: #fff; border-radius: 12px; padding: 10px 12px; }
+  .lk-stufen div { display: flex; justify-content: space-between; font-weight: 700; }
+  .lk-stufen .pf { letter-spacing: -1px; }
+  .lk-stufen .erreicht { color: #3b6d11; }
+  .pfotenreihe { display: flex; justify-content: center; gap: 14px; font-size: 44px; line-height: 1; }
+  .pfotenreihe span { filter: grayscale(1); opacity: .25; transition: opacity .2s; }
+  .pfotenreihe span.an { filter: none; opacity: 1; animation: knall .5s cubic-bezier(.3, 1.6, .5, 1) both; }
+  .level-ziel { position: absolute; top: 44px; left: 12px; z-index: 4; pointer-events: none; font-size: 13px; padding: 3px 10px 3px 8px; }
+  .level-ziel .pf { letter-spacing: -1px; }
+  .level-ziel .pf i { font-style: normal; filter: grayscale(1); opacity: .3; }
+  /* Halstuch-Übergabe */
+  .ueber.zeremonie { flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; background: rgba(10, 16, 8, .85); }
+  #tuchBild { width: min(100%, 340px); aspect-ratio: 340 / 380; display: block; flex: none; }
+  .zeremonie .spaet { opacity: 0; transform: translateY(8px); transition: opacity .4s, transform .4s; }
+  .zeremonie .spaet.da { opacity: 1; transform: none; }
+  .zeremonie .kopfzeile { font: 800 13px var(--font-anzeige); letter-spacing: .08em; text-transform: uppercase; color: var(--gelb); }
+  .zeremonie h2 { margin: 0; font: 800 26px var(--font-anzeige); color: var(--creme); }
+  .tipp { margin: 0; font: 800 18px var(--font-anzeige); color: var(--gelb); opacity: 0; transition: opacity .4s; }
+  .tipp.da { opacity: 1; animation: pochen 1s ease-in-out infinite; }
+  @keyframes pochen { 50% { transform: scale(1.08); } }
+  .sprechblase { position: relative; background: var(--creme); color: var(--tinte); border-radius: 16px; padding: 8px 16px; font: 800 18px var(--font-anzeige); max-width: 300px; }
+  .sprechblase::before { content: ""; position: absolute; top: -9px; left: 50%; margin-left: -9px; border: 9px solid transparent; border-top: 0; border-bottom-color: var(--creme); }
+  .zeremonie .knopfreihe { width: min(100%, 300px); }
+  .zeremonie .zweit { color: var(--creme); border-color: rgba(255, 246, 223, .6); }
   #konfetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 40; }
   .toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 50;
     max-width: calc(100% - 32px); padding: 10px 18px; border-radius: 999px; background: var(--tinte); color: var(--creme);
@@ -353,6 +409,60 @@
   <main class="buehne" id="buehne">
     <canvas id="spiel"></canvas>
     <div class="schild meldung" id="meldung" role="status" hidden></div>
+    <div class="schild level-ziel" id="levelZiel" hidden></div>
+
+    <div class="ueber reise" id="karteSeite" hidden>
+      <div class="reise-kopf">
+        <b data-t="reise">Ezras Reise</b>
+        <span class="summe" id="pfotenSumme"></span>
+        <span style="flex-basis: 100%; height: 0"></span>
+        <button class="zweit" id="endlosKnopf" type="button" data-t="endlos">Endlos-Spiel</button>
+        <button class="zweit" id="karteSachen" type="button" data-t="sachen">Ezras Sachen</button>
+      </div>
+      <div class="reise-scroll" id="reiseScroll"><div class="reise-karte" id="reiseKarte"></div></div>
+    </div>
+
+    <div class="ueber" id="levelKarte" hidden>
+      <div class="karte">
+        <span class="klein" id="lkKopf"></span>
+        <h2 id="lkTitel"></h2>
+        <p class="klein" data-t="pfotenFuer">So gibt es Pfoten:</p>
+        <div class="lk-stufen" id="lkStufen"></div>
+        <p class="klein" id="lkBest"></p>
+        <div class="knopfreihe">
+          <button class="los" id="lkLos" type="button" data-t="levelLos">Los geht’s</button>
+          <button class="zweit" id="lkKarte" type="button" data-t="zurKarte">Zur Karte</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="ueber zeremonie" id="tuchKarte" hidden>
+      <span class="kopfzeile" data-t="geschenkFuerEzra">Ein Geschenk für Ezra!</span>
+      <canvas id="tuchBild" aria-hidden="true"></canvas>
+      <p class="tipp" id="tuchTipp"><span aria-hidden="true">👆</span> <span data-t="tippenOeffnen">Tippen zum Öffnen!</span></p>
+      <h2 class="spaet" id="tuchName"></h2>
+      <div class="sprechblase spaet" id="tuchSpruch"></div>
+      <div class="knopfreihe spaet" id="tuchKnoepfe">
+        <button class="los" id="tuchAn" type="button"></button>
+        <button class="zweit" id="tuchSpaeter" type="button" data-t="spaeter">Später</button>
+      </div>
+    </div>
+
+    <div class="ueber" id="levelEndeKarte" hidden>
+      <div class="karte">
+        <span class="klein" id="leKopf"></span>
+        <h2 id="leTitel"></h2>
+        <div class="pfotenreihe" id="lePfoten"><span>🐾</span><span>🐾</span><span>🐾</span></div>
+        <p id="leText"></p>
+        <p class="ziel" id="leSpruch"></p>
+        <div class="stapel" id="levelStapel"></div>
+        <div class="knopfreihe">
+          <button class="los" id="leWeiter" type="button"></button>
+          <button class="zweit" id="leNochmal" type="button" data-t="levelNochmal">Nochmal</button>
+          <button class="zweit" id="leKarte" type="button" data-t="zurKarte">Zur Karte</button>
+        </div>
+      </div>
+    </div>
 
     <div class="ueber" id="startKarte">
       <div class="karte">
@@ -427,7 +537,15 @@
       <div class="karte">
         <h2 data-t="pause">Pause</h2>
         <p data-t="pauseText">Ezra wartet geduldig.</p>
-        <button class="los" id="weiterKnopf" type="button" data-t="weiter">Weiterspielen</button>
+        <div class="knopfreihe">
+          <button class="los" id="weiterKnopf" type="button" data-t="weiter">Weiterspielen</button>
+          <button class="zweit" id="pauseNochmal" type="button" data-t="levelNochmal">Nochmal</button>
+          <button class="zweit" id="pauseKarte2" type="button"><span aria-hidden="true">🏠</span> <span data-t="zurKarte">Zur Karte</span></button>
+        </div>
+        <div class="einstellungen">
+          <label class="zeile" for="pauseTon"><span data-t="ton">Ton</span><input class="schiebe" type="checkbox" role="switch" id="pauseTon"></label>
+          <label class="zeile" for="pauseVib" id="pauseVibZeile"><span data-t="vibration">Vibration</span><input class="schiebe" type="checkbox" role="switch" id="pauseVib"></label>
+        </div>
       </div>
     </div>
 
@@ -449,7 +567,7 @@
         <div class="knopfreihe" id="endeKnoepfe">
           <button class="los" id="nochmalKnopf" type="button" data-t="nochmal">Nochmal</button>
           <button class="zweit" data-liste type="button" data-t="bestenliste">Bestenliste</button>
-          <button class="zweit" data-start type="button" data-t="startseite">Startseite</button>
+          <button class="zweit" data-start type="button" data-t="zurKarte">Zur Karte</button>
         </div>
       </div>
     </div>
@@ -465,7 +583,7 @@
         <p class="klein" data-t="listeHinweis"></p>
         <div class="knopfreihe">
           <button class="los" id="listeSpielen" type="button" data-t="spielen">Spielen</button>
-          <button class="zweit" data-start type="button" data-t="startseite">Startseite</button>
+          <button class="zweit" data-start type="button" data-t="zurKarte">Zur Karte</button>
         </div>
       </div>
     </div>
@@ -501,6 +619,26 @@
       spielen: 'Spielen', loeschen: 'Bestenliste löschen', loeschenSicher: 'Wirklich alles löschen?', geloescht: 'Bestenliste gelöscht ✓',
       einstellungen: 'Einstellungen', sprache: 'Sprache', auto: 'Auto', ton: 'Ton', fertig: 'Fertig', version: 'Version',
       beendenHinweis: 'Nochmal „Zurück“ zum Beenden',
+      reise: 'Ezras Reise', endlos: 'Endlos-Spiel', zurKarte: 'Zur Karte', levelNr: (welt, n) => `${welt} · Level ${n}`,
+      levelLos: 'Los geht’s', pfotenFuer: 'So gibt es Pfoten:',
+      levelBest: (n) => (n ? `Bestes Ergebnis: ${'🐾'.repeat(n)}` : 'Noch nicht gespielt'),
+      levelGeschafft: (n) => `Level ${n} geschafft!`, levelFast: 'Fast geschafft!', levelSuper: 'Super, alle Pfoten!',
+      levelNochmal: 'Nochmal', levelWeiter: 'Nächstes Level', pfoteErreicht: (n) => `${n}. Pfote!`,
+      levelErgebnis: (was, wert) => `${was}: ${wert}`,
+      geheim: 'Noch geheim! Ezra schnuppert schon …', baldWeiter: 'Bald geht’s weiter …',
+      endlosGesperrt: 'Schaff erst die Proberunde auf der Karte!', levelGesperrt: (n) => `Schaff erst Level ${n}!`,
+      geschenkFuerEzra: 'Ein Geschenk für Ezra!', tippenOeffnen: 'Tippen zum Öffnen!', spaeter: 'Später', tuchLos: 'Los geht’s!',
+      tuchSpruch: { standard: 'Jetzt bin ich bereit!', gaensebluemchen: 'Riecht nach Frühling!', tannen: 'Jetzt bin ich ein echter Waldhund!', muscheln: 'Ab ans Meer! … Ach, ich bin ja schon da!' },
+      halstuchVerliehen: 'Jetzt bin ich bereit!', abenteuerTuch: 'Ezras Abenteuer-Halstuch', neuesTuch: (name) => `Halstuch „${name}“`,
+      proberunde: 'Proberunde',
+      aufgabe: {
+        gefangen: (z) => `Fang ${z} Leckerlis`, punkte: (z) => `Hol ${z} Punkte`, baelle: (z) => `Fang ${z} Bälle`,
+        serie: (z) => `Fang ${z} am Stück`, dauer: (z) => `Halte ${z} Sekunden durch`, gold: (z) => `Fang ${z} goldene Leckerlis`,
+        sauber: (z, g) => `Hol ${z} Punkte ohne ${g}`,
+      },
+      einheit: { gefangen: 'Leckerlis', punkte: 'Punkte', baelle: 'Bälle', serie: 'am Stück', dauer: 'Sekunden', gold: 'Goldene', sauber: 'Punkte' },
+      ohneGefahr: { socke: 'Socke', zapfen: 'Zapfen', qualle: 'Qualle' },
+      ortGesperrt: (welt) => `Erreiche ${welt} auf Ezras Reise`, perWelt: (welt) => `Welt „${welt}“ schaffen`, perProbe: 'Proberunde schaffen',
       anziehen: 'Anziehen', hinGehen: 'Hier spielen', erledigt: '✓',
       balkenLeckerlis: 'Leckerlis', balkenBaelle: 'Bälle', balkenGold: 'Goldene',
       igittName: { socke: 'Socken erwischt', zapfen: 'Zapfen erwischt', qualle: 'Quallen erwischt' },
@@ -523,8 +661,7 @@
       sachen: 'Ezras Sachen', schliessen: 'Schließen', tabErfolge: 'Erfolge', tabKleidung: 'Kleiderschrank', tabOrte: 'Orte',
       geschafft: (n, m) => `${n} von ${m} geschafft`, belohnung: (name) => `Belohnung: Halstuch „${name}“`,
       kleidungHinweis: 'Erfolge schalten neue Halstücher für Ezra frei.', perErfolg: (titel) => `Erfolg „${titel}“`,
-      orteHinweis: 'Mit deinen Gesamtpunkten spielst du neue Orte frei.', ausgewaehlt: 'ausgewählt',
-      ortAb: (ab, fehlt) => `ab ${ab} Punkten · noch ${fehlt}`,
+      orteHinweis: 'Neue Orte erreichst du auf Ezras Reise. Hier wählst du, wo das Endlos-Spiel läuft.', ausgewaehlt: 'ausgewählt',
       neuerOrt: (name) => `Neuer Ort: ${name}`, neuerOrtText: 'Unter „Ezras Sachen“ kannst du ihn auswählen.',
       ziel: (fehlt, wohin) => `Noch ${fehlt} Punkte bis ${wohin}`, zielOrt: { wald: 'zum Wald', strand: 'zum Strand' },
       alleOrte: 'Alle Orte freigespielt!',
@@ -532,6 +669,7 @@
       halstuch: {
         standard: 'Ezras Blaues', karo: 'Rot kariert', punkte: 'Pinke Punkte', sterne: 'Sternenhimmel',
         sonne: 'Sonnenschein', tannen: 'Tannenwald', pfoten: 'Pfötchen', gold: 'Goldstück',
+        gaensebluemchen: 'Gänseblümchen', muscheln: 'Muscheln',
       },
       // [Titel, wie man ihn schafft, Ezra-Moment danach]
       erfolge: {
@@ -550,6 +688,10 @@
         stammgast: ['Stammgast', 'Spiel 50 Runden.', '50 Runden! Ezra wedelt schon, wenn er dich nur sieht.'],
         treu: ['Treuer Freund', 'Spiel an 14 verschiedenen Tagen.', 'Vierzehn Tage voller Leckerlis. Ezra freut sich jeden Tag auf dich.'],
         freund: ['Beste Freunde', 'Sammle insgesamt 3000 Punkte.', 'Dreitausend Punkte! Ezra hat einen neuen besten Freund: dich.'],
+        gartenMeister: ['Garten-Meister', 'Hol in allen Garten-Leveln 3 Pfoten.', 'Jeder Winkel im Garten erschnüffelt. Hier ist Ezra der Chef!'],
+        waldMeister: ['Wald-Meister', 'Hol in allen Wald-Leveln 3 Pfoten.', 'Kein Zapfen hat Ezra aufgehalten. Der Wald gehört ihm!'],
+        strandMeister: ['Strand-Meister', 'Hol in allen Strand-Leveln 3 Pfoten.', 'Sand in den Pfoten, Glück im Herzen. Ezra ist Strand-König!'],
+        pfotenProfi: ['Pfoten-Profi', 'Sammle alle 90 Pfoten.', 'Alle 90 Pfoten! Ezra ist mächtig stolz auf dich.'],
       },
     },
     en: {
@@ -575,6 +717,26 @@
       spielen: 'Play', loeschen: 'Clear high scores', loeschenSicher: 'Really clear everything?', geloescht: 'High scores cleared ✓',
       einstellungen: 'Settings', sprache: 'Language', auto: 'Auto', ton: 'Sound', fertig: 'Done', version: 'Version',
       beendenHinweis: 'Press “Back” again to exit',
+      reise: 'Ezra’s Journey', endlos: 'Endless mode', zurKarte: 'To the map', levelNr: (welt, n) => `${welt} · Level ${n}`,
+      levelLos: 'Let’s go', pfotenFuer: 'How to earn paws:',
+      levelBest: (n) => (n ? `Best result: ${'🐾'.repeat(n)}` : 'Not played yet'),
+      levelGeschafft: (n) => `Level ${n} done!`, levelFast: 'Almost there!', levelSuper: 'Great, all the paws!',
+      levelNochmal: 'Try again', levelWeiter: 'Next level', pfoteErreicht: (n) => `Paw ${n}!`,
+      levelErgebnis: (was, wert) => `${was}: ${wert}`,
+      geheim: 'Still a secret! Ezra is already sniffing around …', baldWeiter: 'More coming soon …',
+      endlosGesperrt: 'Finish the warm-up on the map first!', levelGesperrt: (n) => `Finish level ${n} first!`,
+      geschenkFuerEzra: 'A gift for Ezra!', tippenOeffnen: 'Tap to open!', spaeter: 'Later', tuchLos: 'Let’s go!',
+      tuchSpruch: { standard: 'Now I’m ready!', gaensebluemchen: 'Smells like spring!', tannen: 'Now I’m a real forest dog!', muscheln: 'Off to the sea! … Oh wait, I’m already here!' },
+      halstuchVerliehen: 'Now I’m ready!', abenteuerTuch: 'Ezra’s adventure bandana', neuesTuch: (name) => `“${name}” bandana`,
+      proberunde: 'Warm-up',
+      aufgabe: {
+        gefangen: (z) => `Catch ${z} treats`, punkte: (z) => `Score ${z} points`, baelle: (z) => `Catch ${z} balls`,
+        serie: (z) => `Catch ${z} in a row`, dauer: (z) => `Last ${z} seconds`, gold: (z) => `Catch ${z} golden treats`,
+        sauber: (z, g) => `Score ${z} points without a ${g}`,
+      },
+      einheit: { gefangen: 'treats', punkte: 'points', baelle: 'balls', serie: 'in a row', dauer: 'seconds', gold: 'golden', sauber: 'points' },
+      ohneGefahr: { socke: 'sock', zapfen: 'pine cone', qualle: 'jellyfish' },
+      ortGesperrt: (welt) => `Reach the ${welt.toLowerCase()} on Ezra’s journey`, perWelt: (welt) => `Finish the ${welt.toLowerCase()} world`, perProbe: 'Finish the warm-up',
       anziehen: 'Wear it', hinGehen: 'Play here', erledigt: '✓',
       balkenLeckerlis: 'Treats', balkenBaelle: 'Balls', balkenGold: 'Golden',
       igittName: { socke: 'Socks caught', zapfen: 'Pine cones caught', qualle: 'Jellyfish caught' },
@@ -597,8 +759,8 @@
       sachen: 'Ezra’s Stuff', schliessen: 'Close', tabErfolge: 'Achievements', tabKleidung: 'Wardrobe', tabOrte: 'Places',
       geschafft: (n, m) => `${n} of ${m} unlocked`, belohnung: (name) => `Reward: “${name}” bandana`,
       kleidungHinweis: 'Achievements unlock new bandanas for Ezra.', perErfolg: (titel) => `Achievement “${titel}”`,
-      orteHinweis: 'Your total points unlock new places.', ausgewaehlt: 'selected',
-      ortAb: (ab, fehlt) => `from ${ab} points · ${fehlt} to go`,
+      orteHinweis: 'You reach new places on Ezra’s journey. Pick where endless mode is played.', ausgewaehlt: 'selected',
+
       neuerOrt: (name) => `New place: ${name}`, neuerOrtText: 'Pick it under “Ezra’s Stuff”.',
       ziel: (fehlt, wohin) => `${fehlt} more points to unlock ${wohin}`, zielOrt: { wald: 'the forest', strand: 'the beach' },
       alleOrte: 'All places unlocked!',
@@ -606,6 +768,7 @@
       halstuch: {
         standard: 'Ezra’s Blue', karo: 'Red Check', punkte: 'Pink Dots', sterne: 'Starry Night',
         sonne: 'Sunshine', tannen: 'Pine Forest', pfoten: 'Paw Prints', gold: 'Golden',
+        gaensebluemchen: 'Daisies', muscheln: 'Seashells',
       },
       erfolge: {
         ersterHappen: ['First Bite', 'Catch your first treat.', 'Ezra snapped his very first treat!'],
@@ -623,6 +786,10 @@
         stammgast: ['Regular', 'Play 50 rounds.', '50 rounds! Ezra wags his tail as soon as he sees you.'],
         treu: ['Loyal Friend', 'Play on 14 different days.', 'Fourteen days of treats. Ezra looks forward to you every day.'],
         freund: ['Best Buddies', 'Collect 3000 points in total.', 'Three thousand points! Ezra has a new best friend: you.'],
+        gartenMeister: ['Garden Master', 'Get 3 paws in every garden level.', 'Every corner of the garden sniffed out. Ezra is the boss here!'],
+        waldMeister: ['Forest Master', 'Get 3 paws in every forest level.', 'Not a single pine cone stopped Ezra. The forest is his!'],
+        strandMeister: ['Beach Master', 'Get 3 paws in every beach level.', 'Sand in his paws, joy in his heart. Ezra is king of the beach!'],
+        pfotenProfi: ['Paw Pro', 'Collect all 90 paws.', 'All 90 paws! Ezra is super proud of you.'],
       },
     },
   };
@@ -737,7 +904,37 @@
   $('rekord').textContent = rekord;
 
   // ---------- Fortschritt: Erfolge, Kleiderschrank, Orte (nur auf dem Gerät) ----------
-  const ORTE_AB = { garten: 0, wald: 500, strand: 2000 };
+  // ---------- Ezras Reise: Welten und Level ----------
+  // basis = Schwierigkeit beim Start der Welt (0–1), steigt pro Level um 0,03
+  const WELTEN = [
+    { id: 'garten', halstuch: 'gaensebluemchen', basis: 0 },
+    { id: 'wald', halstuch: 'tannen', basis: .25 },
+    { id: 'strand', halstuch: 'muscheln', basis: .45 },
+  ];
+  // art: was gezählt wird; stufen: ab wann es 1, 2, 3 Pfoten gibt
+  const LEVEL = [
+    ['garten', 'gefangen', 10, 15, 20], ['garten', 'punkte', 25, 40, 60], ['garten', 'baelle', 3, 5, 7],
+    ['garten', 'serie', 10, 15, 20], ['garten', 'dauer', 40, 55, 70], ['garten', 'gold', 1, 2, 3],
+    ['garten', 'punkte', 50, 75, 100], ['garten', 'sauber', 30, 45, 60], ['garten', 'baelle', 6, 8, 10],
+    ['garten', 'punkte', 100, 130, 160],
+    ['wald', 'punkte', 40, 60, 80], ['wald', 'dauer', 60, 75, 90], ['wald', 'serie', 15, 25, 35],
+    ['wald', 'baelle', 6, 9, 12], ['wald', 'gold', 2, 3, 4], ['wald', 'punkte', 80, 110, 140],
+    ['wald', 'sauber', 50, 70, 90], ['wald', 'dauer', 90, 105, 120], ['wald', 'serie', 25, 35, 50],
+    ['wald', 'punkte', 150, 200, 250],
+    ['strand', 'punkte', 60, 90, 120], ['strand', 'baelle', 8, 11, 14], ['strand', 'serie', 30, 40, 55],
+    ['strand', 'dauer', 100, 120, 140], ['strand', 'gold', 3, 4, 5], ['strand', 'punkte', 120, 160, 200],
+    ['strand', 'sauber', 80, 110, 140], ['strand', 'serie', 40, 60, 80], ['strand', 'baelle', 12, 15, 18],
+    ['strand', 'punkte', 250, 320, 400],
+  ].map(([welt, art, ...stufen], i) => {
+    const w = WELTEN.findIndex((x) => x.id === welt), imWelt = i % 10;
+    return { nr: i + 1, welt, art, stufen, imWelt, basis: WELTEN[w].basis + imWelt * .03, letztes: imWelt === 9 };
+  });
+  const levelPfotenVon = (s, nr) => (s.levels && s.levels[nr]) || 0;
+  const levelOffen = (nr) => nr === 1 || levelPfotenVon(stand, nr - 1) > 0;
+  const weltOffen = (id) => { const i = WELTEN.findIndex((w) => w.id === id); return i === 0 || levelPfotenVon(stand, i * 10) > 0; };
+  const weltGeschafft = (id) => { const i = WELTEN.findIndex((w) => w.id === id); return levelPfotenVon(stand, i * 10 + 10) > 0; };
+  const pfotenSumme = (s) => LEVEL.reduce((n, l) => n + levelPfotenVon(s, l.nr), 0);
+  const weltVoll = (s, id) => LEVEL.filter((l) => l.welt === id && levelPfotenVon(s, l.nr) === 3).length;
   // s = Summen über alle Runden, r = gerade beendete Runde; belohnung = Halstuch, das der Erfolg freischaltet
   // geschafft, sobald wert >= ziel; rund = zählt nur innerhalb einer Runde; balken: false = nie als Fortschritt zeigen;
   // live: false = nicht schon während der Runde melden
@@ -752,23 +949,38 @@
     { id: 'serie50', rund: true, ziel: 150, wert: (s, r) => r.serieMax },
     { id: 'ausdauer', belohnung: 'sonne', rund: true, ziel: 180, wert: (s, r) => Math.floor(r.dauer), zeit: true },
     { id: 'allesfresser', rund: true, ziel: 3, wert: (s, r) => r.igitt, balken: false },
-    { id: 'leckermaul', belohnung: 'tannen', ziel: 1500, wert: (s) => s.gefangen },
+    { id: 'leckermaul', ziel: 1500, wert: (s) => s.gefangen },
     { id: 'vielfrass', ziel: 6000, wert: (s) => s.gefangen },
     { id: 'stammgast', ziel: 50, wert: (s) => s.runden },
     { id: 'treu', belohnung: 'pfoten', ziel: 14, wert: (s) => s.tage.length },
     { id: 'freund', ziel: 3000, wert: (s) => s.gesamt },
+    { id: 'gartenMeister', ziel: 10, wert: (s) => weltVoll(s, 'garten'), balken: false, live: false },
+    { id: 'waldMeister', ziel: 10, wert: (s) => weltVoll(s, 'wald'), balken: false, live: false },
+    { id: 'strandMeister', ziel: 10, wert: (s) => weltVoll(s, 'strand'), balken: false, live: false },
+    { id: 'pfotenProfi', ziel: 90, wert: (s) => pfotenSumme(s), balken: false, live: false },
   ];
-  const stand = { gesamt: 0, gefangen: 0, gold: 0, runden: 0, tage: [], erfolge: {}, halstuch: 'standard', ort: 'garten' };
+  // halstuch 'keins' = nur Halsband, bis die Proberunde geschafft ist
+  const stand = { gesamt: 0, gefangen: 0, gold: 0, runden: 0, tage: [], erfolge: {}, levels: {}, halstuch: 'keins', ort: 'garten' };
   try { Object.assign(stand, JSON.parse(lies('ezra-fortschritt', '{}'))); } catch (e) {}
   if (!Array.isArray(stand.tage)) stand.tage = [];
   if (!stand.erfolge || typeof stand.erfolge !== 'object') stand.erfolge = {};
+  if (!stand.levels || typeof stand.levels !== 'object') stand.levels = {};
   const standSichern = () => schreib('ezra-fortschritt', JSON.stringify(stand));
-  const ortFrei = (id) => stand.gesamt >= (ORTE_AB[id] ?? Infinity);
+  const ortFrei = (id) => weltOffen(id);
   const erfolgFuer = (halstuch) => ERFOLGE.find((e) => e.belohnung === halstuch);
-  const halstuchFrei = (id) => id === 'standard' || !!stand.erfolge[erfolgFuer(id)?.id];
+  const weltFuer = (halstuch) => WELTEN.find((w) => w.halstuch === halstuch);
+  const halstuchFrei = (id) => id === 'keins' ? true
+    : id === 'standard' ? levelPfotenVon(stand, 1) > 0
+    : weltFuer(id) ? weltGeschafft(weltFuer(id).id)
+    : !!stand.erfolge[erfolgFuer(id)?.id];
+  const tuchHinweis = (id) => id === 'standard' ? T.perProbe
+    : weltFuer(id) ? T.perWelt(T.orte[weltFuer(id).id])
+    : T.perErfolg(T.erfolge[erfolgFuer(id).id][0]);
   const anzahlErfolge = () => ERFOLGE.filter((e) => stand.erfolge[e.id]).length;
   if (!ortFrei(stand.ort)) stand.ort = 'garten';
-  if (!halstuchFrei(stand.halstuch)) stand.halstuch = 'standard';
+  if (!halstuchFrei(stand.halstuch)) stand.halstuch = levelPfotenVon(stand, 1) ? 'standard' : 'keins';
+  // Ort des laufenden Spiels: Endlos = gewählter Ort, Level = Welt des Levels
+  let spielOrt = stand.ort, modus = 'endlos', level = null, levelPfoten = 0, levelErgebnis = null;
 
   let runde = null, auswertung = null;
   function heute() {
@@ -787,30 +999,23 @@
     if (!stand.tage.includes(tag)) stand.tage = [...stand.tage, tag].slice(-400);
     const neueErfolge = ERFOLGE.filter((e) => !stand.erfolge[e.id] && e.wert(stand, r) >= e.ziel);
     neueErfolge.forEach((e) => { stand.erfolge[e.id] = Date.now(); });
-    const neueOrte = Object.keys(ORTE_AB).filter((id) => vorher < ORTE_AB[id] && stand.gesamt >= ORTE_AB[id]);
+    const neueOrte = [];
     standSichern();
-    return { neueErfolge, neueOrte, ziele: zieleWaehlen(alt, r), r, alt, gefahr: ORTE[stand.ort].gefahr };
+    return { neueErfolge, neueOrte, ziele: zieleWaehlen(alt, r), r, alt, gefahr: ORTE[spielOrt].gefahr };
   }
   // Ziele, bei denen sich diese Runde etwas bewegt hat – für den „So knapp!“-Hinweis
   function zieleWaehlen(alt, r) {
-    const ziele = [];
-    const ort = Object.keys(ORTE_AB).find((id) => !ortFrei(id));
-    if (ort) ziele.push({ ort, von: alt.gesamt, bis: stand.gesamt, ziel: ORTE_AB[ort] });
     const kandidaten = ERFOLGE
       .filter((e) => e.balken !== false && !stand.erfolge[e.id])
       .map((e) => ({ erfolg: e, von: e.rund ? 0 : e.wert(alt, r), bis: e.wert(stand, r), ziel: e.ziel }))
       .filter((z) => z.bis > z.von)
       .sort((a, b) => b.bis / b.ziel - a.bis / a.ziel);
-    return [...ziele, ...kandidaten];
+    return kandidaten;
   }
   const zielTitel = (z) => T.erfolge[z.erfolg.id][0];
   // Nächste noch offene Hürde aus einer Reihe von Erfolgen (z. B. Leckermaul → Vielfraß)
   const naechsteHuerde = (ids, wert) => ids.map((id) => ERFOLGE.find((e) => e.id === id)).find((e) => wert < e.ziel)?.ziel ?? null;
   const zielZahl = (z, n) => (z.erfolg?.zeit ? `${Math.floor(n / 60)}:${String(n % 60).padStart(2, '0')}` : String(n));
-  function naechstesZiel() {
-    const id = ['wald', 'strand'].find((o) => !ortFrei(o));
-    return id ? T.ziel(ORTE_AB[id] - stand.gesamt, T.zielOrt[id]) : T.alleOrte;
-  }
 
   // ---------- Ton ----------
   let ac = null, ton = lies('ezra-ton', 'an') !== 'aus';
@@ -984,6 +1189,24 @@
         c.restore();
       }
     } },
+    gaensebluemchen: { schrift: '#fff6df', muster(c) {
+      tuchFlaeche(c, '#5e9e4a');
+      for (const [x, y] of [[-21, -53], [-4, -55], [13, -53], [26, -55], [-12, -32], [5, -31], [16, -35]]) {
+        c.fillStyle = '#fffdf5';
+        for (let k = 0; k < 6; k++) { const w = k * Math.PI / 3; ellipse(c, x + Math.cos(w) * 2.4, y + Math.sin(w) * 2.4, 1.7, 1.1, w); }
+        c.fillStyle = '#f2c21a'; ellipse(c, x, y, 1.4, 1.4);
+      }
+    } },
+    muscheln: { schrift: '#fff6df', muster(c) {
+      tuchFlaeche(c, '#2d86c4');
+      c.fillStyle = 'rgba(255,255,255,.25)'; c.fillRect(-32, -42, 64, 2); c.fillRect(-32, -29, 64, 2);
+      for (const [x, y] of [[-21, -52], [-5, -54], [12, -52], [25, -54], [-12, -31], [4, -30], [16, -33]]) {
+        c.fillStyle = '#ffe3c4';
+        c.beginPath(); c.moveTo(x, y + 2.6); c.arc(x, y + 2.6, 3.6, Math.PI, 0); c.closePath(); c.fill();
+        c.strokeStyle = '#d99a6c'; c.lineWidth = .5;
+        for (const d of [-2, 0, 2]) { c.beginPath(); c.moveTo(x, y + 2.6); c.lineTo(x + d * 1.4, y - .6); c.stroke(); }
+      }
+    } },
     gold: { schrift: '#7a4d00', muster(c) {
       const g = c.createLinearGradient(-30, -60, 30, -20);
       g.addColorStop(0, '#f7d774'); g.addColorStop(.5, '#d9a520'); g.addColorStop(1, '#f7e09a');
@@ -992,6 +1215,7 @@
     } },
   };
   function malHalstuch(c, id) {
+    if (id === 'keins') return; // nur Halsband
     const h = HALSTUCH[id] || HALSTUCH.standard;
     c.fillStyle = CREME; dreieck(c, -35, -60, 35, -60, 0, -15); c.fill();
     c.save();
@@ -1094,12 +1318,12 @@
   function malHimmel(c) {
     c.setTransform(dpr, 0, 0, dpr, 0, 0);
     c.clearRect(0, 0, W, H);
-    ORTE[stand.ort].himmel(c);
+    ORTE[spielOrt].himmel(c);
   }
   function malVorder(c) {
     c.setTransform(dpr, 0, 0, dpr, 0, 0);
     c.clearRect(0, 0, W, H);
-    ORTE[stand.ort].vorder(c);
+    ORTE[spielOrt].vorder(c);
   }
   function wolken(c, liste) {
     c.fillStyle = 'rgba(255,255,255,.85)';
@@ -1306,10 +1530,16 @@
     const t = clamp((st - a0) / (a1 - a0), 0, 1);
     return { farbe: f0.map((v, k) => lerp(v, f1[k], t)), nacht: lerp(n0, n1, t) };
   }
-  const fortschritt = () => Math.min(1, zeit / 120);
+  const fortschritt = () => Math.min(1, modus === 'level' ? level.basis + zeit / 240 : zeit / 120);
+  const levelArt = () => (modus === 'level' ? level.art : null);
+  function ortSetzen(id) {
+    spielOrt = id;
+    malHimmel(himmelCv.getContext('2d'));
+    malVorder(vorderCv.getContext('2d'));
+  }
 
   function malHintergrund() {
-    const st = fortschritt();
+    const st = Math.min(1, zeit / 120);
     const tz = tageszeit(st);
     ctx.drawImage(himmelCv, 0, 0, W, H);
     const [r, g, b, a] = tz.farbe;
@@ -1358,12 +1588,12 @@
     }
     ctx.drawImage(vorderCv, 0, 0, W, H);
     if (tz.nacht > .01) {
-      const ab = ORTE[stand.ort].nachtAb();
+      const ab = ORTE[spielOrt].nachtAb();
       ctx.fillStyle = `rgba(10,18,48,${tz.nacht})`;
       ctx.fillRect(0, ab, W, H - ab);
     }
     // Glühwürmchen
-    if (sternAlpha > 0 && !ruhig && ORTE[stand.ort].gluehwuermchen) {
+    if (sternAlpha > 0 && !ruhig && ORTE[spielOrt].gluehwuermchen) {
       for (let i = 0; i < 9; i++) {
         const fx = (W * ((i * .137 + .05) % 1)) + Math.sin(uhr * .7 + i) * 20;
         const fy = heckeOben + 20 + ((i * 53) % Math.max(1, grasOben - heckeOben + 60)) + Math.cos(uhr * .9 + i * 2) * 10;
@@ -1400,6 +1630,7 @@
     punkte = 0; leben = 3; zeit = 0;
     serie = 0; besteSerie = 0; zeitlupe = 0; faktor = 1;
     runde = { knochen: 0, baelle: 0, gold: 0, igitt: 0 };
+    levelPfoten = 0;
     meldungenZuruecksetzen();
     auswertung = null;
     items = []; krümel = []; texte = [];
@@ -1414,7 +1645,10 @@
   }
 
   function zeige(id) {
-    for (const k of ['startKarte', 'sachenKarte', 'pauseKarte', 'endeKarte', 'listeKarte', 'einstellKarte', 'infoKarte']) $(k).hidden = k !== id;
+    const imSpiel = zustand === 'laeuft' || zustand === 'pause';
+    $('einstellKnopf').hidden = imSpiel;
+    $('pauseKnopf').hidden = !imSpiel;
+    for (const k of ['karteSeite', 'levelKarte', 'levelEndeKarte', 'tuchKarte', 'startKarte', 'sachenKarte', 'pauseKarte', 'endeKarte', 'listeKarte', 'einstellKarte', 'infoKarte']) $(k).hidden = k !== id;
   }
 
   // ---------- Startkarte und „Ezras Sachen“ ----------
@@ -1425,17 +1659,32 @@
     return e;
   }
   function startFuellen() {
-    const gefahr = ORTE[stand.ort].gefahr;
+    const gefahr = ORTE[stand.ort].gefahr; // Startseite gehört zum Endlos-Spiel
     symbolMalen($('gefahrSymbol'), gefahr);
     $('gefahrRegel').innerHTML = T.r_gefahr[gefahr];
     $('sachenZahl').textContent = `${anzahlErfolge()}/${ERFOLGE.length}`;
-    $('startZiel').textContent = stand.gesamt ? naechstesZiel() : '';
+    $('startZiel').textContent = '';
   }
-  function zumStart() {
+  // Startseite des Endlos-Spiels
+  function endlosZeigen() {
+    if (!levelPfotenVon(stand, 1)) return toast(T.endlosGesperrt);
     if (zustand === 'ende') zustand = 'start';
+    if (spielOrt !== stand.ort) ortSetzen(stand.ort);
     startFuellen();
     zeige('startKarte');
     $('losKnopf').focus();
+  }
+  // „Zur Karte“ – die Karte ist jetzt der Startpunkt der App
+  function zumStart() {
+    if (zustand === 'ende') zustand = 'start';
+    kartenZeigen();
+  }
+  let toastUhr2 = 0;
+  function toast(text) {
+    $('toast').textContent = text;
+    $('toast').hidden = false;
+    clearTimeout(toastUhr2);
+    toastUhr2 = setTimeout(() => { $('toast').hidden = true; }, 2200);
   }
 
   let tab = 'erfolge';
@@ -1481,7 +1730,7 @@
         if (!frei) g.globalAlpha = .3;
         malHalstuch(g, id);
         b.append(c, el('span', null, T.halstuch[id]));
-        if (!frei) b.append(el('span', 'hinweis', T.perErfolg(T.erfolge[erfolgFuer(id).id][0])));
+        if (!frei) b.append(el('span', 'hinweis', tuchHinweis(id)));
         b.addEventListener('click', () => { stand.halstuch = id; standSichern(); sachenFuellen(); });
         raster.append(b);
       }
@@ -1501,13 +1750,12 @@
         ortVorschau(c, id);
         if (!frei) { const g = c.getContext('2d'); g.fillStyle = 'rgba(20,30,15,.55)'; g.fillRect(0, 0, 320, 180); }
         const zeile = el('span');
-        zeile.append(el('b', null, T.orte[id]), el('em', null, frei ? (stand.ort === id ? T.ausgewaehlt : '') : T.ortAb(ORTE_AB[id], ORTE_AB[id] - stand.gesamt)));
+        zeile.append(el('b', null, T.orte[id]), el('em', null, frei ? (stand.ort === id ? T.ausgewaehlt : '') : T.ortGesperrt(T.orte[id])));
         b.append(c, zeile);
         b.addEventListener('click', () => {
           stand.ort = id;
           standSichern();
-          malHimmel(himmelCv.getContext('2d'));
-          malVorder(vorderCv.getContext('2d'));
+          ortSetzen(id);
           sachenFuellen();
         });
         ziel.append(b);
@@ -1520,7 +1768,7 @@
   function einstellungenOeffnen() {
     if (!$('einstellKarte').hidden || !$('infoKarte').hidden) return einstellungenSchliessen();
     if (zustand === 'laeuft') pause();
-    const offen = ['startKarte', 'sachenKarte', 'pauseKarte', 'endeKarte', 'listeKarte'].find((k) => !$(k).hidden);
+    const offen = ['karteSeite', 'levelKarte', 'levelEndeKarte', 'startKarte', 'sachenKarte', 'pauseKarte', 'endeKarte', 'listeKarte'].find((k) => !$(k).hidden);
     if (!offen) return;
     vorherKarte = offen;
     loeschenScharf(false);
@@ -1534,6 +1782,7 @@
   function einstellungenSchliessen() {
     if (vorherKarte === 'listeKarte') listeZeigen();
     else if (vorherKarte === 'sachenKarte') sachenOeffnen();
+    else if (vorherKarte === 'karteSeite') kartenZeigen();
     else zeige(vorherKarte);
   }
 
@@ -1566,6 +1815,9 @@
   }
 
   function starten() {
+    if (!levelPfotenVon(stand, 1)) return levelKarteZeigen(1);
+    modus = 'endlos';
+    if (spielOrt !== stand.ort) ortSetzen(stand.ort);
     tonStarten();
     neuesSpiel();
     zustand = 'laeuft';
@@ -1575,8 +1827,16 @@
   function pause() {
     if (zustand !== 'laeuft') return;
     zustand = 'pause';
+    $('pauseTon').checked = ton;
+    $('pauseVib').checked = vibration;
+    $('pauseVibZeile').hidden = !kannVibrieren;
     zeige('pauseKarte');
     $('weiterKnopf').focus();
+  }
+  function abbrechen() {
+    zustand = 'start';
+    meldungenZuruecksetzen();
+    $('levelZiel').hidden = true;
   }
   function weiter() {
     if (zustand !== 'pause') return;
@@ -1655,9 +1915,7 @@
 
     // „So knapp!“: das Ziel, das jetzt am nächsten dran ist
     const knapp = a.ziele.filter((z) => z.bis / z.ziel >= .8 && z.bis < z.ziel).sort((x, y) => y.bis / y.ziel - x.bis / x.ziel)[0];
-    $('endeZiel').textContent = !knapp ? '' : knapp.ort
-      ? T.knappOrt(knapp.ziel - knapp.bis, T.zielOrt[knapp.ort])
-      : T.knapp(zielZahl(knapp, knapp.ziel - knapp.bis), zielTitel(knapp));
+    $('endeZiel').textContent = knapp ? T.knapp(zielZahl(knapp, knapp.ziel - knapp.bis), zielTitel(knapp)) : '';
 
     if (!animiert || ruhig) { teile.forEach(({ z, setze }) => setze(z.bis)); return 0; }
     teile.forEach(({ z, setze }) => setze(z.von));
@@ -1680,19 +1938,19 @@
     stapelUhren.forEach(clearTimeout);
     stapelUhren = [];
     $('endeStapel').replaceChildren();
+    $('levelStapel').replaceChildren();
   }
-  function stapelBauen(verzoegerung) {
+  function stapelBauen(boxId, sachen, verzoegerung) {
     stapelLeeren();
-    const a = auswertung;
-    const sachen = [
-      ...a.neueOrte.map((id) => ({ ort: id })),
-      ...a.neueErfolge.filter((e) => e.belohnung).map((e) => ({ erfolg: e })),
-      ...a.neueErfolge.filter((e) => !e.belohnung).map((e) => ({ erfolg: e })),
+    sachen = [
+      ...sachen.filter((x) => !x.erfolg),
+      ...sachen.filter((x) => x.erfolg?.belohnung),
+      ...sachen.filter((x) => x.erfolg && !x.erfolg.belohnung),
     ];
     // Alle Schilder kommen rein; ab dem dritten scrollt der Stapel mit
     sachen.map(schildBauen).forEach((schild, i) => {
       const los = () => {
-        const box = $('endeStapel');
+        const box = $(boxId);
         box.append(schild);
         box.scrollTo({ top: box.scrollHeight, behavior: ruhig ? 'auto' : 'smooth' });
         const rect = schild.getBoundingClientRect();
@@ -1705,12 +1963,17 @@
   }
   function schildBauen(sache) {
     const schild = el('div', 'schild');
-    if (sache.ort) {
+    if (sache.halstuch) {
+      const name = sache.halstuch === 'standard' ? T.abenteuerTuch : T.neuesTuch(T.halstuch[sache.halstuch]);
+      schild.append(el('span', 'sz', '🎀'), el('span', null, name));
+      const b = aktionsKnopf(T.anziehen, () => { stand.halstuch = sache.halstuch; });
+      if (sache.an) { b.textContent = T.erledigt; b.disabled = true; }
+      schild.append(b);
+    } else if (sache.ort) {
       schild.append(el('span', 'sz', '📍'), el('span', null, T.neuerOrt(T.orte[sache.ort])));
       schild.append(aktionsKnopf(T.hinGehen, () => {
         stand.ort = sache.ort;
-        malHimmel(himmelCv.getContext('2d'));
-        malVorder(vorderCv.getContext('2d'));
+        ortSetzen(sache.ort);
       }));
     } else {
       schild.append(el('span', 'sz', '🏆'), el('span', null, T.erfolge[sache.erfolg.id][0]));
@@ -1757,7 +2020,7 @@
     (endePlatz >= 0 ? $('nameFeld') : $('nochmalKnopf')).focus();
     punkteHochzaehlen(!$('rekordNeu').hidden);
     const balkenDauer = balkenMalen(true);
-    stapelBauen(balkenDauer + 200);
+    stapelBauen('endeStapel', [...auswertung.neueOrte.map((id) => ({ ort: id })), ...auswertung.neueErfolge.map((e) => ({ erfolg: e }))], balkenDauer + 200);
   }
 
   // ---------- Meldungen während des Spiels: Meilensteine, Rekord, Erfolge ----------
@@ -1799,11 +2062,13 @@
   }
   function liveCheck() {
     if (zustand !== 'laeuft') return;
-    if (punkte >= meilenstein) {
+    levelCheck();
+    if (zustand !== 'laeuft') return;
+    if (modus === 'endlos' && punkte >= meilenstein) {
       melden('⭐', T.meilenstein(meilenstein, T.sprueche[Math.min(spruchNr++, T.sprueche.length - 1)]), 1);
       meilenstein = naechsterMeilenstein(punkte);
     }
-    if (!rekordGemeldet && punkte > rekord) {
+    if (modus === 'endlos' && !rekordGemeldet && punkte > rekord) {
       rekordGemeldet = true;
       melden('🎉', T.rekordNeu, 3);
     }
@@ -1815,11 +2080,521 @@
       liveGemeldet.add(e.id);
       melden('🏆', T.liveErfolg(T.erfolge[e.id][0]), 2);
     }
-    for (const id of Object.keys(ORTE_AB)) {
-      if (ortFrei(id) || liveGemeldet.has(id) || s.gesamt < ORTE_AB[id]) continue;
-      liveGemeldet.add(id);
-      melden('📍', T.neuerOrt(T.orte[id]), 2);
+  }
+
+  // ---------- Level spielen ----------
+  function levelWert() {
+    switch (level.art) {
+      case 'gefangen': return runde.knochen + runde.baelle + runde.gold;
+      case 'baelle': return runde.baelle;
+      case 'gold': return runde.gold;
+      case 'serie': return besteSerie;
+      case 'dauer': return Math.floor(zeit);
+      default: return punkte; // punkte, sauber
     }
+  }
+  const pfotenFuer = (wert) => level.stufen.filter((st) => wert >= st).length;
+  function levelZielZeigen() {
+    const box = $('levelZiel');
+    if (modus !== 'level' || zustand !== 'laeuft' && zustand !== 'pause') { box.hidden = true; return; }
+    const ziel = level.stufen[Math.min(levelPfoten, 2)];
+    const pf = el('span', 'pf');
+    for (let i = 0; i < 3; i++) pf.append(i < levelPfoten ? '🐾' : el('i', null, '🐾'));
+    box.replaceChildren(pf, el('span', null, `${levelWert()} / ${ziel} ${T.einheit[level.art]}`));
+    box.hidden = false;
+  }
+  function levelCheck() {
+    if (modus !== 'level' || zustand !== 'laeuft') return;
+    const n = pfotenFuer(levelWert());
+    if (n > levelPfoten) {
+      levelPfoten = n;
+      melden('🐾', T.pfoteErreicht(n), 3);
+      if (n === 3) setTimeout(() => { if (zustand === 'laeuft') ende(); }, 700);
+    }
+    levelZielZeigen();
+  }
+
+  // ---------- Level: Startfenster ----------
+  let gewaehlt = 1;
+  const levelTitel = (l) => T.aufgabe[l.art](l.stufen[0], T.ohneGefahr[ORTE[l.welt].gefahr]);
+  function levelKarteZeigen(nr) {
+    const l = LEVEL[nr - 1];
+    gewaehlt = nr;
+    $('lkKopf').textContent = T.levelNr(T.orte[l.welt], nr) + (nr === 1 ? ` · ${T.proberunde}` : '');
+    $('lkTitel').textContent = levelTitel(l);
+    const best = levelPfotenVon(stand, nr);
+    const box = $('lkStufen');
+    box.replaceChildren();
+    l.stufen.forEach((zahl, i) => {
+      const zeile = el('div', i < best ? 'erreicht' : null);
+      zeile.append(el('span', 'pf', '🐾'.repeat(i + 1)), el('span', null, `${zahl} ${T.einheit[l.art]}`));
+      box.append(zeile);
+    });
+    $('lkBest').textContent = T.levelBest(best);
+    zeige('levelKarte');
+    $('lkLos').focus();
+  }
+  function levelStarten(nr) {
+    ezraVon = null; // wer direkt weiterspielt, sieht den Lauf auf der Karte nicht mehr
+    modus = 'level';
+    level = LEVEL[nr - 1];
+    ortSetzen(level.welt);
+    tonStarten();
+    neuesSpiel();
+    zustand = 'laeuft';
+    zeige(null);
+    levelZielZeigen();
+    piep(520, .09, 'triangle', .06); piep(780, .12, 'triangle', .06, 0, .09);
+  }
+
+  // ---------- Level: Ende ----------
+  function levelEnde() {
+    vibrieren(levelPfoten ? 'mittel' : 'stark');
+    const nr = level.nr, n = pfotenFuer(levelWert()), vorher = levelPfotenVon(stand, nr);
+    if (n > vorher) stand.levels[nr] = n;
+    auswertung = rundeAuswerten();
+    const extras = [];
+    const neuGeschafft = n > 0 && !vorher;
+    if (neuGeschafft && nr === 1) extras.push({ halstuch: 'standard', an: true }); // angezogen wird es in der Übergabe-Szene
+    if (neuGeschafft && LEVEL[nr]) ezraVon = nr;
+    if (neuGeschafft && level.letztes) {
+      const w = WELTEN.findIndex((x) => x.id === level.welt);
+      if (WELTEN[w + 1]) weltNeu = WELTEN[w + 1].id;
+      extras.push({ halstuch: WELTEN[w].halstuch });
+      if (WELTEN[w + 1]) extras.push({ ort: WELTEN[w + 1].id });
+    }
+    standSichern();
+    levelErgebnis = { nr, n, vorher, wert: levelWert(), extras };
+    setTimeout(levelEndeZeigen, 650);
+    if (n) [523, 659, 784].forEach((f, i) => piep(f, .12, 'triangle', .05, .0, .7 + i * .09));
+    else { piep(440, .18, 'triangle', .06, .7); piep(330, .3, 'triangle', .06, .6, .18); }
+  }
+  function levelEndeZeigen() {
+    const e = levelErgebnis, l = LEVEL[e.nr - 1];
+    $('leKopf').textContent = T.levelNr(T.orte[l.welt], e.nr);
+    $('leTitel').textContent = !e.n ? T.levelFast : e.n === 3 ? T.levelSuper : T.levelGeschafft(e.nr);
+    $('leText').textContent = T.levelErgebnis(T.einheit[l.art].replace(/^./, (b) => b.toUpperCase()), e.wert) + ` · ${l.stufen.join(' / ')}`;
+    $('leSpruch').textContent = '';
+    const naechstes = LEVEL[e.nr];
+    const weiter = $('leWeiter');
+    if (!e.n) { weiter.textContent = T.levelNochmal; weiter.dataset.ziel = 'nochmal'; }
+    else if (naechstes) { weiter.textContent = T.levelWeiter; weiter.dataset.ziel = 'weiter'; }
+    else { weiter.textContent = T.zurKarte; weiter.dataset.ziel = 'karte'; }
+    $('leNochmal').hidden = !e.n;
+    const pfoten = [...$('lePfoten').children];
+    pfoten.forEach((p) => p.classList.remove('an'));
+    zeige('levelEndeKarte');
+    weiter.focus();
+    pfoten.slice(0, e.n).forEach((p, i) => setTimeout(() => {
+      p.classList.add('an');
+      const rect = p.getBoundingClientRect();
+      konfetti(30, rect.left + rect.width / 2, rect.top + rect.height / 2, .6);
+      piep(660 + i * 200, .14, 'triangle', .06);
+      vibrieren('leicht');
+    }, ruhig ? 0 : 350 + i * 450));
+    const sachen = [...e.extras.filter((x) => !x.halstuch), ...auswertung.neueErfolge.map((x) => ({ erfolg: x }))];
+    const tuch = e.extras.find((x) => x.halstuch);
+    if (tuch) {
+      // erst die Pfoten feiern, dann die Übergabe; danach zurück hierher (erstes Tuch: gleich zur Karte)
+      const nachher = () => (tuch.an ? zumStart() : (zeige('levelEndeKarte'), stapelBauen('levelStapel', sachen, 200)));
+      stapelUhren.push(setTimeout(() => tuchZeremonie(tuch.halstuch, !!tuch.an, nachher), ruhig ? 300 : 350 + e.n * 450 + 500));
+    } else {
+      stapelBauen('levelStapel', sachen, 350 + e.n * 450 + 200);
+    }
+  }
+
+  // ---------- Halstuch-Übergabe: Geschenk wackelt, antippen, Tuch fliegt heraus und landet auf Ezra ----------
+  // Geschenkpapier je Tuch: [Papier, Band]
+  const PAPIER = { standard: ['#2742c4', '#f2d43a'], gaensebluemchen: ['#5e9e4a', '#fff6df'], tannen: ['#2f6b34', '#d33b2f'], muscheln: ['#2d86c4', '#fff6df'] };
+  let tuchUhr = 0, tuchTempo = 1, tuchNachher = null, tuchAntippen = null;
+  function tuchZeremonie(id, schonAn, nachher) {
+    tuchNachher = nachher;
+    tuchTempo = 1;
+    $('tuchName').textContent = id === 'standard' ? T.abenteuerTuch : T.neuesTuch(T.halstuch[id]);
+    $('tuchSpruch').textContent = `„${T.tuchSpruch[id]}“`;
+    $('tuchAn').textContent = schonAn ? T.tuchLos : T.anziehen;
+    $('tuchSpaeter').hidden = schonAn;
+    document.querySelectorAll('#tuchKarte .spaet').forEach((x) => x.classList.remove('da'));
+    $('tuchTipp').classList.remove('da');
+    $('tuchTipp').hidden = false;
+    $('tuchAn').dataset.id = id;
+    zeige('tuchKarte');
+    const c = $('tuchBild'), g = c.getContext('2d');
+    const B = 340, Hh = 380;
+    c.width = B * dpr; c.height = Hh * dpr;
+    const S = 2.2, ex = B / 2 - 32, ey = Hh - 22; // Ezra etwas links …
+    const bx = B / 2 + 98, by = ey;               // … das Geschenk rechts daneben
+    const halsX = ex, halsY = ey - 37.5 * S;      // hier landet das Tuch
+    const [papier, band] = PAPIER[id] || PAPIER.standard;
+    const altesTuch = stand.halstuch === id ? 'keins' : stand.halstuch;
+    const funken = [];
+    const STEIG = .55, TANZ = 1.5, FALL = 1.5; // aus dem Paket hoch, in der Mitte tanzen, zu Ezra schweben
+    let t = 0, tAuf = null, zuletzt = performance.now(), gelandet = false, letzterHupf = -1;
+
+    tuchAntippen = () => {
+      if (tAuf === null && t > .6) {
+        tAuf = t;
+        $('tuchTipp').hidden = true;
+        piep(520, .05, 'triangle', .05); piep(1040, .12, 'sine', .05, 1.5, .05); // Schleife springt ab
+        [659, 880, 1175].forEach((f, i) => piep(f, .14, 'triangle', .045, 0, .12 + i * .07));
+        vibrieren('leicht');
+      } else if (tAuf !== null) tuchTempo = 3;
+    };
+    setTimeout(() => { if (tAuf === null && !$('tuchKarte').hidden) $('tuchTipp').classList.add('da'); }, 2000);
+
+    const lichtkegel = (staerke) => {
+      const kegel = g.createLinearGradient(0, 0, 0, Hh);
+      kegel.addColorStop(0, `rgba(255,240,200,${.05 * staerke})`); kegel.addColorStop(1, `rgba(255,240,200,${.28 * staerke})`);
+      g.fillStyle = kegel;
+      g.beginPath(); g.moveTo(B / 2 - 50, 0); g.lineTo(B / 2 + 50, 0); g.lineTo(B / 2 + 175, Hh); g.lineTo(B / 2 - 175, Hh); g.closePath(); g.fill();
+      const boden = g.createRadialGradient(B / 2, ey, 10, B / 2, ey, 170);
+      boden.addColorStop(0, `rgba(255,240,200,${.35 * staerke})`); boden.addColorStop(1, 'rgba(255,240,200,0)');
+      g.fillStyle = boden; g.fillRect(0, ey - 60, B, 90);
+    };
+    const paket = (deckelAuf) => {
+      g.fillStyle = 'rgba(0,0,0,.25)'; ellipse(g, 0, 2, 40, 6);
+      g.fillStyle = papier; g.beginPath(); g.roundRect(-34, -56, 68, 56, 4); g.fill();
+      g.fillStyle = 'rgba(0,0,0,.12)'; g.fillRect(-34, -56, 68, 6);
+      g.fillStyle = band; g.fillRect(-6, -56, 12, 56);
+      if (deckelAuf) return;
+      g.fillStyle = papier; g.beginPath(); g.roundRect(-39, -68, 78, 15, 4); g.fill();
+      g.fillStyle = band; g.fillRect(-6, -68, 12, 15);
+    };
+    const schleife = () => {
+      g.fillStyle = band;
+      ellipse(g, -11, -74, 11, 7, -.4); ellipse(g, 11, -74, 11, 7, .4);
+      g.fillStyle = 'rgba(0,0,0,.15)'; ellipse(g, 0, -71, 4.5, 4.5);
+    };
+    const tuchMalen = (cx, cy, w, gr) => {
+      g.setTransform(dpr * S * gr, 0, 0, dpr * S * gr, dpr * cx, dpr * cy);
+      g.rotate(w); g.translate(0, 37.5);
+      malHalstuch(g, id);
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+
+    cancelAnimationFrame(tuchUhr);
+    const schritt = (jetzt) => {
+      const dt = Math.min(.05, (jetzt - zuletzt) / 1000) * tuchTempo; zuletzt = jetzt;
+      t += dt;
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      g.clearRect(0, 0, B, Hh);
+      lichtkegel(clamp(t / .4, 0, 1));
+      const seitAuf = tAuf === null ? -1 : t - tAuf;
+      const pFall = seitAuf < STEIG + TANZ ? 0 : clamp((seitAuf - STEIG - TANZ) / FALL, 0, 1);
+
+      // Ezra: neugierig, nach dem Öffnen immer aufgeregter, Hüpfer kurz vor der Landung
+      const aufregung = tAuf === null ? .2 : .4 + pFall * .6;
+      const hupf = !gelandet && pFall > .78 ? Math.sin((pFall - .78) / .22 * Math.PI) * 22 : 0;
+      const nachLandung = gelandet ? Math.max(0, 1 - (seitAuf - STEIG - TANZ - FALL) * 2) : 0;
+      malEzraMitTuch(g, gelandet ? id : altesTuch, ex, ey - hupf - nachLandung * 10, S,
+        { neig: tAuf === null ? .05 : 0, wedel: Math.sin(t * (6 + aufregung * 22)) * (.3 + aufregung * .35), maul: gelandet ? .2 : 0, igitt: 0, blinzel: false });
+
+      // Geschenk: plumpst herein, wackelt, hüpft ab und zu; nach dem Öffnen verblasst es
+      if (seitAuf < 1.4) {
+        const fallRein = clamp((t - .25) / .45, 0, 1);
+        let gy = -280 * (1 - fallRein) ** 2;
+        let dreh = 0;
+        if (tAuf === null && t > .7) {
+          const ph = (t - .7) % 1.5;
+          if (ph < .28) gy -= Math.sin(ph / .28 * Math.PI) * 12;
+          const staerke = Math.min(1, (t - .7) / 3);
+          dreh = Math.sin(t * 17) * (.04 + staerke * .1) * (ph < .6 ? 1 : .35);
+          const runde = Math.floor((t - .7) / 1.5);
+          if (runde !== letzterHupf) { letzterHupf = runde; piep(180, .05, 'triangle', .025); piep(150, .05, 'triangle', .02, 0, .07); }
+        }
+        g.save();
+        g.globalAlpha = seitAuf > .9 ? clamp(1 - (seitAuf - .9) / .5, 0, 1) : 1;
+        g.translate(bx, by + gy); g.rotate(dreh);
+        // Lichtstrahlen aus dem offenen Paket
+        if (seitAuf >= 0) {
+          const licht = clamp(1 - seitAuf / 1.1, 0, 1);
+          g.fillStyle = `rgba(255,236,150,${.55 * licht})`;
+          for (let i = -3; i <= 3; i++) { g.beginPath(); g.moveTo(-18, -56); g.lineTo(18, -56); g.lineTo(i * 34 + 14, -56 - 170); g.lineTo(i * 34 - 14, -56 - 170); g.closePath(); g.fill(); }
+        }
+        paket(seitAuf >= 0);
+        if (seitAuf < 0) schleife();
+        g.restore();
+        // Deckel und Schleife fliegen weg
+        if (seitAuf >= 0 && seitAuf < 1.2) {
+          const k = seitAuf;
+          g.save();
+          g.globalAlpha = clamp(1 - k / 1.1, 0, 1);
+          g.translate(bx + k * 90, by - 62 - k * 260 + k * k * 260); g.rotate(k * 5);
+          g.fillStyle = papier; g.beginPath(); g.roundRect(-39, -7, 78, 15, 4); g.fill();
+          g.fillStyle = band; g.fillRect(-6, -7, 12, 15);
+          g.restore();
+          g.save();
+          g.globalAlpha = clamp(1 - k / 1.1, 0, 1);
+          g.translate(bx - k * 70, by - k * 320 + k * k * 300); g.rotate(-k * 7);
+          schleife();
+          g.restore();
+        }
+      }
+
+      // Tuch: springt aus dem Paket in die Mitte, tanzt dort kurz und schwebt dann zu Ezra an den Hals
+      if (seitAuf >= 0 && !gelandet) {
+        const startX = bx, startY = by - 70, mitteX = B / 2, mitteY = 56; // über Ezras Kopf
+        let cx, cy, w, gr;
+        if (seitAuf < STEIG) {
+          const k = seitAuf / STEIG, e = 1 - (1 - k) ** 2;
+          cx = startX + (mitteX - startX) * e; cy = startY + (mitteY - startY) * e - Math.sin(k * Math.PI) * 40;
+          w = k * Math.PI * 2; gr = .35 + .5 * e;
+        } else if (seitAuf < STEIG + TANZ) {
+          // Tanz: hin und her wiegen, hüpfen, eine Pirouette in der Mitte
+          const tt = seitAuf - STEIG, k = tt / TANZ;
+          const pirouette = k > .4 && k < .7 ? Math.sin((k - .4) / .3 * Math.PI) : 0;
+          cx = mitteX + Math.sin(tt * 7) * 22;
+          cy = mitteY - Math.abs(Math.sin(tt * 7)) * 14;
+          w = Math.sin(tt * 7) * .45 + pirouette * Math.PI * 2 * ((k - .4) / .3);
+          gr = .85 + Math.abs(Math.sin(tt * 14)) * .07 + pirouette * .12;
+          if (Math.floor(tt * 7 / Math.PI) !== Math.floor((tt - dt) * 7 / Math.PI)) piep(1175 + Math.random() * 400, .06, 'sine', .03);
+          if (Math.random() < .5) { const wk = Math.random() * Math.PI * 2; funken.push({ x: cx + Math.cos(wk) * 55, y: cy + Math.sin(wk) * 40, l: .7, r: 1.5 + Math.random() * 2 }); }
+        } else {
+          const e = pFall * pFall * (3 - 2 * pFall), tt = seitAuf - STEIG - TANZ;
+          cx = mitteX + (halsX - mitteX) * e + Math.sin(tt * 3.4) * 30 * (1 - e);
+          cy = mitteY + (halsY - mitteY) * e;
+          w = Math.sin(tt * 3.4 + .6) * .45 * (1 - e); gr = .85 + .15 * e;
+        }
+        tuchMalen(cx, cy, w, gr);
+        if (Math.random() < .6) funken.push({ x: cx + (Math.random() - .5) * 40, y: cy + (Math.random() - .5) * 30, l: .8, r: 1.5 + Math.random() * 2 });
+      }
+
+      // Glitzer
+      for (const f of funken) {
+        f.l -= dt; f.y += dt * 20 + (f.vy || 0) * dt; f.x += (f.vx || 0) * dt;
+        g.globalAlpha = clamp(f.l / .8, 0, 1);
+        g.fillStyle = '#ffe680';
+        stern(g, f.x, f.y, f.r);
+      }
+      g.globalAlpha = 1;
+      for (let i = funken.length - 1; i >= 0; i--) if (funken[i].l <= 0) funken.splice(i, 1);
+
+      // Plopp!
+      if (!gelandet && pFall >= 1) {
+        gelandet = true;
+        for (let i = 0; i < 26; i++) {
+          const w = Math.random() * Math.PI * 2, v = 60 + Math.random() * 120;
+          funken.push({ x: halsX, y: halsY, vx: Math.cos(w) * v, vy: Math.sin(w) * v, l: .9, r: 2 + Math.random() * 2.5 });
+        }
+        const rect = c.getBoundingClientRect();
+        konfetti(90, rect.left + rect.width * halsX / B, rect.top + rect.height * halsY / Hh, .8);
+        piep(880, .06, 'sine', .06, .5); // plopp
+        piep(330, .1, 'square', .045, .6, .12); piep(300, .14, 'square', .045, .55, .27); // wuff wuff
+        [784, 1047, 1319].forEach((f, i) => piep(f, .16, 'triangle', .045, 0, .45 + i * .09));
+        vibrieren('mittel'); setTimeout(() => vibrieren('mittel'), 160);
+        setTimeout(() => document.querySelectorAll('#tuchKarte .spaet').forEach((x, i) => setTimeout(() => x.classList.add('da'), i * 180)), 250 / tuchTempo);
+        setTimeout(() => $('tuchAn').focus(), 700);
+      }
+      if ($('tuchKarte').hidden) return;
+      if (!gelandet || funken.length || seitAuf < STEIG + TANZ + FALL + 1.5) tuchUhr = requestAnimationFrame(schritt);
+      else if (!ruhig) tuchUhr = requestAnimationFrame(ruhigWedeln);
+    };
+    // nach der Szene wedelt Ezra einfach weiter
+    const ruhigWedeln = (jetzt) => {
+      const tt = jetzt / 1000;
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      g.clearRect(0, 0, B, Hh);
+      lichtkegel(1);
+      malEzraMitTuch(g, id, ex, ey, S, { neig: 0, wedel: Math.sin(tt * 10) * .45, maul: .1, igitt: 0, blinzel: Math.sin(tt * 1.3) > .985 });
+      if (!$('tuchKarte').hidden) tuchUhr = requestAnimationFrame(ruhigWedeln);
+    };
+    tuchUhr = requestAnimationFrame(schritt);
+  }
+  // Ezra mit einem bestimmten Tuch malen, ohne das angezogene zu ändern
+  function malEzraMitTuch(g, tuch, x, y, s, o) {
+    const alt = stand.halstuch;
+    stand.halstuch = tuch;
+    malEzra(g, x, y, s, o);
+    stand.halstuch = alt;
+  }
+  function tuchFertig(anziehen) {
+    cancelAnimationFrame(tuchUhr);
+    if (anziehen) {
+      stand.halstuch = $('tuchAn').dataset.id;
+      standSichern();
+      piep(880, .08, 'triangle', .05); piep(1320, .12, 'triangle', .05, 0, .08);
+    }
+    const n = tuchNachher;
+    tuchNachher = null;
+    if (n) n();
+  }
+
+  // ---------- Levelkarte: Ezras Reise ----------
+  const WELT_HOEHE = 640, GEHEIM_HOEHE = 300, START_PLATZ = 70;
+  // nach einem neu geschafften Level: von wo Ezra losläuft und welche Welt gerade frei wurde
+  let ezraVon = null, weltNeu = null;
+  let nebelVorher = null;
+  function kartenZeigen() {
+    if (zustand === 'ende') zustand = 'start';
+    $('levelZiel').hidden = true;
+    zeige('karteSeite');
+    karteBauen();
+  }
+  function karteBauen() {
+    const box = $('reiseKarte'), scroll = $('reiseScroll');
+    const w = scroll.clientWidth || 360;
+    const hoehe = GEHEIM_HOEHE + WELTEN.length * WELT_HOEHE + START_PLATZ;
+    box.replaceChildren();
+    box.style.height = `${hoehe}px`;
+    $('pfotenSumme').textContent = `🐾 ${pfotenSumme(stand)} / ${LEVEL.length * 3}`;
+    const weltOben = (i) => GEHEIM_HOEHE + (WELTEN.length - 1 - i) * WELT_HOEHE;
+
+    // Welten als Landschaften, von unten (Garten) nach oben (Strand)
+    WELTEN.forEach((welt, i) => {
+      const c = el('canvas', 'welt');
+      c.width = Math.round(w * dpr); c.height = Math.round(WELT_HOEHE * dpr);
+      c.style.width = `${w}px`; c.style.height = `${WELT_HOEHE}px`; c.style.top = `${weltOben(i)}px`;
+      weltMalen(c, welt.id);
+      box.append(c);
+    });
+    // Geheimes Gebiet über dem Strand
+    const geheim = el('div', 'nebel');
+    geheim.style.top = '0px'; geheim.style.height = `${GEHEIM_HOEHE + 40}px`;
+    box.append(geheim);
+
+    // Punkte entlang eines geschwungenen Pfads
+    const punkte = LEVEL.map((l) => {
+      const wi = WELTEN.findIndex((x) => x.id === l.welt);
+      const y = weltOben(wi) + WELT_HOEHE - 50 - l.imWelt * 58;
+      const x = w / 2 + Math.sin(l.imWelt * 1.05 + wi * 2.1) * w * .28;
+      return { x, y };
+    });
+    const geheimPunkte = [0, 1, 2].map((k) => ({ x: w / 2 + Math.sin((10 + k) * 1.05 + 6.3) * w * .28, y: GEHEIM_HOEHE - 40 - k * 70 }));
+    const pfad = [{ x: w / 2, y: hoehe - 10 }, ...punkte, ...geheimPunkte];
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', `0 0 ${w} ${hoehe}`);
+    svg.setAttribute('width', w); svg.setAttribute('height', hoehe);
+    const weg = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    let d = `M ${pfad[0].x} ${pfad[0].y}`;
+    for (let k = 1; k < pfad.length; k++) {
+      const a = pfad[k - 1], b = pfad[k];
+      d += ` C ${a.x} ${(a.y + b.y) / 2}, ${b.x} ${(a.y + b.y) / 2}, ${b.x} ${b.y}`;
+    }
+    weg.setAttribute('d', d);
+    weg.setAttribute('fill', 'none'); weg.setAttribute('stroke', '#fff6df'); weg.setAttribute('stroke-width', '7');
+    weg.setAttribute('stroke-linecap', 'round'); weg.setAttribute('stroke-dasharray', '1 13'); weg.setAttribute('opacity', '.9');
+    svg.append(weg);
+    box.insertBefore(svg, geheim);
+
+    // Level-Knöpfe
+    const jetzt = LEVEL.find((l) => levelOffen(l.nr) && !levelPfotenVon(stand, l.nr)) || LEVEL[LEVEL.length - 1];
+    LEVEL.forEach((l, k) => {
+      const offen = levelOffen(l.nr), pf = levelPfotenVon(stand, l.nr);
+      const b = el('button', 'lvl' + (l === jetzt && !pf ? ' jetzt' : offen ? '' : ' zu'), String(l.nr));
+      b.type = 'button';
+      b.style.left = `${punkte[k].x}px`; b.style.top = `${punkte[k].y}px`;
+      b.setAttribute('aria-label', `Level ${l.nr}`);
+      if (pf) b.append(el('span', 'pf', '🐾'.repeat(pf)));
+      b.addEventListener('click', () => (offen ? levelKarteZeigen(l.nr) : toast(T.levelGesperrt(l.nr - 1))));
+      box.append(b);
+      // Geschenk am Ende jeder Welt
+      if (l.letztes) {
+        const welt = WELTEN.find((x) => x.id === l.welt);
+        const g = el('div', 'geschenk' + (halstuchFrei(welt.halstuch) ? ' da' : ''));
+        const x = punkte[k].x + (punkte[k].x > w / 2 ? -62 : 62);
+        g.style.left = `${x}px`; g.style.top = `${punkte[k].y - 6}px`;
+        const c = el('canvas'); c.width = 80; c.height = 64;
+        const gc = c.getContext('2d');
+        gc.setTransform(1.1, 0, 0, 1.1, 40, 32 + 37.5 * 1.1);
+        if (!halstuchFrei(welt.halstuch)) gc.globalAlpha = .45;
+        malHalstuch(gc, welt.halstuch);
+        g.append(c);
+        box.append(g);
+      }
+    });
+    geheimPunkte.forEach((pt) => {
+      const b = el('button', 'lvl geheim', '?');
+      b.type = 'button';
+      b.style.left = `${pt.x}px`; b.style.top = `${pt.y}px`;
+      b.addEventListener('click', () => toast(T.geheim));
+      box.append(b);
+    });
+    const tafel = el('div', 'schildchen', T.baldWeiter);
+    tafel.style.top = `${GEHEIM_HOEHE - 150}px`;
+    box.append(tafel);
+
+    // Nebel über gesperrten Welten; über der nächsten lichtet er sich mit jedem Level
+    WELTEN.forEach((welt, i) => {
+      if (weltOffen(welt.id)) return;
+      const n = el('div', 'nebel');
+      n.style.top = `${weltOben(i) - 20}px`; n.style.height = `${WELT_HOEHE + 40}px`;
+      const vorige = WELTEN[i - 1];
+      const anteil = weltOffen(vorige.id) ? LEVEL.filter((l) => l.welt === vorige.id && levelPfotenVon(stand, l.nr)).length / 10 : 0;
+      // a = Anteil geschaffter Level der vorigen Welt: 0 = dichter Nebel, 1 = unten fast klar
+      const maske = (a) => `linear-gradient(to top, rgba(0,0,0,${1 - a * .9}) ${a * 55}%, #000 ${a * 55 + 30}%)`;
+      const alt = nebelVorher && nebelVorher[welt.id] != null ? nebelVorher[welt.id] : anteil;
+      n.style.webkitMaskImage = n.style.maskImage = maske(alt);
+      if (alt !== anteil) requestAnimationFrame(() => setTimeout(() => { n.style.webkitMaskImage = n.style.maskImage = maske(anteil); }, 300));
+      box.append(n);
+    });
+    nebelVorher = Object.fromEntries(WELTEN.map((x, i) => [x.id, i && !weltOffen(x.id) ? LEVEL.filter((l) => l.welt === WELTEN[i - 1].id && levelPfotenVon(stand, l.nr)).length / 10 : 0]));
+
+    // Ezra steht am aktuellen Level
+    const k = jetzt.nr - 1;
+    const marke = el('canvas', 'ezra-marke');
+    marke.width = marke.height = 128;
+    const mc = marke.getContext('2d');
+    malEzra(mc, 64, 118, .95, { neig: 0, wedel: .3, maul: 0, igitt: 0, blinzel: false });
+    const platz = (pt) => [`${pt.x + (pt.x > w / 2 ? -46 : 46)}px`, `${pt.y + 20}px`];
+    [marke.style.left, marke.style.top] = platz(punkte[k]);
+    box.append(marke);
+
+    // Neue Welt: ihr Nebel ist noch da und verzieht sich gleich
+    let neuerNebel = null;
+    if (weltNeu) {
+      const i = WELTEN.findIndex((x) => x.id === weltNeu);
+      neuerNebel = el('div', 'nebel');
+      neuerNebel.style.top = `${weltOben(i) - 20}px`; neuerNebel.style.height = `${WELT_HOEHE + 40}px`;
+      neuerNebel.style.transition = 'opacity 1.8s ease';
+      box.append(neuerNebel);
+    }
+
+    const blick = (y) => y - scroll.clientHeight * .6;
+    const von = ezraVon && ezraVon - 1 !== k ? punkte[ezraVon - 1] : null;
+    ezraVon = null;
+    if (!von || ruhig) {
+      requestAnimationFrame(() => { scroll.scrollTop = blick(punkte[k].y); });
+      if (neuerNebel) neuerNebel.remove();
+      weltNeu = null;
+      return;
+    }
+    // Ezra steht noch beim geschafften Level, läuft dann zum nächsten; die Karte fährt mit
+    [marke.style.left, marke.style.top] = platz(von);
+    marke.style.transition = 'left 1.2s ease-in-out, top 1.2s ease-in-out';
+    marke.classList.add('laeuft');
+    requestAnimationFrame(() => {
+      scroll.scrollTop = blick(von.y);
+      setTimeout(() => {
+        if (neuerNebel) {
+          // erst hochfahren zur neuen Welt, Nebel weg, dann zurück zu Ezra
+          scroll.scrollTo({ top: blick(punkte[k].y - WELT_HOEHE * .45), behavior: 'smooth' });
+          setTimeout(() => {
+            neuerNebel.style.opacity = '0';
+            [1047, 1319, 1568].forEach((f, i) => piep(f, .18, 'sine', .04, 0, i * .12));
+          }, 900);
+          setTimeout(() => scroll.scrollTo({ top: blick(punkte[k].y), behavior: 'smooth' }), 2700);
+          setTimeout(() => neuerNebel.remove(), 3000);
+        } else {
+          scroll.scrollTo({ top: blick(punkte[k].y), behavior: 'smooth' });
+        }
+        setTimeout(() => {
+          [marke.style.left, marke.style.top] = platz(punkte[k]);
+          piep(700, .06, 'triangle', .04); piep(900, .06, 'triangle', .04, 0, .3); piep(1100, .08, 'triangle', .04, 0, .6);
+          setTimeout(() => marke.classList.remove('laeuft'), 1250);
+        }, neuerNebel ? 3000 : 400);
+      }, 500);
+    });
+    weltNeu = null;
+  }
+  // Landschaft einer Welt in voller Kartenhöhe (wie die Vorschau, nur hochkant)
+  function weltMalen(c, id) {
+    const alt = [W, H, grasOben, heckeOben];
+    W = c.width / dpr; H = c.height / dpr; grasOben = H * .5; heckeOben = H * .3;
+    const g = c.getContext('2d');
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ORTE[id].himmel(g);
+    ORTE[id].vorder(g);
+    [W, H, grasOben, heckeOben] = alt;
   }
 
   // ---------- Konfetti ----------
@@ -1862,9 +2637,12 @@
     requestAnimationFrame(schritt);
   }
   function ende() {
+    if (zustand === 'ende') return;
     zustand = 'ende';
     meldungenZuruecksetzen();
     stapelLeeren();
+    $('levelZiel').hidden = true;
+    if (modus === 'level') return levelEnde();
     vibrieren('stark');
     const neu = punkte > rekord;
     if (neu) {
@@ -1888,11 +2666,13 @@
     const stufe = fortschritt();
     const w = Math.random();
     let typ;
-    if (zeit > 15 && zeitlupe <= 0 && !items.some((i) => i.typ === 'gold') && Math.random() < .035) typ = 'gold';
+    const goldLevel = levelArt() === 'gold';
+    if (zeit > (goldLevel ? 4 : 15) && zeitlupe <= 0 && !items.some((i) => i.typ === 'gold') && Math.random() < (goldLevel ? .09 : .035)) typ = 'gold';
     else if (leben < 3 && !items.some((i) => i.typ === 'pfote') && Math.random() < .03) typ = 'pfote';
     else {
       const sockenAnteil = lerp(.14, .34, stufe);
-      typ = w < sockenAnteil ? ORTE[stand.ort].gefahr : w < sockenAnteil + .1 ? 'ball' : 'knochen';
+      const ballAnteil = levelArt() === 'baelle' ? .2 : .1;
+      typ = w < sockenAnteil ? ORTE[spielOrt].gefahr : w < sockenAnteil + ballAnteil ? 'ball' : 'knochen';
     }
     const r = { ball: 12, pfote: 16 }[typ] || 14;
     const tempo = lerp(150, 390, stufe) * clamp(H / 650, .8, 1.3) * (.85 + Math.random() * .3);
@@ -1928,6 +2708,8 @@
       ezra.igitt = .7;
       piep(210, .28, 'sawtooth', .045, .5);
       lebenWeg(tx, ty, T.igitt);
+      // „Ohne Socke“-Level: die erste eklige Sache beendet das Level
+      if (levelArt() === 'sauber' && zustand === 'laeuft') ende();
       return;
     }
     ezra.maul = .22; ezra.freude = .8;
@@ -2203,16 +2985,34 @@
     AppPlugin.addListener('backButton', () => {
       if (Date.now() < beendenBis) return AppPlugin.exitApp();
       if (!$('infoKarte').hidden) zeige('einstellKarte');
+      else if (!$('tuchKarte').hidden) { if (!$('tuchTipp').hidden) tuchAntippen(); else tuchFertig($('tuchSpaeter').hidden); }
       else if (!$('einstellKarte').hidden) einstellungenSchliessen();
       else if (zustand === 'laeuft') { pause(); beendenAnbieten(); }
       else if (!$('sachenKarte').hidden) zumStart();
-      else if (!$('listeKarte').hidden) zustand === 'ende' ? zeige('endeKarte') : zumStart();
+      else if (!$('listeKarte').hidden) zustand === 'ende' ? zeige('endeKarte') : endlosZeigen();
+      else if (!$('startKarte').hidden || !$('levelKarte').hidden || !$('levelEndeKarte').hidden) zumStart();
       else beendenAnbieten();
     });
     AppPlugin.addListener('pause', pause);
   }
 
   $('losKnopf').addEventListener('click', starten);
+  $('endlosKnopf').addEventListener('click', endlosZeigen);
+  $('tuchAn').addEventListener('click', () => tuchFertig(true));
+  $('tuchSpaeter').addEventListener('click', () => tuchFertig(false));
+  $('tuchKarte').addEventListener('click', (e) => { if (!e.target.closest('button') && tuchAntippen) tuchAntippen(); });
+  $('karteSachen').addEventListener('click', sachenOeffnen);
+  $('lkLos').addEventListener('click', () => levelStarten(gewaehlt));
+  $('lkKarte').addEventListener('click', zumStart);
+  $('leKarte').addEventListener('click', zumStart);
+  $('leNochmal').addEventListener('click', () => levelStarten(levelErgebnis.nr));
+  $('leWeiter').addEventListener('click', () => {
+    const ziel = $('leWeiter').dataset.ziel;
+    if (ziel === 'nochmal') levelStarten(levelErgebnis.nr);
+    else if (ziel === 'weiter') levelKarteZeigen(levelErgebnis.nr + 1);
+    else zumStart();
+  });
+  addEventListener('resize', () => { if (!$('karteSeite').hidden) karteBauen(); });
   $('nochmalKnopf').addEventListener('click', starten);
   $('weiterKnopf').addEventListener('click', weiter);
   $('listeSpielen').addEventListener('click', starten);
@@ -2249,6 +3049,23 @@
     $('loeschKnopf').dataset.geloescht = '1';
   });
   $('pauseKnopf').addEventListener('click', () => { zustand === 'laeuft' ? pause() : weiter(); });
+  $('pauseNochmal').addEventListener('click', () => {
+    const war = modus;
+    abbrechen();
+    war === 'level' ? levelStarten(level.nr) : starten();
+  });
+  $('pauseKarte2').addEventListener('click', () => { abbrechen(); kartenZeigen(); });
+  $('pauseTon').addEventListener('change', (e) => {
+    ton = e.target.checked;
+    $('tonSchalter').checked = ton;
+    schreib('ezra-ton', ton ? 'an' : 'aus');
+  });
+  $('pauseVib').addEventListener('change', (e) => {
+    vibration = e.target.checked;
+    $('vibSchalter').checked = vibration;
+    schreib('ezra-vibration', vibration ? 'an' : 'aus');
+    vibrieren('mittel');
+  });
   $('einstellKnopf').addEventListener('click', einstellungenOeffnen);
   $('fertigKnopf').addEventListener('click', einstellungenSchliessen);
   $('infoKnopf').addEventListener('click', () => { zeige('infoKarte'); $('infoZurueck').focus(); });
@@ -2270,6 +3087,7 @@
     texteSetzen();
     endeTexte();
     startFuellen();
+    if (!$('karteSeite').hidden) karteBauen();
     loeschenScharf(false);
     if (anleitungAus) $('anleitungKnopf').textContent = T.anleitungOk;
     if (geloescht && $('loeschKnopf').dataset.geloescht) $('loeschKnopf').textContent = T.geloescht;
@@ -2285,6 +3103,8 @@
 
   startFuellen();
   groesse();
+  kartenZeigen();
+  if (!levelPfotenVon(stand, 1)) levelKarteZeigen(1);
   requestAnimationFrame(schleife);
 
   // Offline spielbar (nur Webversion – in der App liegen die Dateien ohnehin auf dem Handy)

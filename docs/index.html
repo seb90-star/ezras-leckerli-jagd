@@ -388,6 +388,32 @@
   .neu-hinweis small { display: block; font: 800 11px var(--font-anzeige); letter-spacing: .06em; text-transform: uppercase; color: var(--fell); }
   .neu-hinweis b { display: block; font: 800 16px var(--font-anzeige); }
   .neu-hinweis span { font-size: 13px; line-height: 1.3; }
+  .ausr-kopf { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 14px; }
+  .ausr-kopf b { font: 800 16px var(--font-anzeige); }
+  .ausr-kopf span { font-weight: 700; opacity: .75; }
+  .ausr-liste { display: flex; flex-direction: column; gap: 8px; }
+  .ausr-karte { display: grid; grid-template-columns: 48px 1fr; gap: 4px 10px; align-items: start; padding: 10px; border-radius: 12px; background: #fff; border: 2px solid transparent; }
+  .ausr-karte.an { border-color: var(--gelb); background: #fffbea; }
+  .ausr-karte canvas { width: 48px; height: 48px; grid-row: span 2; }
+  .ausr-karte b { font: 800 16px var(--font-anzeige); margin-right: 6px; }
+  .ausr-karte p { margin: 2px 0 0; font-size: 13px; line-height: 1.3; }
+  .ausr-karte .naechste { opacity: .6; }
+  .ausr-stufe { display: inline-flex; gap: 3px; vertical-align: middle; }
+  .ausr-stufe i { width: 10px; height: 10px; border-radius: 50%; background: rgba(38, 50, 31, .15); }
+  .ausr-stufe i.voll { background: var(--fell); }
+  .ausr-knoepfe { grid-column: 2; display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; align-items: center; }
+  .ausr-knoepfe .los.klein { margin: 0; padding: 6px 12px; font-size: 14px; box-shadow: 0 3px 0 #1a2d8a; }
+  .ausr-knoepfe .teuer { opacity: .55; }
+  .ausr-knoepfe .zweit.klein { align-self: auto; }
+  .tabs button { font-size: 14px; }
+  .lk-ausr { display: flex; flex-direction: column; gap: 6px; padding: 8px 12px; border-radius: 12px; background: rgba(39, 66, 196, .07); }
+  .lk-ausr-kopf { display: flex; justify-content: space-between; align-items: center; }
+  .lk-ausr-kopf b { font: 800 15px var(--font-anzeige); }
+  .lk-plaetze { display: flex; gap: 6px; flex-wrap: wrap; }
+  .lk-plaetze span { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 999px; background: #fff; font-size: 13px; font-weight: 700; }
+  .lk-plaetze span.leer { opacity: .5; border: 1.5px dashed rgba(38, 50, 31, .3); background: transparent; }
+  .dose-plus { font-weight: 800; color: var(--fell); }
+  .dose-plus:empty { display: none; }
   .lk-stufen { display: flex; flex-direction: column; gap: 6px; background: #fff; border-radius: 12px; padding: 10px 12px; }
   .lk-stufen div { display: flex; justify-content: space-between; font-weight: 700; }
   .lk-stufen .pf { letter-spacing: -1px; }
@@ -445,6 +471,7 @@
       <div class="reise-kopf">
         <b data-t="reise">Ezras Reise</b>
         <span class="summe" id="pfotenSumme"></span>
+        <span class="summe" id="doseAnzeige"></span>
         <span style="flex-basis: 100%; height: 0"></span>
         <button class="zweit" id="endlosKnopf" type="button" data-t="endlos">Endlos-Spiel</button>
         <button class="zweit" id="karteSachen" type="button" data-t="sachen">Ezras Sachen</button>
@@ -463,6 +490,11 @@
         <p class="klein" data-t="pfotenFuer">So gibt es Pfoten:</p>
         <div class="lk-stufen" id="lkStufen"></div>
         <p class="klein" id="lkBest"></p>
+        <div class="lk-ausr" id="lkAusr">
+          <div class="lk-ausr-kopf"><b data-t="ausruestung">Ausrüstung</b><button class="zweit klein" id="lkAusrAendern" type="button" data-t="aendern">Ändern</button></div>
+          <div class="lk-plaetze" id="lkPlaetze"></div>
+          <p class="klein" id="lkTipp"></p>
+        </div>
         <div class="knopfreihe">
           <button class="los" id="lkLos" type="button" data-t="levelLos">Los geht’s</button>
           <button class="zweit" id="lkKarte" type="button" data-t="zurKarte">Zur Karte</button>
@@ -529,6 +561,7 @@
           <button type="button" role="tab" data-tab="erfolge" data-t="tabErfolge">Erfolge</button>
           <button type="button" role="tab" data-tab="kleidung" data-t="tabKleidung">Kleiderschrank</button>
           <button type="button" role="tab" data-tab="orte" data-t="tabOrte">Orte</button>
+          <button type="button" role="tab" data-tab="ausruestung" data-t="tabAusruestung">Ausrüstung</button>
         </div>
         <div id="tabInhalt" role="tabpanel"></div>
         <button class="los" id="sachenSpielen" type="button" data-t="spielen">Spielen</button>
@@ -574,8 +607,10 @@
             <button class="zweit" type="button" data-dev="tuch" data-tuch="muscheln">Muscheln</button>
             <small>Freischalten / Zurücksetzen</small>
             <button class="zweit breit" type="button" data-dev="allesfrei">Alle Erfolge und Halstücher frei</button>
+            <button class="zweit breit" type="button" data-dev="dose">+500 🦴 in die Dose</button>
             <button class="zweit" type="button" data-dev="resetLevel">Level zurück</button>
             <button class="zweit" type="button" data-dev="resetErfolge">Erfolge zurück</button>
+            <button class="zweit breit" type="button" data-dev="resetAusr">Ausrüstung und Dose zurück</button>
             <button class="zweit warnung breit" type="button" data-dev="resetAlles">Alles zurück (wie neu installiert)</button>
           </div>
         </div>
@@ -622,6 +657,7 @@
         <div class="gross" id="endePunkte">0</div>
         <p id="endeText">Punkte</p>
         <p class="klein" id="endeSerie"></p>
+        <p class="dose-plus" id="endeDose"></p>
         <div class="stapel" id="endeStapel"></div>
         <div class="balken" id="endeBalken"></div>
         <p class="ziel" id="endeZiel"></p>
@@ -745,6 +781,22 @@
       anleitungTouch: 'Wischen, um Ezra zu steuern', anleitungMaus: 'Pfeiltasten oder Maus zum Steuern',
       datum: 'de-DE',
       sachen: 'Ezras Sachen', schliessen: 'Schließen', tabErfolge: 'Erfolge', tabKleidung: 'Kleiderschrank', tabOrte: 'Orte',
+      tabAusruestung: 'Ausrüstung', ausruestung: 'Ausrüstung', aendern: 'Ändern', frei: 'frei',
+      dose: (n) => `${n} in Ezras Leckerli-Dose`, dosePlus: (n) => `+${n} 🦴 für Ezras Leckerli-Dose`,
+      ausrHinweis: 'Kauf und verbessere Ausrüstung mit gesammelten Leckerlis. Anlegen kannst du so viele Teile, wie Ezra Plätze hat.',
+      plaetze: (belegt, alle) => `Plätze belegt: ${belegt} von ${alle}`, mehrPlaetze: 'Neue Plätze gibt es nach dem Garten und nach dem Wald.',
+      kaufen: (preis) => `Kaufen · ${preis} 🦴`, verbessern: (preis) => `Verbessern · ${preis} 🦴`, maximal: 'Höchste Stufe',
+      anlegen: 'Anlegen', ablegen: 'Ablegen', angelegt: 'angelegt', zuWenig: (n) => `Noch ${n} 🦴 nötig`, plaetzeVoll: 'Alle Plätze belegt – leg erst etwas ab.',
+      gekauft: (name, st) => `${name} – Stufe ${st}!`, stufe: (st) => `Stufe ${st}/3`, nochNicht: 'Noch nicht gekauft',
+      tipp: (name) => `Tipp: ${name} hilft hier.`, keineAusr: 'Noch keine Ausrüstung angelegt.',
+      teile: {
+        pfoten: ['Turbo-Pfoten', (st) => `Ezra läuft ${st * 10} % schneller`],
+        kappe: ['Kappe', (st) => `Magnet hält ${st * 2} Sekunden länger`],
+        halsband: ['Glücks-Halsband', (st) => `${[0, 15, 30, 50][st]} % mehr Gold und Power-ups`],
+        rucksack: ['Rucksack', (st) => `Combo übersteht ${st} ${st === 1 ? 'Fehler' : 'Fehler'} pro Runde`],
+        brille: ['Sonnenbrille', (st) => ['', 'Ekliges leuchtet rot', 'Ekliges leuchtet, Schatten früher', 'Dazu fällt Ekliges langsamer'][st]],
+      },
+      rucksackHilft: 'Rucksack!',
       geschafft: (n, m) => `${n} von ${m} geschafft`, belohnung: (name) => `Belohnung: Halstuch „${name}“`,
       kleidungHinweis: 'Erfolge schalten neue Halstücher für Ezra frei.', perErfolg: (titel) => `Erfolg „${titel}“`,
       orteHinweis: 'Neue Orte erreichst du auf Ezras Reise. Hier wählst du, wo das Endlos-Spiel läuft.', ausgewaehlt: 'ausgewählt',
@@ -863,6 +915,22 @@
       anleitungTouch: 'Swipe to move Ezra', anleitungMaus: 'Use arrow keys or mouse to move',
       datum: undefined,
       sachen: 'Ezra’s Stuff', schliessen: 'Close', tabErfolge: 'Achievements', tabKleidung: 'Wardrobe', tabOrte: 'Places',
+      tabAusruestung: 'Gear', ausruestung: 'Gear', aendern: 'Change', frei: 'empty',
+      dose: (n) => `${n} in Ezra’s treat jar`, dosePlus: (n) => `+${n} 🦴 for Ezra’s treat jar`,
+      ausrHinweis: 'Buy and upgrade gear with the treats you collect. Ezra can wear as many pieces as he has slots.',
+      plaetze: (belegt, alle) => `Slots used: ${belegt} of ${alle}`, mehrPlaetze: 'You get new slots after the garden and after the forest.',
+      kaufen: (preis) => `Buy · ${preis} 🦴`, verbessern: (preis) => `Upgrade · ${preis} 🦴`, maximal: 'Max level',
+      anlegen: 'Wear', ablegen: 'Take off', angelegt: 'worn', zuWenig: (n) => `${n} more 🦴 needed`, plaetzeVoll: 'All slots in use – take something off first.',
+      gekauft: (name, st) => `${name} – level ${st}!`, stufe: (st) => `Level ${st}/3`, nochNicht: 'Not bought yet',
+      tipp: (name) => `Tip: ${name} helps here.`, keineAusr: 'No gear equipped yet.',
+      teile: {
+        pfoten: ['Turbo paws', (st) => `Ezra runs ${st * 10}% faster`],
+        kappe: ['Cap', (st) => `Magnet lasts ${st * 2} seconds longer`],
+        halsband: ['Lucky collar', (st) => `${[0, 15, 30, 50][st]}% more gold and power-ups`],
+        rucksack: ['Backpack', (st) => `Combo survives ${st} ${st === 1 ? 'mistake' : 'mistakes'} per round`],
+        brille: ['Sunglasses', (st) => ['', 'Yucky things glow red', 'Glow, and shadows show earlier', 'Plus yucky things fall slower'][st]],
+      },
+      rucksackHilft: 'Backpack!',
       geschafft: (n, m) => `${n} of ${m} unlocked`, belohnung: (name) => `Reward: “${name}” bandana`,
       kleidungHinweis: 'Achievements unlock new bandanas for Ezra.', perErfolg: (titel) => `Achievement “${titel}”`,
       orteHinweis: 'You reach new places on Ezra’s journey. Pick where endless mode is played.', ausgewaehlt: 'selected',
@@ -1071,11 +1139,31 @@
     { id: 'pfotenProfi', ziel: 90, wert: (s) => pfotenSumme(s), balken: false, live: false },
   ];
   // halstuch 'keins' = nur Halsband, bis die Proberunde geschafft ist
-  const stand = { gesamt: 0, gefangen: 0, gold: 0, runden: 0, tage: [], erfolge: {}, levels: {}, halstuch: 'keins', ort: 'garten' };
+  const stand = { gesamt: 0, gefangen: 0, gold: 0, runden: 0, tage: [], erfolge: {}, levels: {}, halstuch: 'keins', ort: 'garten', dose: 0, ausruestung: {}, angelegt: [] };
   try { Object.assign(stand, JSON.parse(lies('ezra-fortschritt', '{}'))); } catch (e) {}
   if (!Array.isArray(stand.tage)) stand.tage = [];
   if (!stand.erfolge || typeof stand.erfolge !== 'object') stand.erfolge = {};
   if (!stand.levels || typeof stand.levels !== 'object') stand.levels = {};
+  if (!stand.ausruestung || typeof stand.ausruestung !== 'object') stand.ausruestung = {};
+  if (!Array.isArray(stand.angelegt)) stand.angelegt = [];
+  stand.dose = Math.max(0, +stand.dose || 0);
+  // ---------- Ezras Ausrüstung: stärkt ihn, je 3 Stufen, bezahlt mit gesammelten Leckerlis ----------
+  const AUSR = ['pfoten', 'kappe', 'halsband', 'rucksack', 'brille'];
+  const PREISE = { pfoten: [60, 150, 300], kappe: [80, 180, 350], halsband: [80, 200, 400], rucksack: [100, 220, 450], brille: [70, 160, 320] };
+  const AUSR_ZEICHEN = { pfoten: '👟', kappe: '🧢', halsband: '🔵', rucksack: '🎒', brille: '🕶️' };
+  const stufeVon = (id) => stand.ausruestung[id] || 0;
+  // Wirkung nur, wenn das Teil angelegt ist
+  const ausr = (id) => (stand.angelegt.includes(id) ? stufeVon(id) : 0);
+  const plaetze = () => 2 + (weltGeschafft('garten') ? 1 : 0) + (weltGeschafft('wald') ? 1 : 0);
+  const glueck = () => [0, .15, .3, .5][ausr('halsband')];
+  // Welche Ausrüstung hilft in welchem Level?
+  function tippFuer(l) {
+    if (l.art === 'boss') return 'kappe';
+    if (NEU_IN[l.nr] === 'biene' || l.art === 'sauber' || l.art === 'dauer') return 'brille';
+    if (l.art === 'serie') return 'rucksack';
+    if (l.art === 'gold') return 'halsband';
+    return 'pfoten';
+  }
   const standSichern = () => schreib('ezra-fortschritt', JSON.stringify(stand));
   const ortFrei = (id) => weltOffen(id);
   const erfolgFuer = (halstuch) => ERFOLGE.find((e) => e.belohnung === halstuch);
@@ -1106,13 +1194,15 @@
     stand.gefangen += r.knochen + r.baelle + r.gold;
     stand.gold += r.gold;
     stand.runden += 1;
+    const verdient = r.knochen + r.baelle + r.gold * 3;
+    stand.dose += verdient;
     const tag = heute();
     if (!stand.tage.includes(tag)) stand.tage = [...stand.tage, tag].slice(-400);
     const neueErfolge = ERFOLGE.filter((e) => !stand.erfolge[e.id] && e.wert(stand, r) >= e.ziel);
     neueErfolge.forEach((e) => { stand.erfolge[e.id] = Date.now(); });
     const neueOrte = [];
     standSichern();
-    return { neueErfolge, neueOrte, ziele: zieleWaehlen(alt, r), r, alt, gefahr: ORTE[spielOrt].gefahr };
+    return { neueErfolge, neueOrte, ziele: zieleWaehlen(alt, r), r, alt, gefahr: ORTE[spielOrt].gefahr, verdient };
   }
   // Ziele, bei denen sich diese Runde etwas bewegt hat – für den „So knapp!“-Hinweis
   function zieleWaehlen(alt, r) {
@@ -1484,6 +1574,8 @@
     c.strokeStyle = FELL_D; c.lineWidth = 8; c.lineCap = 'round';
     c.beginPath(); c.moveTo(0, 0); c.quadraticCurveTo(15, -5, 20, -23); c.stroke();
     c.restore();
+    // Rucksack lugt hinter dem Körper hervor
+    if (stand.angelegt.includes('rucksack')) { c.fillStyle = '#8a5a2e'; c.beginPath(); c.roundRect(-40, -58, 80, 36, 8); c.fill(); c.fillStyle = '#6b4422'; c.fillRect(-40, -46, 80, 4); }
     // Körper und Beine
     c.fillStyle = fellLicht(c, 0, -30, 38); ellipse(c, 0, -30, 38, 32);
     for (const bx of [-16, 16]) {
@@ -1497,14 +1589,24 @@
     for (const bx of [-16, 16]) ellipse(c, bx, -3, 9, 4.5);
     c.strokeStyle = 'rgba(110,50,20,.5)'; c.lineWidth = 1;
     for (const bx of [-16, 16]) for (const z of [-3, 3]) { c.beginPath(); c.moveTo(bx + z, -6); c.lineTo(bx + z, -1.5); c.stroke(); }
+    if (stand.angelegt.includes('pfoten')) { // Turbo-Pfoten: rote Turnschuhe
+      for (const bx of [-16, 16]) {
+        c.fillStyle = '#e5484d'; c.beginPath(); c.roundRect(bx - 10, -10, 20, 11, [6, 6, 3, 3]); c.fill();
+        c.fillStyle = '#fff'; c.fillRect(bx - 10, -2, 20, 3);
+        c.strokeStyle = '#fff'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(bx - 3, -8); c.lineTo(bx + 3, -6); c.moveTo(bx - 3, -5); c.lineTo(bx + 3, -7); c.stroke();
+      }
+    }
+    if (stand.angelegt.includes('rucksack')) { c.strokeStyle = '#6b4422'; c.lineWidth = 4; c.beginPath(); c.moveTo(-22, -56); c.lineTo(-17, -26); c.moveTo(22, -56); c.lineTo(17, -26); c.stroke(); }
     malHalstuch(c, stand.halstuch);
     // Schatten, den der Kopf auf Brust und Tuch wirft
     c.fillStyle = 'rgba(60,25,5,.16)'; ellipse(c, 0, -60, 24, 6);
-    // Halsband
-    c.fillStyle = BLAU_D; c.beginPath(); c.roundRect(-28, -67, 56, 8, 4); c.fill();
-    c.strokeStyle = '#f2d43a'; c.lineWidth = 1.6; c.beginPath();
+    // Halsband (Glücks-Halsband: golden mit Kleeblatt-Anhänger)
+    const gluecksband = stand.angelegt.includes('halsband');
+    c.fillStyle = gluecksband ? '#d9a520' : BLAU_D; c.beginPath(); c.roundRect(-28, -67, 56, 8, 4); c.fill();
+    c.strokeStyle = gluecksband ? '#fff3b0' : '#f2d43a'; c.lineWidth = 1.6; c.beginPath();
     for (let i = 0; i <= 10; i++) { const px = -25 + i * 5, py = i % 2 ? -61 : -65; i ? c.lineTo(px, py) : c.moveTo(px, py); }
     c.stroke();
+    if (gluecksband) { c.fillStyle = '#3fb27f'; for (const [kx, ky] of [[-2.2, -56], [2.2, -56], [0, -58.4], [0, -53.8]]) ellipse(c, kx, ky, 2.4, 2.4); }
     // Kopf
     c.fillStyle = fellLicht(c, 0, -88, 29); ellipse(c, 0, -88, 29, 26);
     // Lichtkante oben links
@@ -1560,7 +1662,30 @@
       c.moveTo(0, -74); c.quadraticCurveTo(4, -70, 8, -73);
       c.stroke();
     }
+    if (stand.angelegt.includes('brille')) { // Sonnenbrille
+      c.fillStyle = 'rgba(20,20,30,.88)';
+      for (const sx of [-1, 1]) { c.beginPath(); c.roundRect(sx * 11 - 7.5, -98, 15, 10, [3, 3, 6, 6]); c.fill(); }
+      c.strokeStyle = '#1a1a22'; c.lineWidth = 2; c.beginPath(); c.moveTo(-3.5, -95); c.lineTo(3.5, -95); c.moveTo(-18.5, -96); c.lineTo(-25, -98); c.moveTo(18.5, -96); c.lineTo(25, -98); c.stroke();
+      c.fillStyle = 'rgba(255,255,255,.35)'; for (const sx of [-1, 1]) c.fillRect(sx * 11 - 5, -96, 3, 2);
+    }
+    if (stand.angelegt.includes('kappe')) { // Kappe
+      c.fillStyle = '#2742c4'; c.beginPath(); c.ellipse(0, -108, 24, 14, 0, Math.PI, 0); c.fill();
+      c.fillStyle = '#1d2f8f'; c.beginPath(); c.ellipse(10, -108, 20, 5, -.12, 0, Math.PI * 2); c.fill();
+      c.fillStyle = '#f2d43a'; ellipse(c, 0, -121, 3, 3);
+      c.fillStyle = '#fff6df'; c.font = '800 7px "Baloo 2", sans-serif'; c.textAlign = 'center'; c.fillText('EZRA', -2, -110);
+    }
     c.restore();
+  }
+  // Symbol eines Ausrüstungsteils (für Sachen und Level-Karte)
+  function ausrMalen(g, id, gr) {
+    g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, g.canvas.width, g.canvas.height);
+    g.translate(g.canvas.width / 2, g.canvas.height / 2); g.scale(gr, gr);
+    if (id === 'pfoten') { g.fillStyle = '#e5484d'; g.beginPath(); g.roundRect(-14, -8, 28, 15, [8, 8, 4, 4]); g.fill(); g.fillStyle = '#fff'; g.fillRect(-14, 3, 28, 4); g.strokeStyle = '#fff'; g.lineWidth = 1.6; g.beginPath(); g.moveTo(-4, -5); g.lineTo(4, -2); g.moveTo(-4, -1); g.lineTo(4, -4); g.stroke(); }
+    if (id === 'kappe') { g.fillStyle = '#2742c4'; g.beginPath(); g.ellipse(0, 4, 15, 13, 0, Math.PI, 0); g.fill(); g.fillStyle = '#1d2f8f'; g.beginPath(); g.ellipse(8, 4, 15, 4, -.12, 0, Math.PI * 2); g.fill(); g.fillStyle = '#f2d43a'; ellipse(g, 0, -9, 2.5, 2.5); }
+    if (id === 'halsband') { g.strokeStyle = '#d9a520'; g.lineWidth = 5; g.beginPath(); g.ellipse(0, -2, 14, 9, 0, 0, Math.PI * 2); g.stroke(); g.fillStyle = '#3fb27f'; for (const [kx, ky] of [[-2.6, 8], [2.6, 8], [0, 5.4], [0, 10.6]]) ellipse(g, kx, ky, 2.8, 2.8); }
+    if (id === 'rucksack') { g.fillStyle = '#8a5a2e'; g.beginPath(); g.roundRect(-11, -12, 22, 25, 6); g.fill(); g.fillStyle = '#6b4422'; g.beginPath(); g.roundRect(-8, 0, 16, 9, 3); g.fill(); g.strokeStyle = '#6b4422'; g.lineWidth = 2.5; g.beginPath(); g.arc(0, -12, 5, Math.PI, 0); g.stroke(); }
+    if (id === 'brille') { g.fillStyle = '#1a1a22'; for (const sx of [-1, 1]) { g.beginPath(); g.roundRect(sx * 8 - 7, -5, 14, 10, [3, 3, 6, 6]); g.fill(); } g.strokeStyle = '#1a1a22'; g.lineWidth = 2; g.beginPath(); g.moveTo(-1, -2); g.lineTo(1, -2); g.stroke(); g.fillStyle = 'rgba(255,255,255,.4)'; for (const sx of [-1, 1]) g.fillRect(sx * 8 - 5, -3, 3, 2); }
+    g.restore();
   }
 
   // ---------- Kulisse: Himmel und Garten getrennt, damit Sonne und Mond hinter der Hecke stehen ----------
@@ -2077,6 +2202,7 @@
     auswertung = null;
     items = []; krümel = []; texte = []; werfer = [];
     powerMagnet = 0; powerSchild = false;
+    rucksackRest = ausr('rucksack');
     bossStarten();
     ezra.x = W / 2; ezra.vx = 0; ezra.maul = 0; ezra.igitt = 0;
     zielX = null;
@@ -2131,16 +2257,80 @@
     toastUhr2 = setTimeout(() => { $('toast').hidden = true; }, 2200);
   }
 
-  let tab = 'erfolge';
-  function sachenOeffnen() {
+  let tab = 'erfolge', sachenVonLevel = false;
+  function sachenOeffnen(neuerTab, vonLevel) {
+    if (typeof neuerTab === 'string') tab = neuerTab;
+    sachenVonLevel = vonLevel === true;
     sachenFuellen();
     zeige('sachenKarte');
     $('sachenZu').focus();
+  }
+  function sachenSchliessen() {
+    if (sachenVonLevel) { sachenVonLevel = false; levelKarteZeigen(gewaehlt); } else zumStart();
+  }
+  function ausrKaufen(id) {
+    const st = stufeVon(id);
+    if (st >= 3) return;
+    const preis = PREISE[id][st];
+    if (stand.dose < preis) return toast(T.zuWenig(preis - stand.dose));
+    stand.dose -= preis;
+    stand.ausruestung[id] = st + 1;
+    if (!stand.angelegt.includes(id) && stand.angelegt.length < plaetze()) stand.angelegt.push(id);
+    standSichern();
+    konfetti(60);
+    [659, 880, 1175].forEach((f, i) => piep(f, .12, 'triangle', .05, 0, i * .08));
+    vibrieren('mittel');
+    toast(T.gekauft(T.teile[id][0], st + 1));
+    sachenFuellen();
+  }
+  function ausrAnlegen(id) {
+    const i = stand.angelegt.indexOf(id);
+    if (i >= 0) stand.angelegt.splice(i, 1);
+    else if (stand.angelegt.length >= plaetze()) return toast(T.plaetzeVoll);
+    else stand.angelegt.push(id);
+    standSichern();
+    piep(i >= 0 ? 520 : 880, .08, 'triangle', .05);
+    sachenFuellen();
   }
   function sachenFuellen() {
     document.querySelectorAll('[data-tab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === tab)));
     const ziel = $('tabInhalt');
     ziel.replaceChildren();
+
+    if (tab === 'ausruestung') {
+      const kopf = el('div', 'ausr-kopf');
+      kopf.append(el('b', null, `🦴 ${T.dose(stand.dose)}`), el('span', null, T.plaetze(stand.angelegt.length, plaetze())));
+      ziel.append(kopf, el('p', 'klein', T.ausrHinweis + (plaetze() < 4 ? ' ' + T.mehrPlaetze : '')));
+      const liste = el('div', 'ausr-liste');
+      for (const id of AUSR) {
+        const st = stufeVon(id), an = stand.angelegt.includes(id);
+        const karte = el('div', 'ausr-karte' + (an ? ' an' : ''));
+        const c = el('canvas'); c.width = c.height = 96;
+        ausrMalen(c.getContext('2d'), id, 2);
+        const text = el('div');
+        const titel = el('b', null, T.teile[id][0]);
+        const punkte = el('span', 'ausr-stufe');
+        punkte.innerHTML = [1, 2, 3].map((n) => `<i class="${n <= st ? 'voll' : ''}"></i>`).join('');
+        text.append(titel, punkte, el('p', null, st ? T.teile[id][1](st) : T.nochNicht));
+        if (st < 3) text.append(el('p', 'naechste', `→ ${T.teile[id][1](st + 1)}`));
+        const knoepfe = el('div', 'ausr-knoepfe');
+        if (st < 3) {
+          const k = el('button', 'los klein', st ? T.verbessern(PREISE[id][st]) : T.kaufen(PREISE[id][st]));
+          k.type = 'button'; if (stand.dose < PREISE[id][st]) k.classList.add('teuer');
+          k.addEventListener('click', () => ausrKaufen(id));
+          knoepfe.append(k);
+        } else knoepfe.append(el('span', 'klein', T.maximal));
+        if (st) {
+          const a = el('button', 'zweit klein', an ? T.ablegen : T.anlegen);
+          a.type = 'button';
+          a.addEventListener('click', () => ausrAnlegen(id));
+          knoepfe.append(a);
+        }
+        karte.append(c, text, knoepfe);
+        liste.append(karte);
+      }
+      ziel.append(liste);
+    }
 
     if (tab === 'erfolge') {
       ziel.append(el('p', 'klein', T.geschafft(anzahlErfolge(), ERFOLGE.length)));
@@ -2225,7 +2415,7 @@
   }
   function einstellungenSchliessen() {
     if (vorherKarte === 'listeKarte') listeZeigen();
-    else if (vorherKarte === 'sachenKarte') sachenOeffnen();
+    else if (vorherKarte === 'sachenKarte') sachenOeffnen(null, sachenVonLevel);
     else if (vorherKarte === 'karteSeite') kartenZeigen();
     else zeige(vorherKarte);
   }
@@ -2295,6 +2485,7 @@
     $('endeTitel').textContent = punkte >= 150 ? T.ende50 : punkte >= 50 ? T.ende20 : T.ende0;
     $('endeText').textContent = punkte === 1 ? T.punkt : T.punkte;
     $('endeSerie').textContent = besteSerie >= 2 ? T.serieLang(besteSerie) : '';
+    $('endeDose').textContent = auswertung && auswertung.verdient ? T.dosePlus(auswertung.verdient) : '';
     if (endePlatz >= 0) $('platzText').textContent = T.platz(endePlatz + 1);
     balkenMalen(false);
   }
@@ -2602,6 +2793,16 @@
       $('lkNeuName').textContent = T.dinge[neu][0];
       $('lkNeuText').textContent = T.dinge[neu][1];
     }
+    // Ausrüstung: belegte und freie Plätze, Tipp fürs Level
+    $('lkAusr').hidden = nr === 1;
+    const pl = $('lkPlaetze');
+    pl.replaceChildren();
+    for (let i = 0; i < plaetze(); i++) {
+      const id = stand.angelegt[i];
+      pl.append(id ? el('span', null, `${AUSR_ZEICHEN[id]} ${T.teile[id][0]} ${stufeVon(id)}`) : el('span', 'leer', T.frei));
+    }
+    const tippId = tippFuer(l);
+    $('lkTipp').textContent = stand.angelegt.includes(tippId) ? '' : T.tipp(`${AUSR_ZEICHEN[tippId]} ${T.teile[tippId][0]}`);
     zeige('levelKarte');
     $('lkLos').focus();
   }
@@ -2647,7 +2848,7 @@
     $('leTitel').textContent = !e.n ? T.levelFast : e.n === 3 ? T.levelSuper : T.levelGeschafft(e.nr);
     $('leText').textContent = l.art === 'boss' ? T.bossErgebnis(e.wert, l.stufen[0])
       : T.levelErgebnis(T.einheit[l.art].replace(/^./, (b) => b.toUpperCase()), e.wert) + ` · ${l.stufen.join(' / ')}`;
-    $('leSpruch').textContent = '';
+    $('leSpruch').textContent = auswertung && auswertung.verdient ? T.dosePlus(auswertung.verdient) : '';
     const naechstes = LEVEL[e.nr];
     const weiter = $('leWeiter');
     if (!e.n) { weiter.textContent = T.levelNochmal; weiter.dataset.ziel = 'nochmal'; }
@@ -2910,6 +3111,7 @@
     box.replaceChildren();
     box.style.height = `${hoehe}px`;
     $('pfotenSumme').innerHTML = `${PFOTE}<span>${pfotenSumme(stand)} / ${LEVEL.length * 3}</span>`;
+    $('doseAnzeige').textContent = `🦴 ${stand.dose}`;
     const weltOben = (i) => GEHEIM_HOEHE + (WELTEN.length - 1 - i) * WELT_HOEHE;
 
     // Punkte entlang eines geschwungenen Pfads; los geht's an Ezras Haustür
@@ -3393,7 +3595,7 @@
     const w = Math.random();
     let typ;
     const goldLevel = levelArt() === 'gold';
-    if (zeit > (goldLevel ? 4 : 15) && zeitlupe <= 0 && !items.some((i) => i.typ === 'gold') && Math.random() < (goldLevel ? .09 : .035)) typ = 'gold';
+    if (zeit > (goldLevel ? 4 : 15) && zeitlupe <= 0 && !items.some((i) => i.typ === 'gold') && Math.random() < (goldLevel ? .09 : .035) * (1 + glueck())) typ = 'gold';
     else if (leben < 3 && !items.some((i) => i.typ === 'pfote') && Math.random() < .03) typ = 'pfote';
     else if ((typ = powerWahl())) { /* Power-up */ }
     else if ((typ = extraWahl())) { /* neue Sache des Orts */ }
@@ -3420,6 +3622,7 @@
     if (typ === 'biene') { it.vy = tempo * .65; it.x0 = it.x; it.drift = (Math.random() - .5) * 40; it.frei = true; }
     if (typ === 'eis') it.vy = tempo * .9;
     if (POWER[typ]) it.vy = tempo * .7;
+    if (EKLIG[typ] && ausr('brille') >= 3) it.vy *= .88;
     if (typ === 'nuss') {
       const seite = Math.random() < .5 ? -1 : 1;
       it.x = seite < 0 ? 26 : W - 26; it.y = heckeOben * .55;
@@ -3454,7 +3657,7 @@
     });
     if (!liste.length) return null;
     const typ = liste[Math.floor(Math.random() * liste.length)];
-    const chance = modus === 'level' && NEU_IN[level.nr] === typ ? .12 : .03;
+    const chance = (modus === 'level' && NEU_IN[level.nr] === typ ? .12 : .03) * (1 + glueck());
     return Math.random() < chance ? typ : null;
   }
   let powerMagnet = 0, powerSchild = false;
@@ -3592,7 +3795,14 @@
   let werfer = [];
   const itX = (it) => it.x + (it.frei ? 0 : Math.sin(it.pendel) * 6);
 
+  let rucksackRest = 0;
   function serieAus() {
+    // Rucksack: die Combo übersteht ein paar Fehler pro Runde
+    if (rucksackRest > 0 && serie >= 2) {
+      rucksackRest--;
+      texte.push({ x: ezra.x, y: boden - 150 * sk, text: T.rucksackHilft, farbe: '#ffd447', leben: 1 });
+      return;
+    }
     serie = 0;
   }
   function lebenWeg(x, y, text) {
@@ -3618,7 +3828,7 @@
       return;
     }
     if (POWER[it.typ]) {
-      if (it.typ === 'magnet') { powerMagnet = 6; melden('🧲', T.magnetAn, 2); }
+      if (it.typ === 'magnet') { powerMagnet = 6 + ausr('kappe') * 2; melden('🧲', T.magnetAn, 2); }
       else { powerSchild = true; melden('🛡️', T.schildAn, 2); }
       [784, 1047, 1319].forEach((f, i) => piep(f, .1, 'triangle', .05, 0, i * .06));
       vibrieren('mittel');
@@ -3699,7 +3909,7 @@
     powerMagnet = Math.max(0, powerMagnet - dt);
 
     // Ezra bewegen (Ezra bleibt auch in der Zeitlupe schnell)
-    const maxTempo = 620 * clamp(W / 500, .8, 1.4);
+    const maxTempo = 620 * clamp(W / 500, .8, 1.4) * (1 + ausr('pfoten') * .1); // Turbo-Pfoten
     const richtung = (tasten.rechts ? 1 : 0) - (tasten.links ? 1 : 0);
     let ziel;
     if (richtung) ziel = richtung * maxTempo;
@@ -3805,12 +4015,17 @@
     // Schatten am Boden: wächst und wird dunkler, je näher etwas kommt – so sieht man, wann es landet
     for (const it of items) {
       const nah = clamp(it.y / boden, 0, 1);
-      if (nah < .2) continue;
-      ctx.fillStyle = `rgba(20,40,10,${.06 + .24 * nah * nah})`;
+      if (nah < (ausr('brille') >= 2 ? .05 : .2)) continue;
+      ctx.fillStyle = EKLIG[it.typ] && ausr('brille') >= 2 ? `rgba(200,30,20,${.12 + .3 * nah})` : `rgba(20,40,10,${.06 + .24 * nah * nah})`;
       ellipse(ctx, itX(it), boden + 1, (5 + 11 * nah) * it.r / 14, 1.5 + 2.5 * nah);
     }
     for (const it of items) {
       const ix = itX(it);
+      if (EKLIG[it.typ] && ausr('brille')) {
+        const warn = ctx.createRadialGradient(ix, it.y, it.r * .5, ix, it.y, it.r * 2.2);
+        warn.addColorStop(0, `rgba(255,50,30,${.35 + .15 * Math.sin(uhr * 8)})`); warn.addColorStop(1, 'rgba(255,50,30,0)');
+        ctx.fillStyle = warn; ellipse(ctx, ix, it.y, it.r * 2.2, it.r * 2.2);
+      }
       ctx.save();
       ctx.translate(ix, it.y);
       if (it.typ === 'eis') { malEis(ctx, 1 - .4 * clamp(it.y / boden, 0, 1)); ctx.restore(); continue; }
@@ -3988,7 +4203,7 @@
       else if (!$('tuchKarte').hidden) { if (!$('tuchTipp').hidden) tuchAntippen(); else tuchFertig($('tuchSpaeter').hidden); }
       else if (!$('einstellKarte').hidden) einstellungenSchliessen();
       else if (zustand === 'laeuft') { pause(); beendenAnbieten(); }
-      else if (!$('sachenKarte').hidden) zumStart();
+      else if (!$('sachenKarte').hidden) sachenSchliessen();
       else if (!$('listeKarte').hidden) zustand === 'ende' ? zeige('endeKarte') : endlosZeigen();
       else if (!$('startKarte').hidden || !$('levelKarte').hidden || !$('levelEndeKarte').hidden) zumStart();
       else beendenAnbieten();
@@ -4044,6 +4259,7 @@
         const alt = stand.halstuch, id = b.dataset.tuch;
         tuchZeremonie(id, id === 'standard', () => { stand.halstuch = alt; standSichern(); zurEinstellung(); });
       },
+      dose() { stand.dose += 500; fertig(`🦴 ${stand.dose}`); },
       allesfrei() {
         ERFOLGE.forEach((e) => { stand.erfolge[e.id] = stand.erfolge[e.id] || Date.now(); });
         stand.devTuecher = true;
@@ -4059,6 +4275,7 @@
         if (!halstuchFrei(stand.halstuch)) stand.halstuch = levelPfotenVon(stand, 1) ? 'standard' : 'keins';
         fertig('Erfolge zurückgesetzt');
       },
+      resetAusr() { stand.ausruestung = {}; stand.angelegt = []; stand.dose = 0; fertig('Ausrüstung zurückgesetzt'); },
       resetAlles(b) {
         if (!b.dataset.sicher) { b.dataset.sicher = '1'; b.textContent = 'Wirklich alles? Nochmal tippen'; return; }
         ['ezra-fortschritt', 'ezra-anleitung', 'ezra-bestenliste', 'ezra-rekord', 'ezra-name'].forEach((k) => schreib(k, null));
@@ -4081,8 +4298,9 @@
   $('tuchAn').addEventListener('click', () => tuchFertig(true));
   $('tuchSpaeter').addEventListener('click', () => tuchFertig(false));
   $('tuchKarte').addEventListener('click', (e) => { if (!e.target.closest('button') && tuchAntippen) tuchAntippen(); });
-  $('karteSachen').addEventListener('click', sachenOeffnen);
+  $('karteSachen').addEventListener('click', () => sachenOeffnen(null, false));
   $('lkLos').addEventListener('click', () => levelStarten(gewaehlt));
+  $('lkAusrAendern').addEventListener('click', () => sachenOeffnen('ausruestung', true));
   $('lkKarte').addEventListener('click', zumStart);
   $('leKarte').addEventListener('click', zumStart);
   $('leNochmal').addEventListener('click', () => levelStarten(levelErgebnis.nr));
@@ -4096,9 +4314,9 @@
   $('nochmalKnopf').addEventListener('click', starten);
   $('weiterKnopf').addEventListener('click', weiter);
   $('listeSpielen').addEventListener('click', starten);
-  $('sachenKnopf').addEventListener('click', sachenOeffnen);
-  $('sachenZu').addEventListener('click', zumStart);
-  $('sachenSpielen').addEventListener('click', starten);
+  $('sachenKnopf').addEventListener('click', () => sachenOeffnen(null, false));
+  $('sachenZu').addEventListener('click', sachenSchliessen);
+  $('sachenSpielen').addEventListener('click', () => (sachenVonLevel ? levelStarten(gewaehlt) : starten()));
   document.querySelectorAll('[data-tab]').forEach((b) => b.addEventListener('click', () => { tab = b.dataset.tab; sachenFuellen(); }));
   document.querySelectorAll('[data-start]').forEach((k) => k.addEventListener('click', zumStart));
   document.querySelectorAll('[data-liste]').forEach((k) => k.addEventListener('click', () => { letzteId = null; listeZeigen(); }));

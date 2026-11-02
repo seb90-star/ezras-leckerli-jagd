@@ -344,6 +344,11 @@
   .reise-kopf .summe { font-weight: 800; color: var(--gelb); font-size: 14px; }
   .reise-kopf .zweit { flex: 1 1 40%; padding: 5px 12px; font-size: 14px; border-color: rgba(255, 246, 223, .5); color: var(--creme); }
   .reise-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+  /* Leiste unten auf der Karte: mit dem Daumen gut erreichbar */
+  .reise-leiste { display: flex; gap: 4px; padding: 6px 8px calc(6px + env(safe-area-inset-bottom)); background: var(--hecke); border-top: 1px solid rgba(255, 246, 223, .15); }
+  .reise-leiste button { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 0; border: 0; border-radius: 12px; background: none; color: rgba(255, 246, 223, .8); font: 700 12px inherit; font-family: inherit; cursor: pointer; }
+  .reise-leiste .ic { font-size: 22px; line-height: 1; }
+  .reise-leiste [aria-current] { color: var(--gelb); background: rgba(0, 0, 0, .2); }
   .reise-karte { position: relative; overflow: hidden; }
   .reise-karte canvas.welt { position: absolute; left: 0; display: block; }
   .reise-karte svg { position: absolute; inset: 0; pointer-events: none; }
@@ -477,11 +482,14 @@
         <b data-t="reise">Ezras Reise</b>
         <span class="summe" id="pfotenSumme"></span>
         <span class="summe" id="doseAnzeige"></span>
-        <span style="flex-basis: 100%; height: 0"></span>
-        <button class="zweit" id="endlosKnopf" type="button" data-t="endlos">Endlos-Spiel</button>
-        <button class="zweit" id="karteSachen" type="button" data-t="sachen">Ezras Sachen</button>
       </div>
       <div class="reise-scroll" id="reiseScroll"><div class="reise-karte" id="reiseKarte"></div></div>
+      <nav class="reise-leiste">
+        <button type="button" aria-current="page"><span class="ic">🗺️</span><span data-t="navKarte">Karte</span></button>
+        <button type="button" id="endlosKnopf"><span class="ic">♾️</span><span data-t="navEndlos">Endlos</span></button>
+        <button type="button" id="karteSachen"><span class="ic">🎒</span><span data-t="navSachen">Sachen</span></button>
+        <button type="button" id="karteEinst"><span class="ic">⚙️</span><span data-t="navEinst">Optionen</span></button>
+      </nav>
     </div>
 
     <div class="ueber" id="levelKarte" hidden>
@@ -729,7 +737,7 @@
       spielen: 'Spielen', loeschen: 'Bestenliste löschen', loeschenSicher: 'Wirklich alles löschen?', geloescht: 'Bestenliste gelöscht ✓',
       einstellungen: 'Einstellungen', sprache: 'Sprache', auto: 'Auto', ton: 'Ton', fertig: 'Fertig', version: 'Version',
       beendenHinweis: 'Nochmal „Zurück“ zum Beenden',
-      reise: 'Ezras Reise', endlos: 'Endlos-Spiel', zurKarte: 'Zur Karte', levelNr: (welt, n) => `${welt} · Level ${n}`,
+      reise: 'Ezras Reise', endlos: 'Endlos-Spiel', navKarte: 'Karte', navEndlos: 'Endlos', navSachen: 'Sachen', navEinst: 'Optionen', zurKarte: 'Zur Karte', levelNr: (welt, n) => `${welt} · Level ${n}`,
       levelLos: 'Los geht’s', pfotenFuer: 'So gibt es Pfoten:',
       levelBest: (n) => (n ? `Bestes Ergebnis: ${'🐾'.repeat(n)}` : 'Noch nicht gespielt'),
       levelGeschafft: (n) => `Level ${n} geschafft!`, levelFast: 'Fast geschafft!', levelSuper: 'Super, alle Pfoten!',
@@ -877,7 +885,7 @@
       spielen: 'Play', loeschen: 'Clear high scores', loeschenSicher: 'Really clear everything?', geloescht: 'High scores cleared ✓',
       einstellungen: 'Settings', sprache: 'Language', auto: 'Auto', ton: 'Sound', fertig: 'Done', version: 'Version',
       beendenHinweis: 'Press “Back” again to exit',
-      reise: 'Ezra’s Journey', endlos: 'Endless mode', zurKarte: 'To the map', levelNr: (welt, n) => `${welt} · Level ${n}`,
+      reise: 'Ezra’s Journey', endlos: 'Endless mode', navKarte: 'Map', navEndlos: 'Endless', navSachen: 'Stuff', navEinst: 'Settings', zurKarte: 'To the map', levelNr: (welt, n) => `${welt} · Level ${n}`,
       levelLos: 'Let’s go', pfotenFuer: 'How to earn paws:',
       levelBest: (n) => (n ? `Best result: ${'🐾'.repeat(n)}` : 'Not played yet'),
       levelGeschafft: (n) => `Level ${n} done!`, levelFast: 'Almost there!', levelSuper: 'Great, all the paws!',
@@ -5294,6 +5302,7 @@
     vibrieren('mittel');
   });
   $('einstellKnopf').addEventListener('click', einstellungenOeffnen);
+  $('karteEinst').addEventListener('click', einstellungenOeffnen);
   $('fertigKnopf').addEventListener('click', einstellungenSchliessen);
   $('infoKnopf').addEventListener('click', () => { zeige('infoKarte'); $('infoZurueck').focus(); });
   $('infoZurueck').addEventListener('click', () => { zeige('einstellKarte'); $('infoKnopf').focus(); });

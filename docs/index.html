@@ -297,10 +297,10 @@
   .ortfach canvas { width: 100%; aspect-ratio: 16 / 9; border-radius: 9px; display: block; }
   .ortfach span { display: flex; justify-content: space-between; gap: 8px; padding: 0 4px 2px; }
   .ortfach em { font-style: normal; font-weight: 500; font-size: 13px; opacity: .75; }
-  .neu { list-style: none; margin: 0; padding: 10px 12px; border-radius: 12px; background: #fff; display: flex; flex-direction: column; gap: 8px; }
-  .neu li { display: grid; grid-template-columns: 24px 1fr; gap: 8px; align-items: start; font-size: 14px; line-height: 1.35; }
-  .neu li::before { content: "★"; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--gelb); color: var(--tinte); font-size: 13px; }
-  .neu b { display: block; font-family: var(--font-anzeige); font-size: 16px; }
+  .neuheiten { list-style: none; margin: 0; padding: 10px 12px; border-radius: 12px; background: #fff; display: flex; flex-direction: column; gap: 8px; }
+  .neuheiten li { display: grid; grid-template-columns: 24px 1fr; gap: 8px; align-items: start; font-size: 14px; line-height: 1.35; }
+  .neuheiten li::before { content: "★"; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--gelb); color: var(--tinte); font-size: 13px; }
+  .neuheiten b { display: block; font-family: var(--font-anzeige); font-size: 16px; }
 </style>
 </head>
 <body>
@@ -403,7 +403,7 @@
         <div class="gross" id="endePunkte">0</div>
         <p id="endeText">Punkte</p>
         <p class="klein" id="endeSerie"></p>
-        <ul class="neu" id="neueSachen" hidden></ul>
+        <ul class="neuheiten" id="neueSachen" hidden></ul>
         <p class="ziel" id="endeZiel"></p>
         <form class="eintragen" id="eintragen" hidden>
           <label for="nameFeld" id="platzText"></label>

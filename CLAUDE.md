@@ -52,4 +52,10 @@ Allgemeine Arbeitsweise steht in der globalen CLAUDE.md – vor jeder Änderung 
 - **Handy per USB** (adb: `%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe`), `android/gradlew.bat installDebug`.
   Die App-Seite lässt sich per adb-Forward auf `webview_devtools_remote_<pid>` und Chrome DevTools Protocol fernsteuern
 - Beim Testen keine Daten auf dem Handy verändern (Bestenliste, Name, Fortschritt) – oder vorher fragen
+- **Spiel-Bot** (`test/spielbot.mjs`, `npm run bot`): spielt alle Level mit simulierten Spielern (Kind 5–6, Kind 8–10,
+  Erwachsen, Profi) im unsichtbaren Chrome durch (playwright-core, nutzt das installierte Chrome) und schreibt einen
+  Bericht nach `test-ergebnisse/` (von Git ausgenommen). Optionen: `--runden`, `--level 1-10`, `--spieler kind5,profi`,
+  `--endlos`, `--ausr pfoten:2`, `--setze kind8.reaktion=.25`, `--zuschauen`. Braucht `ENTWICKLUNG = true`;
+  der Test-Zugang `window.ezraTest` ist nur mit `?test` in der Adresse aktiv. Spieler-Werte sind Schätzungen –
+  Ergebnisse als Tendenz lesen, besonders für Vergleiche vorher/nachher
 - Vorher/Nachher-Bilder liegen in `.vergleich/` (von Git ausgenommen)

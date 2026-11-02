@@ -1034,6 +1034,8 @@
   // Entwickler-Menü zum Testen – für die Veröffentlichung auf false stellen!
   const ENTWICKLUNG = true;
   let devAllesOffen = false, devUnverwundbar = false, devPfoten = null;
+  // Spiel-Bot (test/spielbot.mjs): 'schnell' = Bot rechnet selbst, ohne Bild; 'zuschauen' = Bot rechnet, Bild läuft mit
+  let testTakt = false;
   const nativ = !!window.Capacitor?.isNativePlatform?.();
   // Ohne Bundler gibt es kein registerPlugin – die Plugins hängen fertig an Capacitor.Plugins
   const Haptik = nativ ? window.Capacitor.Plugins?.Haptics : null;
@@ -2858,7 +2860,7 @@
     }
     standSichern();
     levelErgebnis = { nr, n, vorher, wert: levelWert(), extras };
-    setTimeout(levelEndeZeigen, 650);
+    if (!testTakt) setTimeout(levelEndeZeigen, 650);
     if (n) [523, 659, 784].forEach((f, i) => piep(f, .12, 'triangle', .05, .0, .7 + i * .09));
     else { piep(440, .18, 'triangle', .06, .7); piep(330, .3, 'triangle', .06, .6, .18); }
   }
@@ -3606,7 +3608,7 @@
     $('endeKnoepfe').hidden = endePlatz >= 0;
     if (endePlatz >= 0) $('nameFeld').value = letzterName;
     endeTexte();
-    setTimeout(endeKarteZeigen, 650);
+    if (!testTakt) setTimeout(endeKarteZeigen, 650);
     piep(440, .18, 'triangle', .06, .7); piep(330, .3, 'triangle', .06, .6, .18);
   }
 
@@ -4376,9 +4378,9 @@
   function schleife(jetzt) {
     const dt = Math.min(.05, (jetzt - zuletzt) / 1000);
     zuletzt = jetzt;
-    if (W && H) {
-      if (zustand === 'laeuft') aktualisieren(dt);
-      if (zustand !== 'pause') effekteAktualisieren(dt);
+    if (W && H && testTakt !== 'schnell') {
+      if (zustand === 'laeuft' && !testTakt) aktualisieren(dt);
+      if (zustand !== 'pause' && !testTakt) effekteAktualisieren(dt);
       malen();
     }
     requestAnimationFrame(schleife);
@@ -4519,6 +4521,48 @@
       devUnverwundbar = !devUnverwundbar;
       e.target.textContent = `Unverwundbar: ${devUnverwundbar ? 'an' : 'aus'}`;
     });
+  }
+  // ---------- Test-Zugang für den Spiel-Bot (nur Entwicklung und mit ?test in der Adresse) ----------
+  // Der Bot startet Level, schaut sich die fallenden Sachen an, bewegt den Finger und rechnet das Spiel selbst weiter
+  if (ENTWICKLUNG && new URLSearchParams(location.search).has('test')) {
+    const ids = new WeakMap();
+    let naechsteId = 1, endeBei = null;
+    const idVon = (it) => { if (!ids.has(it)) ids.set(it, naechsteId++); return ids.get(it); };
+    window.ezraTest = {
+      levels: LEVEL.map((l) => ({ nr: l.nr, welt: l.welt, art: l.art, stufen: l.stufen })),
+      // nr: Level (0 = Endlos), ausr: { pfoten: 2, ... }, takt: 'schnell' oder 'zuschauen'
+      starten(nr, ausr = {}, takt = 'schnell') {
+        LEVEL.forEach((l) => { stand.levels[l.nr] = 3; }); // alles geschafft: keine Übergabe-Szenen zwischendurch
+        stand.ausruestung = { ...ausr }; stand.angelegt = Object.keys(ausr);
+        schreib('ezra-anleitung', 'gesehen');
+        testTakt = takt; endeBei = null;
+        if (nr) levelStarten(nr); else starten();
+      },
+      lage() {
+        return {
+          zustand, W, H, zeit, leben, punkte, ezraX: ezra.x, wind: windKraft,
+          fang: { oben: boden - 120 * sk, unten: boden - 58 * sk, breite: 26 * sk },
+          boss: boss && { phase: boss.phase, treffer: boss.treffer, hp: boss.hp },
+          items: items.map((it) => ({ id: idVon(it), typ: it.typ, x: itX(it), y: it.y, vx: it.vx || 0, vy: it.vy, g: it.g || 0, r: it.r,
+            eklig: !!EKLIG[it.typ], bonus: !!it.bonus, wackelt: it.typ === 'frisbee' || it.typ === 'biene' })),
+        };
+      },
+      finger(x) { zielX = x; },
+      schritt(dt) {
+        if (zustand !== 'laeuft') return false;
+        aktualisieren(dt);
+        effekteAktualisieren(dt);
+        // wie im echten Spiel: nach 3 Pfoten bzw. besiegtem Boss läuft es noch kurz weiter
+        if (endeBei === null && modus === 'level' && (boss ? boss.besiegt : pfotenFuer(levelWert()) === 3)) endeBei = zeit + (boss ? 1.4 : .7);
+        if (endeBei !== null && zeit >= endeBei && zustand === 'laeuft') ende();
+        return zustand === 'laeuft';
+      },
+      beenden() { if (zustand === 'laeuft') ende(); },
+      ergebnis() {
+        return { pfoten: modus === 'level' ? levelErgebnis.n : null, wert: modus === 'level' ? levelErgebnis.wert : punkte,
+          punkte, leben, zeit, serie: besteSerie, ...runde };
+      },
+    };
   }
   $('tuchAn').addEventListener('click', () => tuchFertig(true));
   $('tuchSpaeter').addEventListener('click', () => tuchFertig(false));

@@ -1,4 +1,4 @@
-package de.lifeofezra.leckerlijagd;
+package de.ezrathefoxred.leckerlijagd;
 
 import com.getcapacitor.BridgeActivity;
 

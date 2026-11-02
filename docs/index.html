@@ -236,6 +236,18 @@
   .schiebe:checked::after { transform: translateX(20px); }
   .schiebe:focus-visible { outline: 3px solid var(--gelb); outline-offset: 2px; }
   .trenner { height: 1px; background: rgba(38, 50, 31, .12); }
+  .widmung { align-items: center; gap: 16px; text-align: center; }
+  .ezra-foto {
+    width: min(200px, 55vw); height: auto;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 6px solid #f3e3a4;
+    box-shadow: 0 0 0 3px var(--tuch), 0 10px 24px rgba(0, 0, 0, .25);
+    object-fit: cover;
+  }
+  .widmung h2 { font-size: 30px; }
+  .widmung h2 .unter { display: block; margin-top: 6px; font-size: 19px; font-weight: 600; line-height: 1.3; color: var(--tinte); text-wrap: balance; }
+  .widmung .los { align-self: stretch; }
   .fusszeile { display: flex; justify-content: space-between; font-size: 12px; opacity: .6; }
   .fusszeile a { color: inherit; }
 </style>
@@ -292,9 +304,18 @@
           <div class="trenner"></div>
           <button class="zweit klein" id="anleitungKnopf" type="button" data-t="anleitungNochmal">Kurzanleitung nochmal zeigen</button>
           <button class="zweit klein" id="loeschKnopf" type="button">Bestenliste löschen</button>
+          <button class="zweit klein" id="infoKnopf" type="button" data-t="ueber">Über das Spiel</button>
         </div>
         <button class="los" id="fertigKnopf" type="button" data-t="fertig">Fertig</button>
         <p class="fusszeile"><a id="datenschutzLink" href="datenschutz.html" data-t="datenschutz">Datenschutz</a><span id="versionText">Version 1.0</span></p>
+      </div>
+    </div>
+
+    <div class="ueber" id="infoKarte" hidden>
+      <div class="karte widmung">
+        <img class="ezra-foto" src="ezra.jpg" width="480" height="480" data-talt="fotoAlt" alt="Ezra mit seinem blauen Halstuch">
+        <h2><span data-t="widmung1">Für Ezra,</span><span class="unter" data-t="widmung2">unseren besten Freund auf vier Pfoten.</span></h2>
+        <button class="los" id="infoZurueck" type="button" data-t="zurueck">Zurück</button>
       </div>
     </div>
 
@@ -363,6 +384,8 @@
       spielen: 'Spielen', loeschen: 'Bestenliste löschen', loeschenSicher: 'Wirklich alles löschen?', geloescht: 'Bestenliste gelöscht ✓',
       einstellungen: 'Einstellungen', sprache: 'Sprache', auto: 'Auto', ton: 'Ton', fertig: 'Fertig', version: 'Version',
       anleitungNochmal: 'Kurzanleitung nochmal zeigen', anleitungOk: 'Kommt beim nächsten Spiel ✓',
+      ueber: 'Über das Spiel', widmung1: 'Für Ezra,', widmung2: 'unseren besten Freund auf vier Pfoten.',
+      fotoAlt: 'Ezra mit seinem blauen Halstuch', zurueck: 'Zurück',
       th_name: 'Name', th_datum: 'Datum',
       ende50: 'Kugelrund und glücklich!', ende20: 'Gut gefuttert!', ende0: 'Ezra hat noch Hunger',
       serieLang: (n) => `Längste Serie: ${n}`,
@@ -390,6 +413,8 @@
       spielen: 'Play', loeschen: 'Clear high scores', loeschenSicher: 'Really clear everything?', geloescht: 'High scores cleared ✓',
       einstellungen: 'Settings', sprache: 'Language', auto: 'Auto', ton: 'Sound', fertig: 'Done', version: 'Version',
       anleitungNochmal: 'Show tutorial again', anleitungOk: 'Shown in your next game ✓',
+      ueber: 'About', widmung1: 'For Ezra,', widmung2: 'our best friend on four paws.',
+      fotoAlt: 'Ezra wearing his blue bandana', zurueck: 'Back',
       th_name: 'Name', th_datum: 'Date',
       ende50: 'Round and happy!', ende20: 'Well fed!', ende0: 'Ezra is still hungry',
       serieLang: (n) => `Longest streak: ${n}`,
@@ -416,6 +441,7 @@
     document.querySelectorAll('[data-th]').forEach((el) => { el.innerHTML = T[el.dataset.th]; });
     document.querySelectorAll('[data-ta]').forEach((el) => { el.setAttribute('aria-label', T[el.dataset.ta]); });
     document.querySelectorAll('[data-tp]').forEach((el) => { el.placeholder = T[el.dataset.tp]; });
+    document.querySelectorAll('[data-talt]').forEach((el) => { el.alt = T[el.dataset.talt]; });
     document.getElementById('datenschutzLink').href = T.datenschutzSeite;
     document.getElementById('versionText').textContent = `${T.version} ${VERSION}`;
     document.querySelectorAll('[data-sprache]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.sprache === sprachWahl)));
@@ -871,13 +897,13 @@
   }
 
   function zeige(id) {
-    for (const k of ['startKarte', 'pauseKarte', 'endeKarte', 'listeKarte', 'einstellKarte']) $(k).hidden = k !== id;
+    for (const k of ['startKarte', 'pauseKarte', 'endeKarte', 'listeKarte', 'einstellKarte', 'infoKarte']) $(k).hidden = k !== id;
   }
 
   // ---------- Einstellungen ----------
   let vorherKarte = 'startKarte';
   function einstellungenOeffnen() {
-    if (!$('einstellKarte').hidden) return einstellungenSchliessen();
+    if (!$('einstellKarte').hidden || !$('infoKarte').hidden) return einstellungenSchliessen();
     if (zustand === 'laeuft') pause();
     const offen = ['startKarte', 'pauseKarte', 'endeKarte', 'listeKarte'].find((k) => !$(k).hidden);
     if (!offen) return;
@@ -1276,7 +1302,8 @@
   // Android-Zurück-Taste: im Spiel pausieren statt die App zu schließen
   if (AppPlugin) {
     AppPlugin.addListener('backButton', () => {
-      if (!$('einstellKarte').hidden) einstellungenSchliessen();
+      if (!$('infoKarte').hidden) zeige('einstellKarte');
+      else if (!$('einstellKarte').hidden) einstellungenSchliessen();
       else if (zustand === 'laeuft') pause();
       else if (zustand === 'pause') weiter();
       else if (!$('listeKarte').hidden) zeige(zustand === 'ende' ? 'endeKarte' : 'startKarte');
@@ -1319,6 +1346,8 @@
   $('pauseKnopf').addEventListener('click', () => { zustand === 'laeuft' ? pause() : weiter(); });
   $('einstellKnopf').addEventListener('click', einstellungenOeffnen);
   $('fertigKnopf').addEventListener('click', einstellungenSchliessen);
+  $('infoKnopf').addEventListener('click', () => { zeige('infoKarte'); $('infoZurueck').focus(); });
+  $('infoZurueck').addEventListener('click', () => { zeige('einstellKarte'); $('infoKnopf').focus(); });
   $('tonSchalter').addEventListener('change', (e) => {
     ton = e.target.checked;
     schreib('ezra-ton', ton ? 'an' : 'aus');

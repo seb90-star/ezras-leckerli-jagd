@@ -136,6 +136,8 @@ async function botRunde({ nr, p, seed, ausr, maxZeit, zuschauen, gefahr, extra }
       const x = clamp(it.x + (it.wackelt ? 0 : it.vx * tm) + L.wind * tm, 0, L.W);
       ziele.push({ x, rein, raus: raus ?? rein + .05, eklig, wert: wertVon(it, L), breite: L.fang.breite + it.r * .6 });
     }
+    // Warnflecken der Boss-Angriffe: dort darf Ezra beim Einschlag nicht stehen
+    for (const z of L.zonen || []) ziele.push({ x: z.x, rein: Math.max(0, z.t - .05), raus: z.t + .05, eklig: true, wert: 0, breite: z.b - 2 });
     const tempo = Math.min(p.fingerTempo, 1200), vonX = L.ezraX, start = .04;
     const gute = ziele.filter((z) => !z.eklig).sort((a, b) => a.rein - b.rein), eklige = ziele.filter((z) => z.eklig);
     // Läuft Ezra auf dem Weg (x0 → x1, dann warten bis bisT) in etwas Ekliges?

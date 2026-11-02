@@ -783,10 +783,12 @@
       welleAn: { socke: 'Achtung, Socken-Welle!', zapfen: 'Achtung, Zapfen-Welle!', qualle: 'Achtung, Quallen-Welle!' },
       bossTitel: { garten: 'Die Nachbarskatze!', wald: 'Das freche Eichhörnchen!', strand: 'Die diebische Möwe!' },
       bossName: { garten: 'Katze', wald: 'Eichhörnchen', strand: 'Möwe' },
-      bossText: 'Sie wirft Gutes und Ekliges durcheinander. Fang Leckerlis, bis ihr die Geduld ausgeht!',
+      bossText: 'Fang Leckerlis, bis ihr die Geduld ausgeht! Achte auf rote Stellen am Boden und nutze den Moment, wenn sie benommen ist.',
       bossStufen: ['Boss besiegt', 'mit 2 Leben übrig', 'ohne ein Leben zu verlieren'],
       bossMitArtikel: { garten: 'Die Katze', wald: 'Das Eichhörnchen', strand: 'Die Möwe' },
       bossWutAn: (wer) => `${wer} wird wütend!`, bossMuede: (wer) => `${wer} ist erschöpft – schnell!`,
+      bossSpezial: { garten: 'Krallen-Hiebe! Weg von den roten Stellen!', wald: 'Nuss-Lawine! Ab in die grüne Lücke!', strand: 'Sturzflug! Raus aus der roten Bahn!' },
+      bossBenommen: (wer) => `${wer} ist benommen – jeder Fang zählt doppelt!`,
       bossBesiegt: (wer) => `${wer} gibt auf!`, bossErgebnis: (n, von) => `Gefangen: ${n} / ${von}`,
       bossKopf: 'Boss', zeitlupe: 'Zeitlupe!', lebenPlus: '+1 Leben',
       combo: (m) => `Combo x${m}!`, serie: (n) => `Serie ${n}`, anonym: 'Anonym',
@@ -929,10 +931,12 @@
       welleAn: { socke: 'Watch out, sock wave!', zapfen: 'Watch out, pine cone wave!', qualle: 'Watch out, jellyfish wave!' },
       bossTitel: { garten: 'The neighbour’s cat!', wald: 'The cheeky squirrel!', strand: 'The thieving seagull!' },
       bossName: { garten: 'Cat', wald: 'Squirrel', strand: 'Seagull' },
-      bossText: 'Throws good and yucky things around. Catch treats until it runs out of patience!',
+      bossText: 'Catch treats until it runs out of patience! Watch for red spots on the ground and strike while it is dizzy.',
       bossStufen: ['Boss beaten', 'with 2 lives left', 'without losing a life'],
       bossMitArtikel: { garten: 'The cat', wald: 'The squirrel', strand: 'The seagull' },
       bossWutAn: (wer) => `${wer} is getting angry!`, bossMuede: (wer) => `${wer} is worn out – quick!`,
+      bossSpezial: { garten: 'Claw swipes! Stay off the red spots!', wald: 'Nut avalanche! Get into the green gap!', strand: 'Dive bomb! Get out of the red lane!' },
+      bossBenommen: (wer) => `${wer} is dizzy – every catch counts double!`,
       bossBesiegt: (wer) => `${wer} gives up!`, bossErgebnis: (n, von) => `Caught: ${n} / ${von}`,
       bossKopf: 'Boss', zeitlupe: 'Slow-mo!', lebenPlus: '+1 life',
       combo: (m) => `Combo x${m}!`, serie: (n) => `Streak ${n}`, anonym: 'Anonymous',
@@ -1126,15 +1130,15 @@
     ['garten', 'gefangen', 22, 28, 34], ['garten', 'punkte', 50, 70, 90], ['garten', 'baelle', 6, 9, 12],
     ['garten', 'serie', 12, 21, 29], ['garten', 'dauer', 45, 70, 100], ['garten', 'gold', 1, 2, 3],
     ['garten', 'punkte', 100, 140, 180], ['garten', 'sauber', 20, 45, 80], ['garten', 'baelle', 7, 9, 11],
-    ['garten', 'boss', 20],
+    ['garten', 'boss', 24],
     ['wald', 'punkte', 90, 115, 135], ['wald', 'dauer', 60, 90, 120], ['wald', 'serie', 13, 22, 31],
     ['wald', 'baelle', 9, 12, 15], ['wald', 'gold', 2, 3, 4], ['wald', 'punkte', 75, 120, 165],
     ['wald', 'sauber', 15, 40, 75], ['wald', 'dauer', 65, 95, 125], ['wald', 'serie', 12, 20, 27],
-    ['wald', 'boss', 25],
+    ['wald', 'boss', 30],
     ['strand', 'punkte', 135, 195, 250], ['strand', 'baelle', 12, 15, 18], ['strand', 'serie', 15, 25, 34],
     ['strand', 'dauer', 75, 105, 135], ['strand', 'gold', 4, 5, 6], ['strand', 'punkte', 170, 245, 320],
     ['strand', 'sauber', 15, 50, 100], ['strand', 'serie', 17, 28, 38], ['strand', 'baelle', 19, 24, 28],
-    ['strand', 'boss', 30],
+    ['strand', 'boss', 36],
   ].map(([welt, art, ...stufen], i) => {
     const w = WELTEN.findIndex((x) => x.id === welt), imWelt = i % 10;
     // zeit: so viele Sekunden hat man für die Aufgabe (Durchhalten und Bosse ohne Uhr)
@@ -2281,7 +2285,7 @@
     auswertung = null;
     items = []; krümel = []; texte = []; werfer = [];
     powerMagnet = 0; powerSchild = false; powerRegen = 0; powerRiese = 0; tasche = []; ezraGroesse = 1;
-    ereignis = null; blitz = 0; windKraft = 0; welle = null;
+    ereignis = null; blitz = 0; windKraft = 0; welle = null; zonen = []; schlaege = [];
     ereignisPlanen(true);
     wellePlanen(true);
     rucksackRest = ausr('rucksack');
@@ -3805,6 +3809,7 @@
     }
     if (welle) { welle = null; welleUhr = Infinity; }
     if (boss && boss.phase === 'wut') boss.phaseZeit = 0;
+    if (boss && boss.phase === 'spezial') benommenStarten(); // Knall bricht den Angriff ab
     blitz = 1; wackeln = ruhig ? 0 : .5;
     texte.push({ x: W / 2, y: H * .3, text: T.knallAn, farbe: '#ff8a3a', leben: 1.6, gross: true });
     piep(70, .7, 'sawtooth', .08, .5); piep(140, .5, 'square', .05, .4, .05); piep(900, .3, 'triangle', .04, .3, .1);
@@ -3862,14 +3867,16 @@
     boss = level && level.art === 'boss'
       ? { welt: level.welt, hp: level.stufen[0], treffer: 0, x: W * .5, zielX: W * .5, y: 0, wut: 0, uhr: 0, richtung: 1, seite: 1, besiegt: false, flucht: 0,
         // Phasen: normal → warnung (1 s) → wut (nur Ekliges: ausweichen) → muede (nur Leckerlis) → normal
+        // und dazwischen: spezial (Angriff mit Vorwarnung, ausweichen) → benommen (jeder Fang zählt doppelt) → normal
         phase: 'normal', phaseZeit: 0, pause: 6, mini: false,
-        wutBei: [Math.floor(level.stufen[0] / 3), Math.floor(level.stufen[0] * 2 / 3)] }
+        wutBei: [Math.floor(level.stufen[0] / 3), Math.floor(level.stufen[0] * 2 / 3)],
+        spezialBei: [Math.round(level.stufen[0] / 6), Math.round(level.stufen[0] / 2), Math.round(level.stufen[0] * 5 / 6)] }
       : null;
   }
   const WUT_DAUER = { garten: 3, wald: 3.5, strand: 4.5 };
   function bossWurf() {
     const b = boss;
-    if (b.besiegt || b.phase === 'warnung') return;
+    if (b.besiegt || b.phase === 'warnung' || b.phase === 'spezial') return;
     const liste = BOSS_WIRFT[b.welt];
     const eklig = liste.filter((t) => EKLIG[t]), gut = liste.filter((t) => !EKLIG[t]);
     // Wut: Katze wirft im Fächer, Eichhörnchen wechselt bei jedem Wurf den Baum
@@ -3877,7 +3884,7 @@
     if (b.phase === 'wut' && b.welt === 'wald') { b.seite *= -1; b.x = b.seite < 0 ? 28 : W - 28; }
     for (let n = 0; n < anzahl; n++) {
       let typ;
-      if (b.phase === 'muede') typ = Math.random() < .25 ? 'gold' : gut[Math.floor(Math.random() * gut.length)];
+      if (b.phase === 'muede' || b.phase === 'benommen') typ = Math.random() < .25 ? 'gold' : gut[Math.floor(Math.random() * gut.length)];
       else if (b.phase === 'wut') typ = eklig[Math.floor(Math.random() * eklig.length)]; // Wut: nur ausweichen, nichts zu fangen
       else {
         typ = liste[Math.floor(Math.random() * liste.length)];
@@ -3909,6 +3916,83 @@
     piep(90, .7, 'sawtooth', .06, .6); piep(70, .8, 'sawtooth', .05, .7, .2);
     vibrieren('stark');
   }
+  // ---------- Spezial-Angriffe: erst leuchtet am Boden auf, wo es einschlägt, dann kracht es ----------
+  // Katze: Krallen-Hiebe auf zwei Stellen; Möwe: Sturzflug auf Ezras Bahn; Eichhörnchen: Nuss-Lawine mit einer wandernden Lücke
+  let zonen = [], schlaege = [];
+  const LUECKE = 75; // halbe Breite der grünen Lücke bei der Nuss-Lawine
+  function spezialStarten() {
+    const b = boss;
+    b.phase = 'spezial'; b.phaseZeit = 99; b.runde = 0; b.angriffUhr = .6;
+    spawnUhr = 99; zonen = [];
+    for (const it of items) if (EKLIG[it.typ]) it.bonus = true; // was schon fliegt, kostet im Angriff kein Leben mehr
+    if (b.welt === 'wald') { b.luecke = W * (.3 + Math.random() * .4); b.lawine = 5.2; b.lawineWurf = 0; }
+    melden(b.welt === 'garten' ? '🐾' : b.welt === 'wald' ? '🌰' : '🐦', T.bossSpezial[b.welt], 3);
+    piep(220, .3, 'sawtooth', .05, .8); piep(330, .3, 'sawtooth', .04, .8, .15);
+    vibrieren('mittel');
+  }
+  function benommenStarten() {
+    const b = boss;
+    zonen = [];
+    b.phase = 'benommen'; b.phaseZeit = 2.6; spawnUhr = .3;
+    melden('💫', T.bossBenommen(T.bossMitArtikel[b.welt]), 3);
+    [523, 784, 659, 988].forEach((f, i) => piep(f, .1, 'triangle', .05, 0, i * .08));
+  }
+  function zoneSetzen(x, breite, zeit, art) { zonen.push({ x: clamp(x, breite * .6, W - breite * .6), b: breite, t: zeit, dauer: zeit, art }); }
+  function spezialAktualisieren(dt) {
+    const b = boss;
+    for (const s of schlaege) s.l -= dt;
+    schlaege = schlaege.filter((s) => s.l > 0);
+    if (!b || b.phase !== 'spezial' || b.besiegt) return;
+    // Einschläge
+    for (const z of zonen) {
+      z.t -= dt;
+      if (z.t > 0) continue;
+      schlaege.push({ x: z.x, b: z.b, art: z.art, l: .35 });
+      piep(z.art === 'kralle' ? 180 : 120, .18, 'sawtooth', .06, .5);
+      if (!ruhig) wackeln = Math.max(wackeln, .25);
+      if (Math.abs(ezra.x - z.x) < z.b + 18 * sk * ezraGroesse && leben > 0) {
+        if (powerSchild) { powerSchild = false; texte.push({ x: ezra.x, y: boden - 120 * sk, text: T.geschuetzt, farbe: '#9ad0ff', leben: 1.1 }); }
+        else { ezra.igitt = .7; lebenWeg(ezra.x, boden - 120 * sk, T.autsch); }
+      }
+    }
+    zonen = zonen.filter((z) => z.t > 0);
+    if (zustand !== 'laeuft') return;
+    if (b.welt === 'wald') {
+      // Nuss-Lawine: 1,5 s Vorwarnung, dann 2,3 s Zapfen überall – nur in der grünen Lücke nicht.
+      // Die Lücke bleibt stehen, und der Abstand rechnet Ezras Breite mit ein: wer mit der Mitte im Grünen steht, ist sicher
+      b.lawine -= dt; b.lawineWurf -= dt;
+      if (b.lawine < 3.7 && b.lawine > 1.4 && b.lawineWurf <= 0) {
+        b.lawineWurf = .12;
+        const r = 14, frei = LUECKE * sk + 26 * sk * ezraGroesse + r * .6 + 6;
+        const links = Math.max(0, b.luecke - frei - 16), rechts = Math.max(0, W - 16 - (b.luecke + frei));
+        const z = Math.random() * (links + rechts);
+        const x = z < links ? 16 + z : b.luecke + frei + (z - links);
+        items.push({ typ: 'zapfen', r, x, y: -30, vy: 430 * clamp(H / 650, .8, 1.3), rot: Math.random() * 6, vr: (Math.random() - .5) * 4, pendel: 0, t: 0, frei: true });
+      }
+      if (b.lawine <= 0) benommenStarten();
+      return;
+    }
+    // Katze und Möwe: drei Runden mit Vorwarnung
+    b.angriffUhr -= dt;
+    if (b.angriffUhr > 0 || zonen.length) return;
+    if (b.runde >= 3) return benommenStarten();
+    b.runde++;
+    if (b.welt === 'garten') {
+      // weitere Stellen möglichst weit weg von den schon gesetzten (feste Zahl an Versuchen, damit nichts hängen bleibt)
+      const weitWeg = (andere) => {
+        let beste = 0, abstand = -1;
+        for (let n = 0; n < 20; n++) { const x = W * (.12 + Math.random() * .76), d = Math.min(...andere.map((o) => Math.abs(o - x))); if (d > abstand) { abstand = d; beste = x; } }
+        return beste;
+      };
+      const a = W * (.12 + Math.random() * .76), c = weitWeg([a]);
+      zoneSetzen(a, 40 * sk, .95, 'kralle'); zoneSetzen(c, 40 * sk, .95, 'kralle');
+      if (b.runde === 3) zoneSetzen(weitWeg([a, c]), 34 * sk, .95, 'kralle');
+    } else {
+      zoneSetzen(ezra.x, 38 * sk, 1.05, 'sturz'); // die Möwe zielt auf Ezra
+    }
+    b.angriffUhr = .45;
+  }
+
   function bossBewegen(dt) {
     const b = boss;
     if (!b) return;
@@ -3917,16 +4001,18 @@
     // Phasen weiterschalten
     b.phaseZeit -= dt; b.pause -= dt;
     if (b.phase === 'normal') {
-      if (b.wutBei.length && b.treffer >= b.wutBei[0]) { b.wutBei.shift(); wutAnkuendigen(false); }
+      if (b.spezialBei.length && b.treffer >= b.spezialBei[0]) { b.spezialBei.shift(); spezialStarten(); }
+      else if (b.wutBei.length && b.treffer >= b.wutBei[0]) { b.wutBei.shift(); wutAnkuendigen(false); }
       else if (b.pause <= 0 && Math.random() < dt * .08) wutAnkuendigen(true); // kleiner Überraschungs-Anfall
     } else if (b.phaseZeit <= 0) {
       if (b.phase === 'warnung') { b.phase = 'wut'; b.phaseZeit = b.mini ? 2.2 : WUT_DAUER[b.welt]; spawnUhr = 0; }
       else if (b.phase === 'wut') { b.phase = 'muede'; b.phaseZeit = 2.2; spawnUhr = .3; melden('💦', T.bossMuede(T.bossMitArtikel[b.welt]), 2); }
+      else if (b.phase === 'spezial') { /* endet in spezialAktualisieren */ }
       else { b.phase = 'normal'; b.pause = 7; }
     }
     if (b.phase === 'wut' && !ruhig) wackeln = Math.max(wackeln, .06);
     // Tempo je Phase: in der Wut hektisch, erschöpft ganz langsam
-    const tempo = b.phase === 'wut' ? 2.4 : b.phase === 'muede' ? .3 : 1;
+    const tempo = b.phase === 'wut' ? 2.4 : b.phase === 'muede' || b.phase === 'benommen' ? .3 : 1;
     b.uhr += dt * tempo;
     dt *= tempo;
     if (b.welt === 'garten') { // Katze läuft auf der Hecke hin und her
@@ -3939,12 +4025,51 @@
     } else { // Möwe kreist oben
       const vorher = b.x;
       b.x = W * (.5 + .4 * Math.sin(b.uhr * .7)); b.y = (b.phase === 'wut' ? H * .3 : H * .16) + Math.sin(b.uhr * 1.9) * 10; // Sturzflug in der Wut
+      const bahn = b.phase === 'spezial' && zonen[0];
+      if (bahn) { const k = 1 - bahn.t / bahn.dauer; b.x = vorher + (bahn.x - vorher) * Math.min(1, dt * 8); b.y = k < .75 ? H * .12 : lerp(H * .12, boden - 70 * sk, (k - .75) / .25); }
       b.richtung = b.x >= vorher ? 1 : -1;
+    }
+  }
+  // Warnflecken, Einschläge und die Lücke der Nuss-Lawine (am Boden, hinter Ezra)
+  function bossBodenMalen() {
+    const b = boss;
+    if (!b) return;
+    for (const z of zonen) {
+      const k = 1 - z.t / z.dauer, puls = .5 + .5 * Math.sin(uhr * (10 + k * 20));
+      // leuchtender Streifen bis zum Boden, damit man die Stelle sofort sieht
+      const oben = z.art === 'sturz' ? 0 : grasOben - 40 * sk;
+      const band = ctx.createLinearGradient(0, oben, 0, boden);
+      band.addColorStop(0, 'rgba(255,60,40,0)'); band.addColorStop(1, `rgba(255,60,40,${.2 + .25 * k + .1 * puls})`);
+      ctx.fillStyle = band; ctx.fillRect(z.x - z.b, oben, z.b * 2, boden - oben);
+      ctx.fillStyle = `rgba(255,50,30,${.3 + .35 * k + .15 * puls})`;
+      ellipse(ctx, z.x, boden - 2, z.b, 13 * sk);
+      if (z.art === 'kralle') {
+        ctx.strokeStyle = `rgba(255,240,230,${.3 + .5 * k})`; ctx.lineWidth = 3; ctx.lineCap = 'round';
+        for (let n = -1; n <= 1; n++) { ctx.beginPath(); ctx.moveTo(z.x + n * 12 * sk - 8 * sk, boden - 7 * sk); ctx.lineTo(z.x + n * 12 * sk + 8 * sk, boden + 3 * sk); ctx.stroke(); }
+      }
+    }
+    for (const sl of schlaege) {
+      const a = sl.l / .35;
+      if (sl.art === 'kralle') {
+        ctx.strokeStyle = `rgba(255,255,255,${a})`; ctx.lineWidth = 6 * sk; ctx.lineCap = 'round';
+        for (let n = -1; n <= 1; n++) { ctx.beginPath(); ctx.moveTo(sl.x + n * 16 * sk - 26 * sk, boden - 110 * sk); ctx.lineTo(sl.x + n * 16 * sk + 18 * sk, boden); ctx.stroke(); }
+      } else {
+        ctx.strokeStyle = `rgba(255,246,223,${a})`; ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.ellipse(sl.x, boden - 2, sl.b * (1.6 - a * .6), 12 * sk, 0, 0, Math.PI * 2); ctx.stroke();
+      }
+    }
+    if (b.phase === 'spezial' && b.welt === 'wald') {
+      const gruen = ctx.createLinearGradient(0, 0, 0, boden);
+      gruen.addColorStop(0, 'rgba(120,230,110,0)'); gruen.addColorStop(1, `rgba(120,230,110,${.28 + .1 * Math.sin(uhr * 8)})`);
+      ctx.fillStyle = gruen; ctx.fillRect(b.luecke - LUECKE * sk, 0, 2 * LUECKE * sk, boden);
+      ctx.fillStyle = `rgba(120,230,110,${.45 + .15 * Math.sin(uhr * 8)})`;
+      ellipse(ctx, b.luecke, boden - 2, LUECKE * sk, 13 * sk);
     }
   }
   function bossMalen() {
     const b = boss;
     if (!b) return;
+    bossBodenMalen();
     ctx.save();
     if (b.besiegt) { ctx.globalAlpha = Math.max(0, 1 - b.flucht / 1.2); ctx.translate((b.x < W / 2 ? -1 : 1) * b.flucht * 260, -b.flucht * 60); }
     const tobt = b.phase === 'wut' || b.phase === 'warnung';
@@ -3958,6 +4083,14 @@
       ctx.font = `800 ${Math.round(34 * sk)}px "Baloo 2", sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(30,45,20,.8)'; ctx.strokeText('!', b.x, b.y - 62 * sk + Math.sin(uhr * 20) * 3);
       ctx.fillStyle = '#ff5a3c'; ctx.fillText('!', b.x, b.y - 62 * sk + Math.sin(uhr * 20) * 3);
+    }
+    if (b.phase === 'benommen') {
+      // Sterne kreisen über dem Kopf
+      for (let k = 0; k < 3; k++) {
+        const w = uhr * 4 + k * Math.PI * 2 / 3;
+        ctx.fillStyle = k % 2 ? '#ffd447' : '#fff6df';
+        stern(ctx, b.x + Math.cos(w) * 22 * sk, b.y - 44 * sk + Math.sin(w) * 6 * sk, 6 * sk);
+      }
     }
     if (b.phase === 'muede') {
       ctx.fillStyle = 'rgba(120,190,255,.9)';
@@ -4238,7 +4371,11 @@
       const p = basis * mult;
       punkte += p;
       runde[{ ball: 'baelle', gold: 'gold' }[it.typ] || 'knochen']++;
-      if (boss) bossGetroffen();
+      if (boss) {
+        bossGetroffen();
+        // benommen: jeder Fang zählt doppelt
+        if (boss.phase === 'benommen') { bossGetroffen(); texte.push({ x: tx, y: ty - 26, text: '×2', farbe: '#ffd447', leben: .9 }); }
+      }
       $('punkte').textContent = punkte;
       texte.push({ x: tx, y: ty, text: '+' + p, farbe: it.typ === 'ball' ? '#b8f070' : it.typ === 'gold' ? '#ffd447' : '#ffffff', leben: 1 });
       if (it.typ === 'gold') {
@@ -4284,10 +4421,13 @@
         : !boss ? lerp(1.05, .4, stufe) * (.75 + Math.random() * .5)
         : boss.phase === 'wut' ? (boss.welt === 'garten' ? .9 : boss.welt === 'strand' ? .34 : .45) // nur Ekliges, daher etwas seltener
         : boss.phase === 'muede' ? .32
+        : boss.phase === 'benommen' ? .45
+        : boss.phase === 'spezial' ? 99
         : boss.phase === 'warnung' ? 9
         : lerp(1.15, .5, boss.treffer / boss.hp) * (.8 + Math.random() * .4);
     }
     bossBewegen(fdt);
+    spezialAktualisieren(fdt);
     ereignisAktualisieren(fdt);
     if (!boss) welleAktualisieren(fdt);
     powerMagnet = Math.max(0, powerMagnet - dt);
@@ -4738,8 +4878,9 @@
         return {
           zustand, W, H, zeit, leben, punkte, ezraX: ezra.x, wind: windKraft,
           fang: { oben: boden - 120 * sk, unten: boden - 58 * sk, breite: 26 * sk },
-          boss: boss && { phase: boss.phase, treffer: boss.treffer, hp: boss.hp },
+          boss: boss && { phase: boss.phase, treffer: boss.treffer, hp: boss.hp, luecke: boss.luecke },
           tasche: [...tasche], welle: welle && welle.phase,
+          zonen: zonen.map((z) => ({ x: z.x, b: z.b + 18 * sk * ezraGroesse, t: z.t })),
           items: items.map((it) => ({ id: idVon(it), typ: it.typ, x: itX(it), y: it.y, vx: it.vx || 0, vy: it.vy, g: it.g || 0, r: it.r,
             eklig: !!EKLIG[it.typ], bonus: !!it.bonus, wackelt: it.typ === 'frisbee' || it.typ === 'biene' })),
         };
